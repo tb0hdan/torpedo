@@ -55,7 +55,7 @@ func BashProcessMessage(api *slack.Client, event *slack.MessageEvent) {
                     if n.Type == html.ElementNode && mc.Data == "br" {
                         continue
                     }
-                    quote += mc.Data + "\n"
+                    quote += fmt.Sprintf("%s\n", mc.Data)
                 }
                 quotes[i] = quote
                 i += 1

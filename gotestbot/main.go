@@ -41,7 +41,7 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
         }
         fmt.Printf("PROCESS! -> %s", command)
         if found == 0 {
-            postMessage(event.Channel, "Could not process your message: " + command + ". Command unknown", api)
+            postMessage(event.Channel, fmt.Sprintf("Could not process your message: %s. Command unknown", command), api)
         }
     }
 }
