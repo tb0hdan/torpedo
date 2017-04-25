@@ -34,8 +34,7 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
         command := strings.TrimPrefix(event.Text, "!")
         found := 0
         for handler := range commandHandlers {
-            // TODO: accept command args
-            if handler == command {
+            if strings.HasPrefix(command, handler) {
                 found += 1
                 commandHandlers[handler](api, event)
             }
@@ -47,6 +46,7 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
     }
 }
 
+
 func main() {
         flag.Parse()
 	api := slack.New(*token)
@@ -57,8 +57,7 @@ func main() {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-        // Is there a dynamic way to do this?
-        commandHandlers["bash"] = BashProcessMessage
+        RegisterChatHandlers(commandHandlers)
 
         // TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
@@ -94,5 +93,5 @@ func main() {
 			// Ignore other events..
 			//fmt.Printf("Unexpected: %v\n", msg.Data)
 		}
-	}
+    }
 }
