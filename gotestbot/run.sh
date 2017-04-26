@@ -4,6 +4,12 @@
 # and store as
 # TOKEN="xxx"
 # inside token.sh
-source ./token.sh
-go run *.go -token ${TOKEN} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET}
+if [ "$1" != "" ]; then
+    FNAME="./token.sh.$1"
+else
+    FNAME="./token.sh"
+fi
 
+source ${FNAME}
+
+go run *.go -token ${TOKEN} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET}

@@ -37,11 +37,12 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
             if strings.HasPrefix(command, handler) {
                 found += 1
                 commandHandlers[handler](api, event)
+                break
             }
         }
         fmt.Printf("PROCESS! -> %s", command)
         if found == 0 {
-            postMessage(event.Channel, fmt.Sprintf("Could not process your message: %s. Command unknown", command), api)
+            postMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
         }
     }
 }
