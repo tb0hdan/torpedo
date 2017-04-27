@@ -14,4 +14,5 @@ func RegisterChatHandlers(handlers map[string]func(*slack.Client, *slack.Message
         handlers["help"] = HelpProcessMessage
         //
         handlers["wiki"] = WikiProcessMessage
+        handlers["youtube"] = YoutubeProcessMessage
 }

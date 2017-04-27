@@ -76,12 +76,9 @@ func GetWikiPageExcerpt(query string) (result string) {
 }
 
 func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent) {
-    var message string
-    help := "Usage: !wiki query\n"
     command := strings.Trim(strings.TrimLeft(event.Text, "!wiki"), " ")
-    if command == "" {
-        message = help
-    } else {
+    message := "Usage: !wiki query\n"
+    if command != "" {
         message = GetWikiPageExcerpt(command)
     }
     postMessage(event.Channel, message, api)
