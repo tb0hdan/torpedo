@@ -17,11 +17,19 @@ type WikiRevision struct {
 }
 
 
+type WikiThumbnail struct {
+    Source string `json:"source"`
+    Width int `json:"width"`
+    Height int `json:"height"`
+}
+
+
 type WikiPage struct {
     PageID int `json:"pageid"`
     NS int `json:"ns"`
     Title string `json:"title"`
     Revisions []*WikiRevision `json:"revisions"`
+    Thumbnail *WikiThumbnail `json:"thumbnail,omitempty"`
 }
 
 
@@ -44,8 +52,31 @@ func GetWikiPage(query string) (result string, err error) {
     if err != nil {
         return
     }
+
     for page := range wikiResponse.Query.Pages {
-        result = wikiResponse.Query.Pages[page].Revisions[0].LatestRevision
+        revisions := wikiResponse.Query.Pages[page].Revisions
+        if len(revisions) > 0 {
+            result = revisions[0].LatestRevision
+        }
+    }
+    return
+}
+
+
+func GetWikiTitleImage(query string) (result string, err error) {
+    var wikiResponse WikiResponse
+    new_query := url.QueryEscape(query)
+    data, _ := GetURLBytes(fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&pithumbsize=400&titles=%s", new_query))
+    err = json.Unmarshal(data, &wikiResponse)
+    if err != nil {
+        return
+    }
+
+    for page := range wikiResponse.Query.Pages {
+        thumbnail := wikiResponse.Query.Pages[page].Thumbnail
+        if  thumbnail != nil {
+            result = thumbnail.Source
+        }
     }
     return
 }
@@ -76,10 +107,24 @@ func GetWikiPageExcerpt(query string) (result string) {
 }
 
 func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+    var params slack.PostMessageParameters
     command := strings.Trim(strings.TrimLeft(event.Text, "!wiki"), " ")
     message := "Usage: !wiki query\n"
     if command != "" {
-        message = GetWikiPageExcerpt(command)
+        message = "The page you've requested could not be found."
+        summary := GetWikiPageExcerpt(command)
+        if summary != "" {
+            message = ""
+            image_url, _ := GetWikiTitleImage(command)
+            attachment := slack.Attachment{
+                Color:   "#36a64f",
+                Text:  summary,
+                Title: command,
+                TitleLink: fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.QueryEscape(command)),
+                ImageURL: image_url,
+            }
+            params.Attachments = []slack.Attachment{attachment}
+        }
     }
-    postMessage(event.Channel, message, api)
+    postMessage(event.Channel, message, api, params)
 }
