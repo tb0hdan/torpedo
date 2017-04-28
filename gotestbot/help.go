@@ -9,7 +9,7 @@ import (
 func HelpProcessMessage(api *slack.Client, event *slack.MessageEvent) {
         idx := 0
         message := "Available commands: "
-        for command := range commandHandlers {
+        for command := range RegisterChatHandlers() {
             if idx == 0 {
                 message += fmt.Sprintf("!%s", command)
             } else {

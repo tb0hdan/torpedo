@@ -13,7 +13,6 @@ import (
 
 var (
     token = flag.String("token", "", "Slack legacy token")
-    commandHandlers = make(map[string]func(*slack.Client, *slack.MessageEvent))
 )
 
 func postMessage(channel, message string, api *slack.Client) {
@@ -26,7 +25,7 @@ func postMessage(channel, message string, api *slack.Client) {
     fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 }
 
-func processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
+func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHandlers map[string]func(*slack.Client, *slack.MessageEvent)) {
     messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
     jitter := int64(time.Now().Unix()) - int64(messageTS)
 
@@ -58,7 +57,7 @@ func main() {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-        RegisterChatHandlers(commandHandlers)
+        commandHandlers := RegisterChatHandlers()
 
         // TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
@@ -75,7 +74,7 @@ func main() {
 
 		case *slack.MessageEvent:
 			//fmt.Printf("Message: %v\n", ev)
-                        go processChannelEvent(api, ev)
+                        go processChannelEvent(api, ev, commandHandlers)
 
 		case *slack.PresenceChangeEvent:
 			fmt.Printf("Presence Change: %v\n", ev)
