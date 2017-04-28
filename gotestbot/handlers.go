@@ -15,4 +15,11 @@ func RegisterChatHandlers(handlers map[string]func(*slack.Client, *slack.Message
         //
         handlers["wiki"] = WikiProcessMessage
         handlers["youtube"] = YoutubeProcessMessage
+        // Probably useless stuff
+        handlers["b64e"] = CryptoProcessMessage
+        handlers["b64d"] = CryptoProcessMessage
+        handlers["md5"] = CryptoProcessMessage
+        handlers["sha1"] = CryptoProcessMessage
+        handlers["sha256"] = CryptoProcessMessage
+        handlers["sha512"] = CryptoProcessMessage
 }
