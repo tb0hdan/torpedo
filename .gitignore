@@ -25,6 +25,7 @@ _testmain.go
 
 
 # Local
+gotestbot/data/*
+gotestbot/gotestbot
 gotestbot/token.sh
 gotestbot/token.sh.*
-gotestbot/data/*
