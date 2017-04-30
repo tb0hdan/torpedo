@@ -5,6 +5,7 @@ import (
         "io/ioutil"
         "log"
         "net/http"
+        "os"
         "regexp"
         "strings"
 
@@ -87,5 +88,14 @@ func ChannelsUploadImage(channels []string, fname, fpath, ftype string, api *sla
 func UnformatURL(url string) (newurl string) {
     re := regexp.MustCompile("[<>]")
     newurl = strings.TrimSpace(re.ReplaceAllString(url, ""))
+    return
+}
+
+func FileExists(fpath string) (exists bool) {
+    // TODO: Find a way around this, os.IsExist expects an error and we don't have one yet
+    exists = true
+    if _, err := os.Stat(fpath); os.IsNotExist(err) {
+        exists = false
+    }
     return
 }

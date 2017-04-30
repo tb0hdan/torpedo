@@ -27,6 +27,7 @@ func RegisterChatHandlers()  (handlers map[string]func(*slack.Client, *slack.Mes
     // File category
     handlers["getimg"] = GetSetImageProcessMessage
     handlers["lsimg"] = GetSetImageProcessMessage
+    handlers["listimg"] = GetSetImageProcessMessage
     handlers["setimg"] = GetSetImageProcessMessage
     handlers["rmimg"] = GetSetImageProcessMessage
     return

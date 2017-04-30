@@ -3,6 +3,8 @@ package main
 import (
         "encoding/base64"
         "fmt"
+        "io/ioutil"
+        "log"
         "os"
         "strings"
 
@@ -24,7 +26,7 @@ func GetCreateChannelDir(channel string) (channelDir string, err error) {
 }
 
 
-func GetChannelFile(channel, message string) (channelFile string, err error) {
+func GetChannelFile(channel, message string) (channelFile, mimetype string, err error) {
     wd, err := GetCreateChannelDir(channel)
     if err != nil {
         return
@@ -32,12 +34,11 @@ func GetChannelFile(channel, message string) (channelFile string, err error) {
     // TODO: Add message permutations
     encoded := base64.URLEncoding.EncodeToString([]byte(strings.TrimSpace(message)))
     fname := fmt.Sprintf("%s%s%s", wd, string(os.PathSeparator), encoded)
-    // TODO: Find a way around this, os.IsExist expects an error and we don't have one yet
-    exists := true
-    if _, err := os.Stat(fname); os.IsNotExist(err) {
-        exists = false
-    }
-    if exists {
+    if FileExists(fname) {
+        mimetype, _, _, err = GetMIMEType(fname)
+        if err != nil {
+            return
+        }
         channelFile = fname
     }
     return
@@ -63,8 +64,7 @@ func SetChannelFile(channel, message string) (result string, err error) {
     // Check if target already exists before downloading new one
     encoded := base64.URLEncoding.EncodeToString([]byte(destination))
     new_name := fmt.Sprintf("%s%s%s", wd, string(os.PathSeparator), encoded)
-    _, err = os.Open(new_name)
-    if os.IsExist(err) {
+    if FileExists(new_name) {
         result = "Destination already exists, set skipped. Use `!rmimg destination` to remove."
         return
     }
@@ -80,6 +80,23 @@ func SetChannelFile(channel, message string) (result string, err error) {
     return
 }
 
+func ListChannelFiles(channel string) (files []string, err error) {
+    wd, err := GetCreateChannelDir(channel)
+    if err != nil {
+        return
+    }
+
+    file_names, err := ioutil.ReadDir(wd)
+    if err != nil {
+        log.Fatal(err)
+        return
+    }
+
+    for _, file := range file_names {
+        files = append(files, file.Name())
+    }
+    return
+}
 
 func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent) {
     var params slack.PostMessageParameters
@@ -87,11 +104,9 @@ func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent) {
     if command != "" {
         switch requestedFeature {
         case "!getimg":
-            fpath, err := GetChannelFile(event.Channel, command)
+            fpath, mimetype, err := GetChannelFile(event.Channel, command)
             if fpath != "" {
-                fname := command
-                ftype := "image/gif"
-                ChannelsUploadImage([]string{event.Channel}, fname, fpath, ftype, api)
+                ChannelsUploadImage([]string{event.Channel}, command, fpath, mimetype, api)
                 return
             } else {
                 message = fmt.Sprintf("%+v", err)
@@ -103,10 +118,37 @@ func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent) {
             } else {
                 message = msg
             }
-        case "!listimg":
-            message = "No action set yet"
+        case "!listimg", "!lsimg":
+            files, err := ListChannelFiles(event.Channel)
+            if err != nil {
+                message = "An error occured while retrieving image file list"
+            } else {
+                message = ""
+                for _, fname := range files {
+                    msg, err := base64.URLEncoding.DecodeString(fname)
+                    if err != nil {
+                        continue
+                    }
+                    message += fmt.Sprintf("`%s`\n", msg)
+                }
+                if message == "" {
+                    message = "No files found, upload using !setimg first"
+                } else {
+                    message = fmt.Sprintf("Available image files:\n%s", message)
+                }
+            }
         case "!rmimg":
-            message = "No action set yet"
+            fpath, _, _ := GetChannelFile(event.Channel, command)
+            if fpath != "" {
+                err := os.Remove(fpath)
+                if err != nil {
+                    message = fmt.Sprintf("An error occured while trying to remove `%s`", command)
+                } else {
+                    message = fmt.Sprintf("Requested file `%s` was removed", command)
+                }
+            } else {
+                message = fmt.Sprintf("Requested file `%s` was not found", command)
+            }
         default:
             // should never get here
             message = "Unknown feature requested"
