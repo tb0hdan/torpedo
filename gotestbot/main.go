@@ -1,23 +1,23 @@
 package main
 
 import  (
-        "flag"
-        "strings"
-        )
+	"flag"
+	"strings"
+)
 
 
 var (
-    token = flag.String("token", "", "Comma separated list of Slack legacy tokens")
+	token = flag.String("token", "", "Comma separated list of Slack legacy tokens")
 )
 
 
 func main() {
-        var keys []string
+	var keys []string
 
-        flag.Parse()
+	flag.Parse()
 
-        for _, key := range strings.Split(*token, ",") {
-            keys = append(keys, key)
-        }
-        RunBots(keys)
+	for _, key := range strings.Split(*token, ",") {
+		keys = append(keys, key)
+	}
+	RunBots(keys)
 }

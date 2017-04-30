@@ -1,51 +1,51 @@
 package main
 
 import (
-        "fmt"
-        "log"
-        "os"
-        "strconv"
-        "strings"
-        "time"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 
-        "github.com/nlopes/slack"
-       )
+	"github.com/nlopes/slack"
+)
 
 
 func postMessage(channel, message string, api *slack.Client, parameters...slack.PostMessageParameters) {
-    var params slack.PostMessageParameters
+	var params slack.PostMessageParameters
 
-    if len(parameters) > 0 {
-        params = parameters[0]
-    }
-    channelID, timestamp, err := api.PostMessage(channel, message, params)
-    if err != nil {
-        fmt.Printf("%s\n", err)
-        return
-    }
-    fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+	if len(parameters) > 0 {
+		params = parameters[0]
+	}
+	channelID, timestamp, err := api.PostMessage(channel, message, params)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 }
 
 
 func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHandlers map[string]func(*slack.Client, *slack.MessageEvent)) {
-    messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
-    jitter := int64(time.Now().Unix()) - int64(messageTS)
+	messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
+	jitter := int64(time.Now().Unix()) - int64(messageTS)
 
-    if jitter < 10 && strings.HasPrefix(event.Text, "!") {
-        command := strings.TrimPrefix(event.Text, "!")
-        found := 0
-        for handler := range commandHandlers {
-            if strings.HasPrefix(command, handler) {
-                found += 1
-                commandHandlers[handler](api, event)
-                break
-            }
-        }
-        fmt.Printf("PROCESS! -> %s", command)
-        if found == 0 {
-            postMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
-        }
-    }
+	if jitter < 10 && strings.HasPrefix(event.Text, "!") {
+		command := strings.TrimPrefix(event.Text, "!")
+		found := 0
+		for handler := range commandHandlers {
+			if strings.HasPrefix(command, handler) {
+				found += 1
+				commandHandlers[handler](api, event)
+				break
+			}
+		}
+		fmt.Printf("PROCESS! -> %s", command)
+		if found == 0 {
+			postMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
+		}
+	}
 }
 
 
@@ -59,9 +59,9 @@ func RunBot(apiKey string) {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-        commandHandlers := RegisterChatHandlers()
+	commandHandlers := RegisterChatHandlers()
 
-        // TODO: Move this somewhere else
+	// TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
 		fmt.Print("Event Received: ")
 		switch ev := msg.Data.(type) {
@@ -76,7 +76,7 @@ func RunBot(apiKey string) {
 
 		case *slack.MessageEvent:
 			fmt.Printf("Message: %v\n", ev)
-                        go processChannelEvent(api, ev, commandHandlers)
+			go processChannelEvent(api, ev, commandHandlers)
 
 		case *slack.PresenceChangeEvent:
 			fmt.Printf("Presence Change: %v\n", ev)
@@ -95,19 +95,19 @@ func RunBot(apiKey string) {
 			// Ignore other events..
 			//fmt.Printf("Unexpected: %v\n", msg.Data)
 		}
-    }
+	}
 
 }
 
 func RunLoop() {
-    for {
-        time.Sleep(time.Second)
-    }
+	for {
+		time.Sleep(time.Second)
+	}
 }
 
 func RunBots(keys []string) {
-    for _, key := range keys {
-        go RunBot(key)
-    }
-    RunLoop()
+	for _, key := range keys {
+		go RunBot(key)
+	}
+	RunLoop()
 }

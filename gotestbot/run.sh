@@ -5,9 +5,9 @@
 # TOKEN="xxx"
 # inside token.sh
 if [ "$1" != "" ]; then
-    FNAME="./token.sh.$1"
+	FNAME="./token.sh.$1"
 else
-    FNAME="./token.sh"
+	FNAME="./token.sh"
 fi
 
 source ${FNAME}
