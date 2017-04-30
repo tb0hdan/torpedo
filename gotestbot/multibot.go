@@ -14,6 +14,7 @@ import (
 
 func postMessage(channel, message string, api *slack.Client, parameters...slack.PostMessageParameters) {
     var params slack.PostMessageParameters
+
     if len(parameters) > 0 {
         params = parameters[0]
     }

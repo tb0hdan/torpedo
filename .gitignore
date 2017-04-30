@@ -25,6 +25,8 @@ _testmain.go
 
 
 # Local
+.DS_*
+.idea/*
 gotestbot/data/*
 gotestbot/gotestbot
 gotestbot/token.sh
