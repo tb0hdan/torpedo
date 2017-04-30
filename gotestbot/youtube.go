@@ -87,7 +87,7 @@ func YoutubeSearch(query, developerKey string, maxResults int64) (videos []Youtu
 
 func YoutubeProcessMessage(api *slack.Client, event *slack.MessageEvent) {
     message := "Usage: !youtube query\n"
-    command := strings.Trim(strings.TrimLeft(event.Text, "!youtube"), " ")
+    command := strings.TrimSpace(strings.TrimLeft(event.Text, "!youtube"))
     if command != "" {
         searchResults := YoutubeSearch(command, *google_webapp_key, 25)
         message = fmt.Sprintf("https://youtu.be/%s", searchResults[0].VideoID)

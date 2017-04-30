@@ -11,6 +11,7 @@ Some of the code is loosely based on github.com/nlopes/slack
 # Installation
 
 ```
+go get -u gopkg.in/h2non/filetype.v1
 go get -u github.com/nlopes/slack
 go get -u github.com/shkh/lastfm-go/lastfm
 go get -u golang.org/x/net/html

@@ -71,11 +71,11 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
     var message string
     var params slack.PostMessageParameters
     help := "Usage: !lastfm command\nAvailable commands: artist, tag"
-    command := strings.Split(strings.Trim(strings.TrimLeft(event.Text, "!lastfm"), " "), " ")[0]
+    command := strings.Split(strings.TrimSpace(strings.TrimLeft(event.Text, "!lastfm")), " ")[0]
 
     switch command {
     case "artist":
-        artist := strings.Trim(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)), " ")
+        artist := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)))
         if artist != "" {
             summary, artist_url, artist_corrected, image_url := lastfmArtist(artist)
             attachment := slack.Attachment{
@@ -90,7 +90,7 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
             message = "Please supply artist: !lastfm artist artist_name"
         }
     case "tag":
-        tag := strings.Trim(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)), " ")
+        tag := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)))
         if tag != "" {
             message = lastfmTag(tag)
         } else {

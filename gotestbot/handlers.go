@@ -6,6 +6,7 @@ import (
 
 func RegisterChatHandlers()  (handlers map[string]func(*slack.Client, *slack.MessageEvent)) {
     handlers = make(map[string]func(*slack.Client, *slack.MessageEvent))
+    // TODO: Support command groups and provide category help
     handlers["bash"] = BashProcessMessage
     handlers["lastfm"] = LastFmProcessMessage
     handlers["qr"] = QREncoderProcessMessage
@@ -23,5 +24,10 @@ func RegisterChatHandlers()  (handlers map[string]func(*slack.Client, *slack.Mes
     handlers["sha1"] = CryptoProcessMessage
     handlers["sha256"] = CryptoProcessMessage
     handlers["sha512"] = CryptoProcessMessage
+    // File category
+    handlers["getimg"] = GetSetImageProcessMessage
+    handlers["lsimg"] = GetSetImageProcessMessage
+    handlers["setimg"] = GetSetImageProcessMessage
+    handlers["rmimg"] = GetSetImageProcessMessage
     return
 }

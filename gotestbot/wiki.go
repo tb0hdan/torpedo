@@ -108,7 +108,7 @@ func GetWikiPageExcerpt(query string) (result string) {
 
 func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent) {
     var params slack.PostMessageParameters
-    command := strings.Trim(strings.TrimLeft(event.Text, "!wiki"), " ")
+    command := strings.TrimSpace(strings.TrimLeft(event.Text, "!wiki"))
     message := "Usage: !wiki query\n"
     if command != "" {
         message = "The page you've requested could not be found."
