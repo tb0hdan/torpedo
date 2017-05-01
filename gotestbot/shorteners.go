@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/nlopes/slack"
+	"net/url"
 )
 
 
@@ -27,6 +28,23 @@ func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		channels := []string{event.Channel}
 		filename := fmt.Sprintf("%s.png", command)
 		ChannelsUploadImage(channels, filename, filepath, mimetype, api)
+	}
+}
+
+func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!tinyurl"))
+
+	if command == "" {
+		postMessage(event.Channel, "Usage: !tinyurl url\n", api)
+	} else {
+		command := strings.TrimSpace(strings.TrimLeft(event.Text, "!tinyurl"))
+		query := url.QueryEscape(command)
+		result, err := GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
+		message := "An error occured during TinyURL encoding process"
+		if err == nil {
+			message = string(result)
+		}
+		postMessage(event.Channel, message, api)
 	}
 }
 

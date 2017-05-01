@@ -17,6 +17,8 @@ go get -u github.com/shkh/lastfm-go/lastfm
 go get -u golang.org/x/net/html
 go get -u golang.org/x/text/encoding/charmap
 go get -u golang.org/x/text/transform
+go get -u github.com/google/google-api-go-client/googleapi/transport
+go get -u google.golang.org/api/youtube/v3
 ```
 
 Get Slack token(s):

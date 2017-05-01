@@ -35,7 +35,7 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHa
 		command := strings.TrimPrefix(event.Text, "!")
 		found := 0
 		for handler := range commandHandlers {
-			if strings.HasPrefix(command, handler) {
+			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
 				found += 1
 				commandHandlers[handler](api, event)
 				break

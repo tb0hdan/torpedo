@@ -7,9 +7,11 @@ import (
 func RegisterChatHandlers()  (handlers map[string]func(*slack.Client, *slack.MessageEvent)) {
 	handlers = make(map[string]func(*slack.Client, *slack.MessageEvent))
 	// TODO: Support command groups and provide category help
-	handlers["bash"] = BashProcessMessage
-	handlers["lastfm"] = LastFmProcessMessage
+	handlers["bashim"] = BashProcessMessage
+	handlers["bashorg"] = BashOrgProcessMessage
+ 	handlers["lastfm"] = LastFmProcessMessage
 	handlers["qr"] = QREncoderProcessMessage
+	handlers["tinyurl"] = TinyURLProcessMessage
 	// Help handlers
 	handlers["?"] = HelpProcessMessage
 	handlers["h"] = HelpProcessMessage
