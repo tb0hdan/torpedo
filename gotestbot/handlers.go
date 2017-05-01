@@ -12,6 +12,7 @@ func RegisterChatHandlers()  (handlers map[string]func(*slack.Client, *slack.Mes
  	handlers["lastfm"] = LastFmProcessMessage
 	handlers["qr"] = QREncoderProcessMessage
 	handlers["tinyurl"] = TinyURLProcessMessage
+	handlers["pinterest"] = PinterestProcessMessage
 	// Help handlers
 	handlers["?"] = HelpProcessMessage
 	handlers["h"] = HelpProcessMessage
