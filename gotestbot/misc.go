@@ -15,12 +15,25 @@ import (
 
 
 func GetURLBytes(url string) (result []byte, err error) {
-	response, err := http.DefaultClient.Get(url)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return
+		log.Fatalln(err)
 	}
-	defer response.Body.Close()
-	result, err = ioutil.ReadAll(response.Body)
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (https://github.com/tb0hdan/torpedo; tb0hdan@gmail.com) Go-http-client/1.1")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer resp.Body.Close()
+	result, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	return
 }
 

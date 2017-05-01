@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"golang.org/x/net/html"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/encoding/charmap"
@@ -14,22 +13,29 @@ import (
 )
 
 
-func windows1251_to_utf8(reader_in io.ReadCloser) (reader_out *transform.Reader){
+func windows1251_to_utf8(reader_in io.Reader) (reader_out *transform.Reader){
 	reader_out = transform.NewReader(reader_in, charmap.Windows1251.NewDecoder())
 	return
 }
 
+func windows1251_to_utf8_bytes_reader(input []byte) (output *bytes.Reader, err error) {
+	// TODO: Well, this is obviusly effed up
+	result, err := ioutil.ReadAll(windows1251_to_utf8(bytes.NewReader(input)))
+	if err != nil {
+		fmt.Printf("windows1251_to_utf8_bytes_reader failed with %+v", err)
+	}
+	output = bytes.NewReader(result)
+	return
+}
 
 func get_html(url string) (result *html.Node) {
-	response, err := http.DefaultClient.Get(url)
+	res, err := GetURLBytes(url)
 	if err != nil {
-		fmt.Printf("Error getting data from %s", url)
+		return
 	}
-	defer response.Body.Close()
+	reader, err := windows1251_to_utf8_bytes_reader(res)
 
-	res, _ := ioutil.ReadAll(windows1251_to_utf8(response.Body))
-
-	result, err = html.Parse(bytes.NewReader(res))
+	result, err = html.Parse(reader)
 	if err != nil {
 		fmt.Printf("Error %s parsing html", err)
 	}
