@@ -32,6 +32,7 @@ TOKEN="xxxttt,aaabbb"
 LASTFM_KEY="aaa"
 LASTFM_SECRET="bbb"
 GOOGLE_WEBAPP_KEY="ccc"
+PINTEREST_TOKEN="ddd"
 ```
 
 # Running
@@ -54,16 +55,31 @@ Help:
 Encoding and crypto:
 
 `!b64e`   - Base64 encode
+
 `!b64d`   - Base64 decode
+
 `!md5`    - MD5 hash
+
 `!sha1`   - SHA1 hash
+
 `!sha256` - SHA256 hash
+
 `!sha512` - SHA512 hash
 
 Multimedia:
 
 `!lastfm` - Last.FM artist/tag search
+
 `!youtube` - Search Youtube, Track name -> Video URL
-`!bash` - Bash.Im random quote
+
+`!bashim` - Bash.Im random quote
+
+`!bashorg` - Bash.Org random quote
+
 `!qr` - String to QR using Google API
+
 `!wiki` - Wikipedia search
+
+`!pinterest` - Pinterest boards
+
+`!tinyurl` - TinyURL shortener
