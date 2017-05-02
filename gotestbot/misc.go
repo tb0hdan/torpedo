@@ -87,7 +87,7 @@ func GetRequestedFeature(full_command string, usage...string) (requestedFeature,
 	// Support multiple commands within single function
 	requestedFeature = strings.Split(full_command, " ")[0]
 	command = strings.TrimSpace(strings.TrimLeft(full_command, requestedFeature))
-	if usage[0] == "" {
+	if len(usage) == 0 {
 		message = fmt.Sprintf("Usage: %s string\n", requestedFeature)
 	} else {
 		message = fmt.Sprintf("Usage: %s %s\n", requestedFeature, usage[0])
