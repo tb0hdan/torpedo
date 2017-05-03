@@ -11,21 +11,14 @@ Some of the code is loosely based on github.com/nlopes/slack
 # Installation
 
 ```
-go get -u gopkg.in/h2non/filetype.v1
-go get -u github.com/nlopes/slack
-go get -u github.com/shkh/lastfm-go/lastfm
-go get -u golang.org/x/net/html
-go get -u golang.org/x/text/encoding/charmap
-go get -u golang.org/x/text/transform
-go get -u github.com/google/google-api-go-client/googleapi/transport
-go get -u google.golang.org/api/youtube/v3
+make
 ```
 
 Get Slack token(s):
 
 `https://api.slack.com/custom-integrations/legacy-tokens`
 
-Paste token as `gotestbot/token.sh`
+Paste token as `token.sh`
 
 ```bash
 TOKEN="xxxttt,aaabbb"
@@ -38,7 +31,6 @@ PINTEREST_TOKEN="ddd"
 # Running
 
 ```bash
-cd gotestbot
 ./run.sh
 ```
 
