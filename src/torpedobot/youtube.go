@@ -1,13 +1,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 
 	"github.com/nlopes/slack"
 
+	"torpedobot/multibot"
 	"torpedobot/youtube"
-	"flag"
 )
 
 var (
@@ -15,12 +16,12 @@ var (
 )
 
 
-func YoutubeProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func YoutubeProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	message := "Usage: !youtube query\n"
 	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!youtube"))
 	if command != "" {
 		searchResults := youtube.YoutubeSearch(command, *google_webapp_key, 25)
 		message = fmt.Sprintf("https://youtu.be/%s", searchResults[0].VideoID)
 	}
-	postMessage(event.Channel, message, api)
+	bot.PostMessage(event.Channel, message, api)
 }

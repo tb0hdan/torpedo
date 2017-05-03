@@ -7,10 +7,11 @@ import (
 
 	"github.com/nlopes/slack"
 
+	"torpedobot/multibot"
 	"torpedobot/wiki"
 )
 
-func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	var params slack.PostMessageParameters
 	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!wiki"))
 	message := "Usage: !wiki query\n"
@@ -30,5 +31,5 @@ func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 			params.Attachments = []slack.Attachment{attachment}
 		}
 	}
-	postMessage(event.Channel, message, api, params)
+	bot.PostMessage(event.Channel, message, api, params)
 }

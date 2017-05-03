@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html"
 
 	"torpedobot/common"
+	"torpedobot/multibot"
 )
 
 func get_bashorg_html(url string) (result *html.Node) {
@@ -22,7 +23,7 @@ func get_bashorg_html(url string) (result *html.Node) {
 	return
 }
 
-func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	r := get_bashorg_html("http://bash.org/?random")
 	quotes := make(map[int]string)
 
@@ -52,5 +53,5 @@ func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	}
 	f(r)
 
-	postMessage(event.Channel, quotes[0], api)
+	bot.PostMessage(event.Channel, quotes[0], api)
 }

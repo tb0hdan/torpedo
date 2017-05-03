@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/nlopes/slack"
+
+	"torpedobot/multibot"
 )
 
 
-func HelpProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func HelpProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	idx := 0
 	message := "Available commands: "
-	for command := range RegisterChatHandlers() {
+	for command := range bot.GetCommandHandlers() {
 		if idx == 0 {
 			message += fmt.Sprintf("!%s", command)
 		} else {
@@ -17,5 +19,5 @@ func HelpProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		}
 		idx += 1
 	}
-	postMessage(event.Channel, message, api)
+	bot.PostMessage(event.Channel, message, api)
 }

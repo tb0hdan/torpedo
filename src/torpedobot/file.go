@@ -9,9 +9,10 @@ import (
 
 	"torpedobot/common"
 	"torpedobot/file"
+	"torpedobot/multibot"
 )
 
-func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	var params slack.PostMessageParameters
 	requestedFeature, command, message := common.GetRequestedFeature(event.Text)
 	if command != "" {
@@ -67,5 +68,5 @@ func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 			message = "Unknown feature requested"
 		}
 	}
-	postMessage(event.Channel, message, api, params)
+	bot.PostMessage(event.Channel, message, api, params)
 }

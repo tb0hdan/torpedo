@@ -16,13 +16,14 @@ import (
 	"github.com/nlopes/slack"
 
 	"torpedobot/common"
+	"torpedobot/multibot"
 )
 
-func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!qr"))
 
 	if command == "" {
-		postMessage(event.Channel, "Usage: !qr query\n", api)
+		bot.PostMessage(event.Channel, "Usage: !qr query\n", api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(event.Text, "!qr"))
 		filepath, mimetype, _, _ := common.DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
@@ -33,11 +34,11 @@ func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	}
 }
 
-func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!tinyurl"))
 
 	if command == "" {
-		postMessage(event.Channel, "Usage: !tinyurl url\n", api)
+		bot.PostMessage(event.Channel, "Usage: !tinyurl url\n", api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(event.Text, "!tinyurl"))
 		query := url.QueryEscape(command)
@@ -46,11 +47,11 @@ func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		if err == nil {
 			message = string(result)
 		}
-		postMessage(event.Channel, message, api)
+		bot.PostMessage(event.Channel, message, api)
 	}
 }
 
-func CryptoProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func CryptoProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	requestedFeature, command, message := common.GetRequestedFeature(event.Text)
 	if command != "" {
 		switch requestedFeature {
@@ -84,5 +85,5 @@ func CryptoProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 			message = "Unknown feature requested"
 		}
 	}
-	postMessage(event.Channel, message, api)
+	bot.PostMessage(event.Channel, message, api)
 }

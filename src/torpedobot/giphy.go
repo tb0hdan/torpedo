@@ -9,9 +9,10 @@ import (
 
 	"torpedobot/giphy"
 	"torpedobot/common"
+	"torpedobot/multibot"
 )
 
-func GiphyProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func GiphyProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	var message string
 	var params slack.PostMessageParameters
 	var giphyResponse giphy.GiphyResponse
@@ -42,5 +43,5 @@ func GiphyProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 			message = "Your request to Giphy could not be processed"
 		}
 	}
-	postMessage(event.Channel, message, api, params)
+	bot.PostMessage(event.Channel, message, api, params)
 }

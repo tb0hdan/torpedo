@@ -12,6 +12,7 @@ import (
 	"golang.org/x/text/transform"
 
 	"torpedobot/common"
+	"torpedobot/multibot"
 )
 
 func windows1251_to_utf8(reader_in io.Reader) (reader_out *transform.Reader) {
@@ -43,7 +44,7 @@ func get_html(url string) (result *html.Node) {
 	return
 }
 
-func BashProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func BashProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	r := get_html("http://bash.im/random")
 	quotes := make(map[int]string)
 
@@ -73,5 +74,5 @@ func BashProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	}
 	f(r)
 
-	postMessage(event.Channel, quotes[0], api)
+	bot.PostMessage(event.Channel, quotes[0], api)
 }

@@ -7,6 +7,8 @@ import (
 
 	"github.com/nlopes/slack"
 	"github.com/shkh/lastfm-go/lastfm"
+
+	"torpedobot/multibot"
 )
 
 var (
@@ -66,7 +68,7 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
-func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
+func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
 	var message string
 	var params slack.PostMessageParameters
 	help := "Usage: !lastfm command\nAvailable commands: artist, tag"
@@ -99,5 +101,5 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		message = help
 	}
 
-	postMessage(event.Channel, message, api, params)
+	bot.PostMessage(event.Channel, message, api, params)
 }

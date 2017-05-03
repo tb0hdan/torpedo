@@ -1,4 +1,4 @@
-package main
+package multibot
 
 import (
 	"fmt"
@@ -11,7 +11,15 @@ import (
 	"github.com/nlopes/slack"
 )
 
-func postMessage(channel, message string, api *slack.Client, parameters ...slack.PostMessageParameters) {
+
+type TorpedoBot struct {
+	commandHandlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)
+	config struct {
+		api_keys []string
+	}
+}
+
+func (tb *TorpedoBot) PostMessage(channel, message string, api *slack.Client, parameters ...slack.PostMessageParameters) {
 	var params slack.PostMessageParameters
 
 	if len(parameters) > 0 {
@@ -25,30 +33,24 @@ func postMessage(channel, message string, api *slack.Client, parameters ...slack
 	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 }
 
-func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHandlers map[string]func(*slack.Client, *slack.MessageEvent)) {
+func (tb *TorpedoBot) processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
 	messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
 	jitter := int64(time.Now().Unix()) - int64(messageTS)
 
 	if jitter < 10 && strings.HasPrefix(event.Text, "!") {
 		command := strings.TrimPrefix(event.Text, "!")
 		found := 0
-		for handler := range commandHandlers {
+		for handler := range tb.commandHandlers {
 			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
 				found += 1
-				commandHandlers[handler](api, event)
+				tb.commandHandlers[handler](api, event, tb)
 				break
 			}
 		}
 		fmt.Printf("PROCESS! -> %s", command)
 		if found == 0 {
-			postMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
+			tb.PostMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
 		}
-	}
-}
-
-type TorpedoBot struct {
-	config struct {
-		api_keys []string
 	}
 }
 
@@ -60,8 +62,6 @@ func (tb *TorpedoBot) RunBot(apiKey string) {
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
-
-	commandHandlers := RegisterChatHandlers()
 
 	// TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
@@ -78,7 +78,7 @@ func (tb *TorpedoBot) RunBot(apiKey string) {
 
 		case *slack.MessageEvent:
 			fmt.Printf("Message: %v\n", ev)
-			go processChannelEvent(api, ev, commandHandlers)
+			go tb.processChannelEvent(api, ev)
 
 		case *slack.PresenceChangeEvent:
 			fmt.Printf("Presence Change: %v\n", ev)
@@ -112,6 +112,15 @@ func (tb *TorpedoBot) RunBots() {
 		go tb.RunBot(key)
 	}
 	tb.RunLoop()
+}
+
+func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)) {
+	tb.commandHandlers = handlers
+	return
+}
+
+func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)) {
+	return tb.commandHandlers
 }
 
 func New(api_keys []string) (bot *TorpedoBot) {
