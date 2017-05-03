@@ -5,16 +5,18 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+
 	"encoding/base64"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 
 	"github.com/nlopes/slack"
-	"net/url"
-)
 
+	"torpedobot/common"
+)
 
 func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!qr"))
@@ -23,11 +25,11 @@ func QREncoderProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		postMessage(event.Channel, "Usage: !qr query\n", api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(event.Text, "!qr"))
-		filepath, mimetype, _, _ := DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
+		filepath, mimetype, _, _ := common.DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
 		defer os.Remove(filepath)
 		channels := []string{event.Channel}
 		filename := fmt.Sprintf("%s.png", command)
-		ChannelsUploadImage(channels, filename, filepath, mimetype, api)
+		common.ChannelsUploadImage(channels, filename, filepath, mimetype, api)
 	}
 }
 
@@ -39,7 +41,7 @@ func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(event.Text, "!tinyurl"))
 		query := url.QueryEscape(command)
-		result, err := GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
+		result, err := common.GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
 		message := "An error occured during TinyURL encoding process"
 		if err == nil {
 			message = string(result)
@@ -48,9 +50,8 @@ func TinyURLProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	}
 }
 
-
 func CryptoProcessMessage(api *slack.Client, event *slack.MessageEvent) {
-	requestedFeature, command, message := GetRequestedFeature(event.Text)
+	requestedFeature, command, message := common.GetRequestedFeature(event.Text)
 	if command != "" {
 		switch requestedFeature {
 		case "!b64e":

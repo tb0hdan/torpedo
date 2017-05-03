@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/nlopes/slack"
-	"fmt"
-	"golang.org/x/net/html"
 	"bytes"
+	"fmt"
+
+	"github.com/nlopes/slack"
+	"golang.org/x/net/html"
+
+	"torpedobot/common"
 )
 
-func get_bashorg_html(url string) (result *html.Node){
-	res, err := GetURLBytes(url)
+func get_bashorg_html(url string) (result *html.Node) {
+	res, err := common.GetURLBytes(url)
 	if err != nil {
 		return
 	}
@@ -19,7 +22,7 @@ func get_bashorg_html(url string) (result *html.Node){
 	return
 }
 
-func BashOrgProcessMessage (api *slack.Client, event *slack.MessageEvent) {
+func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	r := get_bashorg_html("http://bash.org/?random")
 	quotes := make(map[int]string)
 
@@ -29,7 +32,7 @@ func BashOrgProcessMessage (api *slack.Client, event *slack.MessageEvent) {
 	var quote string
 
 	f = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "p" && len(n.Attr) > 0{
+		if n.Type == html.ElementNode && n.Data == "p" && len(n.Attr) > 0 {
 			attr := n.Attr[0]
 			if attr.Key == "class" && attr.Val == "qt" {
 				quote = ""

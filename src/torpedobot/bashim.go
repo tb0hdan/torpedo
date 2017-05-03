@@ -1,19 +1,20 @@
 package main
 
-
 import (
 	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"golang.org/x/net/html"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/encoding/charmap"
+
 	"github.com/nlopes/slack"
+	"golang.org/x/net/html"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
+
+	"torpedobot/common"
 )
 
-
-func windows1251_to_utf8(reader_in io.Reader) (reader_out *transform.Reader){
+func windows1251_to_utf8(reader_in io.Reader) (reader_out *transform.Reader) {
 	reader_out = transform.NewReader(reader_in, charmap.Windows1251.NewDecoder())
 	return
 }
@@ -29,7 +30,7 @@ func windows1251_to_utf8_bytes_reader(input []byte) (output *bytes.Reader, err e
 }
 
 func get_html(url string) (result *html.Node) {
-	res, err := GetURLBytes(url)
+	res, err := common.GetURLBytes(url)
 	if err != nil {
 		return
 	}
@@ -41,7 +42,6 @@ func get_html(url string) (result *html.Node) {
 	}
 	return
 }
-
 
 func BashProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	r := get_html("http://bash.im/random")

@@ -8,37 +8,31 @@ import (
 	"sort"
 	"strings"
 
-	"google.golang.org/api/youtube/v3"
 	"github.com/google/google-api-go-client/googleapi/transport"
+	"google.golang.org/api/youtube/v3"
 
 	"github.com/nlopes/slack"
 )
-
 
 var (
 	google_webapp_key = flag.String("google_webapp_key", "", "Google Data API Web Application Key")
 )
 
-
 type YoutubeVideo struct {
-	VideoID string
+	VideoID    string
 	VideoTitle string
 	VideoScore int
 }
-
 
 func (y YoutubeVideo) String() string {
 	return fmt.Sprintf("%s: %d", y.VideoID, y.VideoScore)
 }
 
-
 type ByScore []YoutubeVideo
 
-
-func (s ByScore) Len() int              { return len(s) }
-func (s ByScore) Swap(i, j int)         { s[i], s[j] = s[j], s[i] }
-func (s ByScore) Less(i, j int) bool        { return s[i].VideoScore > s[j].VideoScore }
-
+func (s ByScore) Len() int           { return len(s) }
+func (s ByScore) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s ByScore) Less(i, j int) bool { return s[i].VideoScore > s[j].VideoScore }
 
 func CalculateVideoScore(title, query string) (score int) {
 	// Rulesets
@@ -54,7 +48,6 @@ func CalculateVideoScore(title, query string) (score int) {
 	//
 	return
 }
-
 
 func YoutubeSearch(query, developerKey string, maxResults int64) (videos []YoutubeVideo) {
 	client := &http.Client{
@@ -83,7 +76,6 @@ func YoutubeSearch(query, developerKey string, maxResults int64) (videos []Youtu
 	sort.Sort(ByScore(videos))
 	return
 }
-
 
 func YoutubeProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	message := "Usage: !youtube query\n"

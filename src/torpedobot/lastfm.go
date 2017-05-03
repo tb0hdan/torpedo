@@ -1,22 +1,23 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"strings"
+
 	"github.com/nlopes/slack"
 	"github.com/shkh/lastfm-go/lastfm"
 )
 
 var (
-	lastfm_key = flag.String("lastfm_key", "", "Last.FM API Key")
+	lastfm_key    = flag.String("lastfm_key", "", "Last.FM API Key")
 	lastfm_secret = flag.String("lastfm_secret", "", "Last.FM API Secret")
 )
 
 func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_url string) {
 	var tags string
 	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
-	r,  err := lastfm_api.Artist.GetInfo(lastfm.P{"artist": artist})
+	r, err := lastfm_api.Artist.GetInfo(lastfm.P{"artist": artist})
 	summary = "An error occured while processing your request"
 	if err == nil {
 		for idx, tag := range r.Tags {
@@ -45,7 +46,6 @@ func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_u
 	return
 }
 
-
 func lastfmTag(tag string) (result string) {
 	var artists string
 	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
@@ -66,7 +66,6 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
-
 func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	var message string
 	var params slack.PostMessageParameters
@@ -79,11 +78,11 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 		if artist != "" {
 			summary, artist_url, artist_corrected, image_url := lastfmArtist(artist)
 			attachment := slack.Attachment{
-				Color:   "#36a64f",
-				Text:    summary,
-				Title: artist_corrected,
+				Color:     "#36a64f",
+				Text:      summary,
+				Title:     artist_corrected,
 				TitleLink: artist_url,
-				ImageURL: image_url,
+				ImageURL:  image_url,
 			}
 			params.Attachments = []slack.Attachment{attachment}
 		} else {

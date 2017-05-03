@@ -1,41 +1,42 @@
 package pinterest
 
 import (
-	"encoding/base64"
-	"fmt"
-	"strings"
-	"io/ioutil"
-	"encoding/json"
-	"net/http"
 	"bytes"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"torpedobot/common"
 )
 
 type PinterestInterestItem struct {
-	ID string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type PinterestPage struct {
-	Cursor string `json:"cursor"`
+	Cursor   string `json:"cursor"`
 	NextPage string `json:"next"`
 }
 
 type PinterestInterests struct {
 	Data []*PinterestInterestItem `json:"data"`
-	Page *PinterestPage `json:"page"`
+	Page *PinterestPage           `json:"page"`
 }
 
 type PinterestBoardPinItem struct {
-	URL string `json:"url"`
+	URL  string `json:"url"`
 	Note string `json:"note"`
 	Link string `json:"link"`
-	ID string `json:"id"`
+	ID   string `json:"id"`
 }
 
 type PinterestBoardPins struct {
 	Data []*PinterestBoardPinItem `json:"data"`
-	Page *PinterestPage `json:"page"`
+	Page *PinterestPage           `json:"page"`
 }
 
 type PinterestPinMedia struct {
@@ -43,9 +44,9 @@ type PinterestPinMedia struct {
 }
 
 type PinterestPinOriginalImage struct {
-	URL string `json:"url"`
-	Width int `json:"width"`
-	Height int `json:"height"`
+	URL    string `json:"url"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
 }
 
 type PinterestPinImage struct {
@@ -53,33 +54,33 @@ type PinterestPinImage struct {
 }
 
 type PinterestPinItem struct {
-	Media *PinterestPinMedia `json:"media"`
-	CreatedAt string `json:"created_at"`
-	Image *PinterestPinImage `json:"image"`
-	ID string `json:"id"`
+	Media     *PinterestPinMedia `json:"media"`
+	CreatedAt string             `json:"created_at"`
+	Image     *PinterestPinImage `json:"image"`
+	ID        string             `json:"id"`
 }
 type PinterestPinResponse struct {
 	Data *PinterestPinItem `json:"data"`
-
 }
 
 type PinterestOauthResponse struct {
 	AccessToken string `json:"access_token"`
-	TokenType string `json:"token_type"`
-	Scope []string
+	TokenType   string `json:"token_type"`
+	Scope       []string
 }
 
-const PINTEREST_API_BASE ="https://api.pinterest.com/v1"
+const PINTEREST_API_BASE = "https://api.pinterest.com/v1"
 
 type PinterestClient struct {
 	config struct {
-		client_id string
+		client_id     string
 		client_secret string
-		client_token string
-		redirect_url string
-		state string
+		client_token  string
+		redirect_url  string
+		state         string
 	}
 }
+
 func (api *PinterestClient) GetAcccessToken(code string) (client_token string, err error) {
 	var pinterestOauthResponse PinterestOauthResponse
 
@@ -113,12 +114,7 @@ func (api *PinterestClient) PrepareRequest(state string) {
 func (api *PinterestClient) GetInterests() {
 	var pinterestInterests PinterestInterests
 	url := fmt.Sprintf("%s/me/following/interests/?access_token=%s", PINTEREST_API_BASE, api.config.client_token)
-	r, err := http.DefaultClient.Get(url)
-	if err != nil {
-		return
-	}
-	defer r.Body.Close()
-	response, err := ioutil.ReadAll(r.Body)
+	response, err := common.GetURLBytes(url)
 	err = json.Unmarshal(response, &pinterestInterests)
 	if err == nil {
 		for _, item := range pinterestInterests.Data {
@@ -130,12 +126,7 @@ func (api *PinterestClient) GetInterests() {
 func (api *PinterestClient) GetPinsForBoard(board string) (pins []string, err error) {
 	var pinterestBoardPins PinterestBoardPins
 	url := fmt.Sprintf("https://api.pinterest.com/v1/boards/%s/pins/?access_token=%s", board, api.config.client_token)
-	r, err := http.DefaultClient.Get(url)
-	if err != nil {
-		return
-	}
-	defer r.Body.Close()
-	response, err := ioutil.ReadAll(r.Body)
+	response, err := common.GetURLBytes(url)
 	err = json.Unmarshal(response, &pinterestBoardPins)
 	if err == nil {
 		for _, item := range pinterestBoardPins.Data {
@@ -148,12 +139,7 @@ func (api *PinterestClient) GetPinsForBoard(board string) (pins []string, err er
 func (api *PinterestClient) GetImagesForPin(pin string) (images []string, err error) {
 	var pinterestPinResponse PinterestPinResponse
 	url := fmt.Sprintf("https://api.pinterest.com/v1/pins/%s/?access_token=%s&fields=media,image,created_at", pin, api.config.client_token)
-	r, err := http.DefaultClient.Get(url)
-	if err != nil {
-		return
-	}
-	defer r.Body.Close()
-	response, err := ioutil.ReadAll(r.Body)
+	response, err := common.GetURLBytes(url)
 	if err != nil {
 		fmt.Printf("%+v", err)
 		return
@@ -167,7 +153,7 @@ func (api *PinterestClient) GetImagesForPin(pin string) (images []string, err er
 	return
 }
 
-func (api *PinterestClient) GetImagesForBoard(board string) (images []string, err error){
+func (api *PinterestClient) GetImagesForBoard(board string) (images []string, err error) {
 	pins, err := api.GetPinsForBoard(board)
 	if err != nil {
 		fmt.Printf("Get pins for board failed with %+v", err)

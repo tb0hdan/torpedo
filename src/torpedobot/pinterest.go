@@ -1,18 +1,21 @@
 package main
 
 import (
-	"./pinterest"
-	"github.com/nlopes/slack"
-	"fmt"
 	"flag"
+	"fmt"
 	"strings"
+
+	"github.com/nlopes/slack"
+
+	"torpedobot/common"
+	"torpedobot/pinterest"
 )
 
 var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
-func PinterestProcessMessage (api *slack.Client, event *slack.MessageEvent) {
+func PinterestProcessMessage(api *slack.Client, event *slack.MessageEvent) {
 	var params slack.PostMessageParameters
-	requestedFeature, command, message := GetRequestedFeature(event.Text, "board")
+	requestedFeature, command, message := common.GetRequestedFeature(event.Text, "board")
 	command = strings.Split(command, " ")[0]
 
 	switch command {
@@ -25,11 +28,11 @@ func PinterestProcessMessage (api *slack.Client, event *slack.MessageEvent) {
 				return
 			}
 			attachment := slack.Attachment{
-				Color:   "#36a64f",
-				Text:    board,
-				Title: board,
+				Color:     "#36a64f",
+				Text:      board,
+				Title:     board,
 				TitleLink: pinterest.PINTEREST_API_BASE + board,
-				ImageURL: images[0],
+				ImageURL:  images[0],
 			}
 			params.Attachments = []slack.Attachment{attachment}
 		}

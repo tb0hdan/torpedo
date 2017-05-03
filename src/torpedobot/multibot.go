@@ -11,8 +11,7 @@ import (
 	"github.com/nlopes/slack"
 )
 
-
-func postMessage(channel, message string, api *slack.Client, parameters...slack.PostMessageParameters) {
+func postMessage(channel, message string, api *slack.Client, parameters ...slack.PostMessageParameters) {
 	var params slack.PostMessageParameters
 
 	if len(parameters) > 0 {
@@ -25,7 +24,6 @@ func postMessage(channel, message string, api *slack.Client, parameters...slack.
 	}
 	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 }
-
 
 func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHandlers map[string]func(*slack.Client, *slack.MessageEvent)) {
 	messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
@@ -48,9 +46,13 @@ func processChannelEvent(api *slack.Client, event *slack.MessageEvent, commandHa
 	}
 }
 
+type TorpedoBot struct {
+	config struct {
+		api_keys []string
+	}
+}
 
-
-func RunBot(apiKey string) {
+func (tb *TorpedoBot) RunBot(apiKey string) {
 	api := slack.New(apiKey)
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.SetLogger(logger)
@@ -99,15 +101,21 @@ func RunBot(apiKey string) {
 
 }
 
-func RunLoop() {
+func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
 	}
 }
 
-func RunBots(keys []string) {
-	for _, key := range keys {
-		go RunBot(key)
+func (tb *TorpedoBot) RunBots() {
+	for _, key := range tb.config.api_keys {
+		go tb.RunBot(key)
 	}
-	RunLoop()
+	tb.RunLoop()
+}
+
+func New(api_keys []string) (bot *TorpedoBot) {
+	bot = &TorpedoBot{}
+	bot.config.api_keys = api_keys
+	return
 }

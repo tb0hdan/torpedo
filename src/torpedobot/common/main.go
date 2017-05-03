@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"fmt"
@@ -9,10 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/h2non/filetype.v1"
 	"github.com/nlopes/slack"
+	"gopkg.in/h2non/filetype.v1"
 )
-
 
 func GetURLBytes(url string) (result []byte, err error) {
 	client := &http.Client{}
@@ -36,7 +35,6 @@ func GetURLBytes(url string) (result []byte, err error) {
 	}
 	return
 }
-
 
 func GetMIMEType(fname string) (mimetype, extension string, is_image bool, err error) {
 	// Read a file
@@ -62,7 +60,6 @@ func GetMIMEType(fname string) (mimetype, extension string, is_image bool, err e
 	return
 }
 
-
 func DownloadToTmp(url string) (fname string, mimetype string, is_image bool, err error) {
 	img, _ := GetURLBytes(url)
 	tmpfile, err := ioutil.TempFile("/tmp", "torpedo")
@@ -82,8 +79,7 @@ func DownloadToTmp(url string) (fname string, mimetype string, is_image bool, er
 	return
 }
 
-
-func GetRequestedFeature(full_command string, usage...string) (requestedFeature, command, message string) {
+func GetRequestedFeature(full_command string, usage ...string) (requestedFeature, command, message string) {
 	// Support multiple commands within single function
 	requestedFeature = strings.Split(full_command, " ")[0]
 	command = strings.TrimSpace(strings.TrimLeft(full_command, requestedFeature))

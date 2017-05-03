@@ -27,7 +27,10 @@ _testmain.go
 # Local
 .DS_*
 .idea/*
-gotestbot/data/*
-gotestbot/gotestbot
-gotestbot/token.sh
-gotestbot/token.sh.*
+bin/*
+src/github.com/*
+src/golang.org/*
+src/google.golang.org/*
+src/gopkg.in/*
+token.sh
+token.sh.*

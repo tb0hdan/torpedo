@@ -1,15 +1,13 @@
 package main
 
-import  (
+import (
 	"flag"
 	"strings"
 )
 
-
 var (
 	token = flag.String("token", "", "Comma separated list of Slack legacy tokens")
 )
-
 
 func main() {
 	var keys []string
@@ -19,5 +17,6 @@ func main() {
 	for _, key := range strings.Split(*token, ",") {
 		keys = append(keys, key)
 	}
-	RunBots(keys)
+	bot := New(keys)
+	bot.RunBots()
 }
