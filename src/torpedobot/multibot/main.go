@@ -9,10 +9,15 @@ import (
 	"time"
 
 	"github.com/nlopes/slack"
+
+	"torpedobot/memcache"
+	"crypto/md5"
+	"io"
 )
 
 
 type TorpedoBot struct {
+	caches map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)
 	config struct {
 		api_keys []string
@@ -123,8 +128,59 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*slack.Clie
 	return tb.commandHandlers
 }
 
+func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
+	value, success := tb.caches[name]
+	if ! success {
+		cache = memcache.New()
+		tb.caches[name] = cache
+	} else {
+		cache = value
+	}
+	return
+}
+
+func (tb *TorpedoBot) GetCachedItem(name string) (item string){
+	cache := *tb.GetCreateCache(name)
+	if cache.Len() > 0 {
+		fmt.Printf("\nUsing cached quote...%v\n", cache.Len())
+		key := ""
+		for key = range cache.Cache() {
+			break
+		}
+		quote, _ := cache.Get(key)
+		cache.Delete(key)
+		item = quote
+	}
+	return
+}
+
+
+func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string){
+	cache := *tb.GetCreateCache(name)
+	for idx := range items {
+		my_hash := md5.New()
+		io.WriteString(my_hash, items[idx])
+		message := fmt.Sprintf("%x", my_hash.Sum(nil))
+		_, ok := cache.Get(message)
+		if ! ok {
+			cache.Set(message, items[idx])
+		}
+	}
+
+	item = items[0]
+	//
+	my_hash := md5.New()
+	io.WriteString(my_hash, item)
+	message := fmt.Sprintf("%x", my_hash.Sum(nil))
+	//
+	cache.Delete(message)
+	return
+}
+
+
 func New(api_keys []string) (bot *TorpedoBot) {
 	bot = &TorpedoBot{}
 	bot.config.api_keys = api_keys
+	bot.caches = make(map[string]*memcache.MemCacheType)
 	return
 }

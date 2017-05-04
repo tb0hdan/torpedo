@@ -24,6 +24,12 @@ func get_bashorg_html(url string) (result *html.Node) {
 }
 
 func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+	item := bot.GetCachedItem("bashorg")
+	if item != "" {
+		bot.PostMessage(event.Channel, item, api)
+		return
+	}
+
 	r := get_bashorg_html("http://bash.org/?random")
 	quotes := make(map[int]string)
 
@@ -53,5 +59,6 @@ func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *mu
 	}
 	f(r)
 
-	bot.PostMessage(event.Channel, quotes[0], api)
+	quote = bot.SetCachedItems("bashorg", quotes)
+	bot.PostMessage(event.Channel, quote, api)
 }

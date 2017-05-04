@@ -45,6 +45,12 @@ func get_html(url string) (result *html.Node) {
 }
 
 func BashProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+	item := bot.GetCachedItem("bashim")
+	if item != "" {
+		bot.PostMessage(event.Channel, item, api)
+		return
+	}
+
 	r := get_html("http://bash.im/random")
 	quotes := make(map[int]string)
 
@@ -74,5 +80,7 @@ func BashProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multi
 	}
 	f(r)
 
-	bot.PostMessage(event.Channel, quotes[0], api)
+	quote = bot.SetCachedItems("bashim", quotes)
+
+	bot.PostMessage(event.Channel, quote, api)
 }
