@@ -208,6 +208,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	botApi.api = talk
 	botApi.cmd_prefix = cmd_prefix
 
+	startup_ts := time.Now().Unix()
 	for {
 		chat, err := talk.Recv()
 		if err != nil {
@@ -215,8 +216,12 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 		}
 		switch v := chat.(type) {
 		case xmpp.Chat:
-			fmt.Println(v.Remote, v.Text)
-			go tb.processChannelEvent(botApi, v.Remote, v.Text)
+			passed := int64(time.Now().Unix()) - int64(startup_ts)
+			fmt.Println(v.Remote, v.Text, v.Stamp.Unix())
+			// Since v.Stamp returns default value, use some time to catch up on messages
+			if passed > 30 {
+				go tb.processChannelEvent(botApi, v.Remote, v.Text)
+			}
 		case xmpp.Presence:
 			fmt.Println(v.From, v.Show)
 		}
