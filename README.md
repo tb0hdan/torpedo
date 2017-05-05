@@ -1,18 +1,12 @@
 # torpedo
-Slack/Telegram bot
+Jabber/Slack/Telegram bot
 
 # Intro
 
-Torpedo uses multiple Slack/Telegram accounts (at least one is required)
-
-Some of the code is loosely based on github.com/nlopes/slack
+Torpedo uses multiple Jabber/Slack/Telegram accounts (at least one is required)
 
 
-# Installation
-
-```
-make
-```
+# Configuration
 
 Get Slack token(s):
 
@@ -20,8 +14,12 @@ Get Slack token(s):
 
 Paste token as `token.sh`
 
+Get Telegram/Jabber accounts.
+
 ```bash
 TOKEN="xxxttt,aaabbb"
+TELEGRAM="xxx,yyy"
+JABBER="user@host.com:supersecret,user2@anotherhost.com:a1FvH12"
 LASTFM_KEY="aaa"
 LASTFM_SECRET="bbb"
 GOOGLE_WEBAPP_KEY="ccc"
@@ -31,6 +29,7 @@ PINTEREST_TOKEN="ddd"
 # Running
 
 ```bash
+make deps
 ./run.sh
 ```
 

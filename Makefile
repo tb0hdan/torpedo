@@ -2,9 +2,11 @@ GOPATH=$(shell pwd)
 
 all: build
 
-build:
-	go get -v -d torpedobot
-	go build -o bin/torpedobot torpedobot
+deps:
+	@go get -v -d torpedobot
+
+build:  deps
+	@go build -o bin/torpedobot torpedobot
 
 test:
 	go test -bench=. -benchmem -race -cover torpedobot

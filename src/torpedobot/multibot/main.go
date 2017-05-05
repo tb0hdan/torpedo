@@ -14,7 +14,7 @@ import (
 
 	"gopkg.in/telegram-bot-api.v4"
 	"github.com/nlopes/slack"
-
+	"github.com/mattn/go-xmpp"
 )
 
 
@@ -29,7 +29,6 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, param
 
 	switch api := tba.api.(type) {
 	case *slack.Client:
-
 		if len(parameters) > 0 {
 			params = parameters[0].(slack.PostMessageParameters)
 		}
@@ -41,6 +40,11 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, param
 		fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 	case *tgbotapi.BotAPI:
 		msg := tgbotapi.NewMessage(channel.(int64), message)
+		api.Send(msg)
+	case *xmpp.Client:
+		msg := xmpp.Chat{}
+		msg.Remote = channel.(string)
+		msg.Text = message
 		api.Send(msg)
 	}
 }
@@ -178,6 +182,48 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	}
 }
 
+func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
+	var talk *xmpp.Client
+	var err error
+	str_jid := strings.Split(apiKey,":")[0]
+	password := strings.Split(apiKey, ":")[1]
+	server := strings.Split(str_jid, "@")[1]
+	options := xmpp.Options{Host: server,
+		User:          str_jid,
+		Password:      password,
+		NoTLS:         true,
+		Debug:         true,
+		Session:       false,
+		Status:        "xa",
+		StatusMessage: "",
+	}
+
+	talk, err = options.NewClient()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	botApi := &TorpedoBotAPI{}
+	botApi.api = talk
+	botApi.cmd_prefix = cmd_prefix
+
+	for {
+		chat, err := talk.Recv()
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch v := chat.(type) {
+		case xmpp.Chat:
+			fmt.Println(v.Remote, v.Text)
+			go tb.processChannelEvent(botApi, v.Remote, v.Text)
+		case xmpp.Presence:
+			fmt.Println(v.From, v.Show)
+		}
+	}
+
+}
+
 func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
@@ -195,6 +241,13 @@ func (tb *TorpedoBot) RunTelegramBots(apiKeys []string, cmd_prefix string) {
 		go tb.RunTelegramBot(key, cmd_prefix)
 	}
 }
+
+func (tb *TorpedoBot) RunJabberBots(apiKeys []string, cmd_prefix string) {
+	for _, key := range apiKeys {
+		go tb.RunJabberBot(key, cmd_prefix)
+	}
+}
+
 
 func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)) {
 	tb.commandHandlers = handlers
