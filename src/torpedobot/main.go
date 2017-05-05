@@ -53,5 +53,6 @@ func main() {
 
 	bot := multibot.New(keys)
 	bot.RegisterHandlers(handlers)
-	bot.RunBots()
+	bot.RunSlackBots()
+	bot.RunLoop()
 }

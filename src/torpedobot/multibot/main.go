@@ -1,18 +1,20 @@
 package multibot
 
 import (
+	"crypto/md5"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"torpedobot/memcache"
+
+	"gopkg.in/telegram-bot-api.v4"
 	"github.com/nlopes/slack"
 
-	"torpedobot/memcache"
-	"crypto/md5"
-	"io"
 )
 
 
@@ -59,7 +61,7 @@ func (tb *TorpedoBot) processChannelEvent(api *slack.Client, event *slack.Messag
 	}
 }
 
-func (tb *TorpedoBot) RunBot(apiKey string) {
+func (tb *TorpedoBot) RunSlackBot(apiKey string) {
 	api := slack.New(apiKey)
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.SetLogger(logger)
@@ -106,17 +108,51 @@ func (tb *TorpedoBot) RunBot(apiKey string) {
 
 }
 
+func (tb *TorpedoBot) RunTelegramBot(apiKey string) {
+	api, err := tgbotapi.NewBotAPI(apiKey)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	api.Debug = true
+
+	log.Printf("Authorized on account %s", api.Self.UserName)
+
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates, err := api.GetUpdatesChan(u)
+	for update := range updates {
+		if update.Message == nil {
+			continue
+		}
+
+		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
+		// go tb.processChannelEvent goes here
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		//msg.ReplyToMessageID = update.Message.MessageID
+
+		api.Send(msg)
+	}
+}
+
 func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
 	}
 }
 
-func (tb *TorpedoBot) RunBots() {
+func (tb *TorpedoBot) RunSlackBots() {
 	for _, key := range tb.config.api_keys {
-		go tb.RunBot(key)
+		go tb.RunSlackBot(key)
 	}
-	tb.RunLoop()
+}
+
+func (tb *TorpedoBot) RunTelegramBots() {
+	for _, key := range tb.config.api_keys {
+		go tb.RunTelegramBot(key)
+	}
 }
 
 func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)) {

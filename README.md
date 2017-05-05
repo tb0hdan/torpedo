@@ -1,9 +1,9 @@
 # torpedo
-Slack bot
+Slack/Telegram bot
 
 # Intro
 
-Torpedo uses multiple Slack accounts (at least one is required)
+Torpedo uses multiple Slack/Telegram accounts (at least one is required)
 
 Some of the code is loosely based on github.com/nlopes/slack
 
