@@ -68,15 +68,15 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
-func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func LastFmProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	var message string
 	var params slack.PostMessageParameters
 	help := "Usage: !lastfm command\nAvailable commands: artist, tag"
-	command := strings.Split(strings.TrimSpace(strings.TrimLeft(event.Text, "!lastfm")), " ")[0]
+	command := strings.Split(strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%slastfm", cmd_prefix))), " ")[0]
 
 	switch command {
 	case "artist":
-		artist := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)))
+		artist := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", cmd_prefix, command)))
 		if artist != "" {
 			summary, artist_url, artist_corrected, image_url := lastfmArtist(artist)
 			attachment := slack.Attachment{
@@ -91,7 +91,7 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *mul
 			message = "Please supply artist: !lastfm artist artist_name"
 		}
 	case "tag":
-		tag := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("!lastfm %s", command)))
+		tag := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("!lastfm %s", command)))
 		if tag != "" {
 			message = lastfmTag(tag)
 		} else {
@@ -101,5 +101,5 @@ func LastFmProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *mul
 		message = help
 	}
 
-	bot.PostMessage(event.Channel, message, api, params)
+	bot.PostMessage(channel, message, api, params)
 }

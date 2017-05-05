@@ -12,5 +12,4 @@ fi
 
 source ${FNAME}
 
-GOPATH=$(pwd) go run src/torpedobot/*.go -token ${TOKEN} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST_TOKEN}
-
+GOPATH=$(pwd) go run src/torpedobot/*.go -token ${TOKEN} -telegram ${TELEGRAM} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST_TOKEN}

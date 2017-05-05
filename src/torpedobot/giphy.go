@@ -12,12 +12,12 @@ import (
 	"torpedobot/multibot"
 )
 
-func GiphyProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func GiphyProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	var message string
 	var params slack.PostMessageParameters
 	var giphyResponse giphy.GiphyResponse
 
-	_, command, message := common.GetRequestedFeature(event.Text)
+	_, command, message := common.GetRequestedFeature(incoming_message)
 	if command != "" {
 		query := url.QueryEscape(command)
 		result, err := common.GetURLBytes(fmt.Sprintf("http://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC", query))
@@ -43,5 +43,5 @@ func GiphyProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *mult
 			message = "Your request to Giphy could not be processed"
 		}
 	}
-	bot.PostMessage(event.Channel, message, api, params)
+	bot.PostMessage(channel, message, api, params)
 }

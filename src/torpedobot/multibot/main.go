@@ -18,50 +18,72 @@ import (
 )
 
 
-type TorpedoBot struct {
-	caches map[string]*memcache.MemCacheType
-	commandHandlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)
-	config struct {
-		api_keys []string
+type TorpedoBotAPI struct {
+	api interface {}
+	cmd_prefix string
+}
+
+
+func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, parameters...interface{}){
+	var params slack.PostMessageParameters
+
+	switch api := tba.api.(type) {
+	case *slack.Client:
+
+		if len(parameters) > 0 {
+			params = parameters[0].(slack.PostMessageParameters)
+		}
+		channelID, timestamp, err := api.PostMessage(channel.(string), message, params)
+		if err != nil {
+			fmt.Printf("%s\n", err)
+			return
+		}
+		fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+	case *tgbotapi.BotAPI:
+		msg := tgbotapi.NewMessage(channel.(int64), message)
+		api.Send(msg)
 	}
 }
 
-func (tb *TorpedoBot) PostMessage(channel, message string, api *slack.Client, parameters ...slack.PostMessageParameters) {
+
+type TorpedoBot struct {
+	caches map[string]*memcache.MemCacheType
+	commandHandlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)
+	config struct {
+
+	}
+}
+
+
+func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, parameters ...slack.PostMessageParameters) {
 	var params slack.PostMessageParameters
 
 	if len(parameters) > 0 {
 		params = parameters[0]
 	}
-	channelID, timestamp, err := api.PostMessage(channel, message, params)
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
-	}
-	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+	api.PostMessage(channel, message, params)
 }
 
-func (tb *TorpedoBot) processChannelEvent(api *slack.Client, event *slack.MessageEvent) {
-	messageTS, _ := strconv.ParseFloat(event.Timestamp, 64)
-	jitter := int64(time.Now().Unix()) - int64(messageTS)
-
-	if jitter < 10 && strings.HasPrefix(event.Text, "!") {
-		command := strings.TrimPrefix(event.Text, "!")
+func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
+	cmd_prefix := api.cmd_prefix
+	if strings.HasPrefix(incoming_message, cmd_prefix) {
+		command := strings.TrimPrefix(incoming_message, cmd_prefix)
 		found := 0
 		for handler := range tb.commandHandlers {
 			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
 				found += 1
-				tb.commandHandlers[handler](api, event, tb)
+				tb.commandHandlers[handler](api, tb, channel, incoming_message, cmd_prefix)
 				break
 			}
 		}
-		fmt.Printf("PROCESS! -> %s", command)
+		fmt.Printf("PROCESS! -> `%s`", command)
 		if found == 0 {
-			tb.PostMessage(event.Channel, fmt.Sprintf("Could not process your message: !%s. Command unknown. Send !help for list of valid commands.", command), api)
+			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send %shelp for list of valid commands.", cmd_prefix, command, cmd_prefix), api)
 		}
 	}
 }
 
-func (tb *TorpedoBot) RunSlackBot(apiKey string) {
+func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	api := slack.New(apiKey)
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.SetLogger(logger)
@@ -70,6 +92,9 @@ func (tb *TorpedoBot) RunSlackBot(apiKey string) {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
+	botApi := &TorpedoBotAPI{}
+	botApi.api = api
+	botApi.cmd_prefix = cmd_prefix
 	// TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
 		fmt.Print("Event Received: ")
@@ -85,7 +110,13 @@ func (tb *TorpedoBot) RunSlackBot(apiKey string) {
 
 		case *slack.MessageEvent:
 			fmt.Printf("Message: %v\n", ev)
-			go tb.processChannelEvent(api, ev)
+			channel := ev.Channel
+			incoming_message := ev.Text
+			messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)
+			jitter := int64(time.Now().Unix()) - int64(messageTS)
+			if jitter < 10 {
+				go tb.processChannelEvent(botApi, channel, incoming_message)
+			}
 
 		case *slack.PresenceChangeEvent:
 			fmt.Printf("Presence Change: %v\n", ev)
@@ -108,7 +139,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey string) {
 
 }
 
-func (tb *TorpedoBot) RunTelegramBot(apiKey string) {
+func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	api, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
 		log.Panic(err)
@@ -122,18 +153,28 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey string) {
 	u.Timeout = 60
 
 	updates, err := api.GetUpdatesChan(u)
+
+
+	botApi := &TorpedoBotAPI{}
+	botApi.api = api
+	botApi.cmd_prefix = cmd_prefix
+
+
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
 
+		jitter := int64(time.Now().Unix()) - int64(update.Message.Date)
+
+		if jitter > 10 {
+			continue
+		}
+
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-		// go tb.processChannelEvent goes here
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		//msg.ReplyToMessageID = update.Message.MessageID
+		go tb.processChannelEvent(botApi, update.Message.Chat.ID, update.Message.Text)
 
-		api.Send(msg)
 	}
 }
 
@@ -143,24 +184,24 @@ func (tb *TorpedoBot) RunLoop() {
 	}
 }
 
-func (tb *TorpedoBot) RunSlackBots() {
-	for _, key := range tb.config.api_keys {
-		go tb.RunSlackBot(key)
+func (tb *TorpedoBot) RunSlackBots(apiKeys []string, cmd_prefix string) {
+	for _, key := range apiKeys {
+		go tb.RunSlackBot(key, cmd_prefix)
 	}
 }
 
-func (tb *TorpedoBot) RunTelegramBots() {
-	for _, key := range tb.config.api_keys {
-		go tb.RunTelegramBot(key)
+func (tb *TorpedoBot) RunTelegramBots(apiKeys []string, cmd_prefix string) {
+	for _, key := range apiKeys {
+		go tb.RunTelegramBot(key, cmd_prefix)
 	}
 }
 
-func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)) {
+func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
-func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*slack.Client, *slack.MessageEvent, *TorpedoBot)) {
+func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)) {
 	return tb.commandHandlers
 }
 
@@ -214,9 +255,8 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 }
 
 
-func New(api_keys []string) (bot *TorpedoBot) {
+func New() (bot *TorpedoBot) {
 	bot = &TorpedoBot{}
-	bot.config.api_keys = api_keys
 	bot.caches = make(map[string]*memcache.MemCacheType)
 	return
 }

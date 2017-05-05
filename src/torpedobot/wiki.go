@@ -11,9 +11,9 @@ import (
 	"torpedobot/wiki"
 )
 
-func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func WikiProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	var params slack.PostMessageParameters
-	command := strings.TrimSpace(strings.TrimLeft(event.Text, "!wiki"))
+	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%swiki", cmd_prefix)))
 	message := "Usage: !wiki query\n"
 	if command != "" {
 		message = "The page you've requested could not be found."
@@ -31,5 +31,5 @@ func WikiProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multi
 			params.Attachments = []slack.Attachment{attachment}
 		}
 	}
-	bot.PostMessage(event.Channel, message, api, params)
+	bot.PostMessage(channel, message, api, params)
 }

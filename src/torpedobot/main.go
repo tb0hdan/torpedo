@@ -4,23 +4,28 @@ import (
 	"flag"
 	"strings"
 
-	"github.com/nlopes/slack"
-
 	"torpedobot/multibot"
+
 )
 
 var (
-	token = flag.String("token", "", "Comma separated list of Slack legacy tokens")
-	handlers = make(map[string]func(*slack.Client, *slack.MessageEvent, *multibot.TorpedoBot))
+	token    = flag.String("token", "", "Comma separated list of Slack legacy tokens")
+	telegram = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+	handlers = make(map[string]func(*multibot.TorpedoBotAPI, *multibot.TorpedoBot, interface{}, string, string))
 )
 
 func main() {
 	var keys []string
+	var telegram_keys []string
 
 	flag.Parse()
 
 	for _, key := range strings.Split(*token, ",") {
 		keys = append(keys, key)
+	}
+
+	for _, key := range strings.Split(*telegram, ",") {
+		telegram_keys = append(telegram_keys, key)
 	}
 
 	handlers["bashim"] = BashProcessMessage
@@ -51,8 +56,9 @@ func main() {
 	handlers["setimg"] = GetSetImageProcessMessage
 	handlers["rmimg"] = GetSetImageProcessMessage
 
-	bot := multibot.New(keys)
+	bot := multibot.New()
 	bot.RegisterHandlers(handlers)
-	bot.RunSlackBots()
+	bot.RunSlackBots(keys, "!")
+	bot.RunTelegramBots(telegram_keys, "/")
 	bot.RunLoop()
 }

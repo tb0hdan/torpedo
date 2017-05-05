@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/nlopes/slack"
 	"golang.org/x/net/html"
 
 	"torpedobot/common"
@@ -23,10 +22,10 @@ func get_bashorg_html(url string) (result *html.Node) {
 	return
 }
 
-func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	item := bot.GetCachedItem("bashorg")
 	if item != "" {
-		bot.PostMessage(event.Channel, item, api)
+		bot.PostMessage(channel, item, api)
 		return
 	}
 
@@ -60,5 +59,5 @@ func BashOrgProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *mu
 	f(r)
 
 	quote = bot.SetCachedItems("bashorg", quotes)
-	bot.PostMessage(event.Channel, quote, api)
+	bot.PostMessage(channel, quote, api)
 }

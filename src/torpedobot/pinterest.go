@@ -14,14 +14,14 @@ import (
 
 var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
-func PinterestProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func PinterestProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	var params slack.PostMessageParameters
-	requestedFeature, command, message := common.GetRequestedFeature(event.Text, "board")
+	requestedFeature, command, message := common.GetRequestedFeature(incoming_message, "board")
 	command = strings.Split(command, " ")[0]
 
 	switch command {
 	case "board":
-		board := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("%s %s", requestedFeature, command)))
+		board := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%s %s", requestedFeature, command)))
 		if board != "" {
 			api := pinterest.New(*Token)
 			images, err := api.GetImagesForBoard(board)
@@ -43,5 +43,5 @@ func PinterestProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *
 		}
 	}
 
-	bot.PostMessage(event.Channel, message, api, params)
+	bot.PostMessage(channel, message, api, params)
 }

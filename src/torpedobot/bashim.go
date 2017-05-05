@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/nlopes/slack"
 	"golang.org/x/net/html"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
@@ -44,10 +43,10 @@ func get_html(url string) (result *html.Node) {
 	return
 }
 
-func BashProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func BashProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
 	item := bot.GetCachedItem("bashim")
 	if item != "" {
-		bot.PostMessage(event.Channel, item, api)
+		bot.PostMessage(channel, item, api)
 		return
 	}
 
@@ -82,5 +81,5 @@ func BashProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multi
 
 	quote = bot.SetCachedItems("bashim", quotes)
 
-	bot.PostMessage(event.Channel, quote, api)
+	bot.PostMessage(channel, quote, api)
 }

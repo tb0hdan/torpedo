@@ -12,28 +12,29 @@ import (
 	"torpedobot/multibot"
 )
 
-func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent, bot *multibot.TorpedoBot) {
+func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel_i interface{}, incoming_message, cmd_prefix string) {
 	var params slack.PostMessageParameters
-	requestedFeature, command, message := common.GetRequestedFeature(event.Text)
+	requestedFeature, command, message := common.GetRequestedFeature(incoming_message)
+	channel := channel_i.(string)
 	if command != "" {
 		switch requestedFeature {
 		case "!getimg":
-			fpath, mimetype, err := file.GetChannelFile(event.Channel, command)
+			fpath, mimetype, err := file.GetChannelFile(channel, command)
 			if fpath != "" {
-				common.ChannelsUploadImage([]string{event.Channel}, command, fpath, mimetype, api)
+				common.ChannelsUploadImage([]string{channel}, command, fpath, mimetype, api)
 				return
 			} else {
 				message = fmt.Sprintf("%+v", err)
 			}
 		case "!setimg":
-			msg, err := file.SetChannelFile(event.Channel, command)
+			msg, err := file.SetChannelFile(channel, command)
 			if err != nil {
 				message = fmt.Sprintf("%+v", err)
 			} else {
 				message = msg
 			}
 		case "!listimg", "!lsimg":
-			files, err := file.ListChannelFiles(event.Channel)
+			files, err := file.ListChannelFiles(channel)
 			if err != nil {
 				message = "An error occured while retrieving image file list"
 			} else {
@@ -52,7 +53,7 @@ func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent, bot
 				}
 			}
 		case "!rmimg":
-			fpath, _, _ := file.GetChannelFile(event.Channel, command)
+			fpath, _, _ := file.GetChannelFile(channel, command)
 			if fpath != "" {
 				err := os.Remove(fpath)
 				if err != nil {
@@ -68,5 +69,5 @@ func GetSetImageProcessMessage(api *slack.Client, event *slack.MessageEvent, bot
 			message = "Unknown feature requested"
 		}
 	}
-	bot.PostMessage(event.Channel, message, api, params)
+	bot.PostMessage(channel, message, api, params)
 }

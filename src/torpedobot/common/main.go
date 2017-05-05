@@ -91,10 +91,11 @@ func GetRequestedFeature(full_command string, usage ...string) (requestedFeature
 	return
 }
 
-func ChannelsUploadImage(channels []string, fname, fpath, ftype string, api *slack.Client) {
+func ChannelsUploadImage(channels []string, fname, fpath, ftype string, api_i interface{}) {
 	parameters := slack.FileUploadParameters{File: fpath, Filetype: ftype,
 		Filename: fname, Title: fname,
 		Channels: channels}
+	api := api_i.(slack.Client)
 	api.UploadFile(parameters)
 }
 
