@@ -241,6 +241,9 @@ func (tb *TorpedoBot) RunLoop() {
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey string, cmd_prefix string), CSV, cmd_prefix string) {
 	for _, key := range strings.Split(CSV, ",") {
+		if key == "" {
+			continue
+		}
 		go method(key, cmd_prefix)
 	}
 }
