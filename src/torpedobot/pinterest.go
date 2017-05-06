@@ -14,7 +14,7 @@ import (
 
 var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
-func PinterestProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
+func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var params slack.PostMessageParameters
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message, "board")
 	command = strings.Split(command, " ")[0]
@@ -43,5 +43,5 @@ func PinterestProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoB
 		}
 	}
 
-	bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, params)
 }

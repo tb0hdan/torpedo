@@ -12,7 +12,7 @@ import (
 	"torpedobot/multibot"
 )
 
-func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel_i interface{}, incoming_message, cmd_prefix string) {
+func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{}, incoming_message string) {
 	var params slack.PostMessageParameters
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message)
 	channel := channel_i.(string)
@@ -69,5 +69,5 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.Torped
 			message = "Unknown feature requested"
 		}
 	}
-	bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, params)
 }

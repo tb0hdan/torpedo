@@ -14,12 +14,12 @@ var (
 )
 
 
-func YoutubeProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
+func YoutubeProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	message := "Usage: !youtube query\n"
-	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%syoutube", cmd_prefix)))
+	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%syoutube", api.CommandPrefix)))
 	if command != "" {
 		searchResults := youtube.YoutubeSearch(command, *google_webapp_key, 25)
 		message = fmt.Sprintf("https://youtu.be/%s", searchResults[0].VideoID)
 	}
-	bot.PostMessage(channel, message, api)
+	api.Bot.PostMessage(channel, message, api)
 }

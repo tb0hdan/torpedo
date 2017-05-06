@@ -22,10 +22,10 @@ func get_bashorg_html(url string) (result *html.Node) {
 	return
 }
 
-func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
-	item := bot.GetCachedItem("bashorg")
+func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	item := api.Bot.GetCachedItem("bashorg")
 	if item != "" {
-		bot.PostMessage(channel, item, api)
+		api.Bot.PostMessage(channel, item, api)
 		return
 	}
 
@@ -58,6 +58,6 @@ func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot
 	}
 	f(r)
 
-	quote = bot.SetCachedItems("bashorg", quotes)
-	bot.PostMessage(channel, quote, api)
+	quote = api.Bot.SetCachedItems("bashorg", quotes)
+	api.Bot.PostMessage(channel, quote, api)
 }

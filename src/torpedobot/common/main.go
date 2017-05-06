@@ -11,6 +11,11 @@ import (
 
 	"github.com/nlopes/slack"
 	"gopkg.in/h2non/filetype.v1"
+	"crypto/md5"
+	"io"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 )
 
 func GetURLBytes(url string) (result []byte, err error) {
@@ -111,5 +116,33 @@ func FileExists(fpath string) (exists bool) {
 	if _, err := os.Stat(fpath); os.IsNotExist(err) {
 		exists = false
 	}
+	return
+}
+
+func MD5Hash(message string) (result string){
+	my_hash := md5.New()
+	io.WriteString(my_hash, message)
+	result = fmt.Sprintf("%x", my_hash.Sum(nil))
+	return
+}
+
+func SHA1Hash(message string) (result string) {
+	my_hash := sha1.New()
+	io.WriteString(my_hash, message)
+	message = fmt.Sprintf("%x", my_hash.Sum(nil))
+	return
+}
+
+func SHA256Hash(message string) (result string) {
+	my_hash := sha256.New()
+	io.WriteString(my_hash, message)
+	message = fmt.Sprintf("%x", my_hash.Sum(nil))
+	return
+}
+
+func SHA512Hash(message string) (result string) {
+	my_hash := sha512.New()
+	io.WriteString(my_hash, message)
+	message = fmt.Sprintf("%x", my_hash.Sum(nil))
 	return
 }

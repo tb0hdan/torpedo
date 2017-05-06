@@ -1,33 +1,43 @@
 package multibot
 
 import (
-	"crypto/md5"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"torpedobot/common"
 	"torpedobot/memcache"
 
-	"gopkg.in/telegram-bot-api.v4"
-	"github.com/nlopes/slack"
+
+
 	"github.com/mattn/go-xmpp"
+	"github.com/nlopes/slack"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 
-type TorpedoBotAPI struct {
-	api interface {}
-	cmd_prefix string
+type TorpedoBot struct {
+	caches          map[string]*memcache.MemCacheType
+	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
+	config          struct {
+	}
 }
 
 
-func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, parameters...interface{}){
+type TorpedoBotAPI struct {
+	API        interface{}
+	CommandPrefix string
+	Bot *TorpedoBot
+}
+
+
+func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, parameters ...interface{}) {
 	var params slack.PostMessageParameters
 
-	switch api := tba.api.(type) {
+	switch api := tba.API.(type) {
 	case *slack.Client:
 		if len(parameters) > 0 {
 			params = parameters[0].(slack.PostMessageParameters)
@@ -50,15 +60,6 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, param
 }
 
 
-type TorpedoBot struct {
-	caches map[string]*memcache.MemCacheType
-	commandHandlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)
-	config struct {
-
-	}
-}
-
-
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, parameters ...slack.PostMessageParameters) {
 	var params slack.PostMessageParameters
 
@@ -68,24 +69,25 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *Torp
 	api.PostMessage(channel, message, params)
 }
 
+
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
-	cmd_prefix := api.cmd_prefix
-	if strings.HasPrefix(incoming_message, cmd_prefix) {
-		command := strings.TrimPrefix(incoming_message, cmd_prefix)
+	if strings.HasPrefix(incoming_message, api.CommandPrefix) {
+		command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
 		found := 0
 		for handler := range tb.commandHandlers {
 			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
 				found += 1
-				tb.commandHandlers[handler](api, tb, channel, incoming_message, cmd_prefix)
+				tb.commandHandlers[handler](api, channel, incoming_message)
 				break
 			}
 		}
 		fmt.Printf("PROCESS! -> `%s`", command)
 		if found == 0 {
-			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send %shelp for list of valid commands.", cmd_prefix, command, cmd_prefix), api)
+			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send %shelp for list of valid commands.", api.CommandPrefix, command, api.CommandPrefix), api)
 		}
 	}
 }
+
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	api := slack.New(apiKey)
@@ -97,8 +99,10 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	go rtm.ManageConnection()
 
 	botApi := &TorpedoBotAPI{}
-	botApi.api = api
-	botApi.cmd_prefix = cmd_prefix
+	botApi.API = api
+	botApi.Bot = tb
+	botApi.CommandPrefix = cmd_prefix
+
 	// TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
 		fmt.Print("Event Received: ")
@@ -158,11 +162,10 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 
 	updates, err := api.GetUpdatesChan(u)
 
-
 	botApi := &TorpedoBotAPI{}
-	botApi.api = api
-	botApi.cmd_prefix = cmd_prefix
-
+	botApi.API = api
+	botApi.Bot = tb
+	botApi.CommandPrefix = cmd_prefix
 
 	for update := range updates {
 		if update.Message == nil {
@@ -185,7 +188,7 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
-	str_jid := strings.Split(apiKey,":")[0]
+	str_jid := strings.Split(apiKey, ":")[0]
 	password := strings.Split(apiKey, ":")[1]
 	server := strings.Split(str_jid, "@")[1]
 	options := xmpp.Options{Host: server,
@@ -205,8 +208,9 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	}
 
 	botApi := &TorpedoBotAPI{}
-	botApi.api = talk
-	botApi.cmd_prefix = cmd_prefix
+	botApi.API = talk
+	botApi.Bot = tb
+	botApi.CommandPrefix = cmd_prefix
 
 	startup_ts := time.Now().Unix()
 	for {
@@ -235,37 +239,24 @@ func (tb *TorpedoBot) RunLoop() {
 	}
 }
 
-func (tb *TorpedoBot) RunSlackBots(apiKeys []string, cmd_prefix string) {
-	for _, key := range apiKeys {
-		go tb.RunSlackBot(key, cmd_prefix)
+func (tb *TorpedoBot) RunBotsCSV(method func(apiKey string, cmd_prefix string), CSV, cmd_prefix string) {
+	for _, key := range strings.Split(CSV, ",") {
+		go method(key, cmd_prefix)
 	}
 }
 
-func (tb *TorpedoBot) RunTelegramBots(apiKeys []string, cmd_prefix string) {
-	for _, key := range apiKeys {
-		go tb.RunTelegramBot(key, cmd_prefix)
-	}
-}
-
-func (tb *TorpedoBot) RunJabberBots(apiKeys []string, cmd_prefix string) {
-	for _, key := range apiKeys {
-		go tb.RunJabberBot(key, cmd_prefix)
-	}
-}
-
-
-func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)) {
+func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
-func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, *TorpedoBot, interface{}, string, string)) {
+func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	return tb.commandHandlers
 }
 
 func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
 	value, success := tb.caches[name]
-	if ! success {
+	if !success {
 		cache = memcache.New()
 		tb.caches[name] = cache
 	} else {
@@ -274,7 +265,7 @@ func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType)
 	return
 }
 
-func (tb *TorpedoBot) GetCachedItem(name string) (item string){
+func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	cache := *tb.GetCreateCache(name)
 	if cache.Len() > 0 {
 		fmt.Printf("\nUsing cached quote...%v\n", cache.Len())
@@ -289,29 +280,21 @@ func (tb *TorpedoBot) GetCachedItem(name string) (item string){
 	return
 }
 
-
-func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string){
+func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string) {
 	cache := *tb.GetCreateCache(name)
 	for idx := range items {
-		my_hash := md5.New()
-		io.WriteString(my_hash, items[idx])
-		message := fmt.Sprintf("%x", my_hash.Sum(nil))
+		message := common.MD5Hash(items[idx])
 		_, ok := cache.Get(message)
-		if ! ok {
+		if !ok {
 			cache.Set(message, items[idx])
 		}
 	}
 
 	item = items[0]
-	//
-	my_hash := md5.New()
-	io.WriteString(my_hash, item)
-	message := fmt.Sprintf("%x", my_hash.Sum(nil))
-	//
+	message := common.MD5Hash(item)
 	cache.Delete(message)
 	return
 }
-
 
 func New() (bot *TorpedoBot) {
 	bot = &TorpedoBot{}

@@ -43,10 +43,10 @@ func get_html(url string) (result *html.Node) {
 	return
 }
 
-func BashProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, channel interface{}, incoming_message, cmd_prefix string) {
-	item := bot.GetCachedItem("bashim")
+func BashProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	item := api.Bot.GetCachedItem("bashim")
 	if item != "" {
-		bot.PostMessage(channel, item, api)
+		api.Bot.PostMessage(channel, item, api)
 		return
 	}
 
@@ -79,7 +79,6 @@ func BashProcessMessage(api *multibot.TorpedoBotAPI, bot *multibot.TorpedoBot, c
 	}
 	f(r)
 
-	quote = bot.SetCachedItems("bashim", quotes)
-
-	bot.PostMessage(channel, quote, api)
+	quote = api.Bot.SetCachedItems("bashim", quotes)
+	api.Bot.PostMessage(channel, quote, api)
 }
