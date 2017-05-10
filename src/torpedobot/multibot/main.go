@@ -16,7 +16,13 @@ import (
 	"github.com/mattn/go-xmpp"
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"net/http"
+	"io/ioutil"
+	"encoding/json"
+
 )
+
+
 
 
 type TorpedoBot struct {
@@ -56,6 +62,8 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, param
 		msg.Remote = channel.(string)
 		msg.Text = message
 		api.Send(msg)
+	case *SkypeAPI:
+		api.Send(channel.(string), message)
 	}
 }
 
@@ -147,6 +155,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 }
 
+
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	api, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
@@ -184,6 +193,43 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 
 	}
 }
+
+
+func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
+	skype_api := &SkypeAPI{}
+	app_id := strings.Split(apiKey, ":")[0]
+	app_password := strings.Split(apiKey, ":")[1]
+	fmt.Printf("Waiting for Skype token...\n")
+	token_response := skype_api.GetToken(app_id, app_password)
+	fmt.Printf("Got Token: %s", token_response.AccessToken)
+	skype_api.AccessToken = token_response.AccessToken
+
+	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json")
+		defer r.Body.Close()
+		body_bytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatalf("readAll errored with %+v", err)
+			return
+		}
+		fmt.Printf("Skype incoming message: %s", string(body_bytes))
+		message := &SkypeIncomingMessage{}
+		err = json.Unmarshal(body_bytes, message)
+		if err != nil {
+			log.Fatalf("JSON unmarshalling failed with %+v", err)
+			return
+		}
+		botApi := &TorpedoBotAPI{}
+		skype_api.ServiceURL = message.ServiceURL
+		botApi.API = skype_api
+		botApi.Bot = tb
+		botApi.CommandPrefix = cmd_prefix
+		go tb.processChannelEvent(botApi, message.Conversation.ID, message.Text)
+	})
+		fmt.Printf("Starting Skype API listener...\n")
+		http.ListenAndServe("localhost:3978", nil)
+}
+
 
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
@@ -233,11 +279,13 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 
 }
 
+
 func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
 	}
 }
+
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey string, cmd_prefix string), CSV, cmd_prefix string) {
 	for _, key := range strings.Split(CSV, ",") {
@@ -248,14 +296,17 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey string, cmd_prefix string), 
 	}
 }
 
+
 func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
+
 func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	return tb.commandHandlers
 }
+
 
 func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
 	value, success := tb.caches[name]
@@ -267,6 +318,7 @@ func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType)
 	}
 	return
 }
+
 
 func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	cache := *tb.GetCreateCache(name)
@@ -283,6 +335,7 @@ func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	return
 }
 
+
 func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string) {
 	cache := *tb.GetCreateCache(name)
 	for idx := range items {
@@ -298,6 +351,7 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 	cache.Delete(message)
 	return
 }
+
 
 func New() (bot *TorpedoBot) {
 	bot = &TorpedoBot{}

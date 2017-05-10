@@ -11,6 +11,7 @@ var (
 	token    = flag.String("token", "", "Comma separated list of Slack legacy tokens")
 	telegram = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
 	jabber = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
+	skype = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
 	handlers = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 )
 
@@ -49,5 +50,6 @@ func main() {
 	bot.RunBotsCSV(bot.RunSlackBot, *token, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
 	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
+	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
 	bot.RunLoop()
 }
