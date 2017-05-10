@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
+	"regexp"
 )
 
 
@@ -209,7 +210,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		defer r.Body.Close()
 		body_bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Fatalf("readAll errored with %+v", err)
+			log.Fatalf("readAll errored with %+v\n", err)
 			return
 		}
 		fmt.Printf("Skype incoming message: %s", string(body_bytes))
@@ -224,7 +225,10 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		botApi.API = skype_api
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
-		go tb.processChannelEvent(botApi, message.Conversation.ID, message.Text)
+		re := regexp.MustCompile(`^(@(.+)\s)?`)
+		msg := re.ReplaceAllString(message.Text, "")
+		fmt.Printf("Message: `%s`\n", msg)
+		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
 		fmt.Printf("Starting Skype API listener...\n")
 		http.ListenAndServe("localhost:3978", nil)
