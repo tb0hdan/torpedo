@@ -24,12 +24,11 @@ import (
 )
 
 
-
-
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
 	config          struct {
+		SkypeIncomingAddr string
 	}
 }
 
@@ -202,8 +201,9 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	app_password := strings.Split(apiKey, ":")[1]
 	fmt.Printf("Waiting for Skype token...\n")
 	token_response := skype_api.GetToken(app_id, app_password)
-	fmt.Printf("Got Token: %s", token_response.AccessToken)
+	fmt.Printf("Got Token: %s\n", token_response.AccessToken)
 	skype_api.AccessToken = token_response.AccessToken
+	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
 
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
@@ -213,13 +213,27 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 			log.Fatalf("readAll errored with %+v\n", err)
 			return
 		}
-		fmt.Printf("Skype incoming message: %s", string(body_bytes))
+		fmt.Printf("Skype incoming message: %s\n", string(body_bytes))
 		message := &SkypeIncomingMessage{}
 		err = json.Unmarshal(body_bytes, message)
 		if err != nil {
-			log.Fatalf("JSON unmarshalling failed with %+v", err)
+			log.Fatalf("JSON unmarshalling failed with %+v\n", err)
 			return
 		}
+
+
+		// Check token (ExpiresIn is in the future)
+		if 1 + skype_api.ExpiresIn - int64(time.Now().Unix()) <= 0 {
+			// Get new token
+			token_response := skype_api.GetToken(app_id, app_password)
+			fmt.Printf("Got Token: %s\n", token_response.AccessToken)
+			skype_api.AccessToken = token_response.AccessToken
+			skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
+		} else {
+			fmt.Printf("Token expires in %vs\n", skype_api.ExpiresIn - int64(time.Now().Unix()))
+		}
+
+
 		botApi := &TorpedoBotAPI{}
 		skype_api.ServiceURL = message.ServiceURL
 		botApi.API = skype_api
@@ -230,8 +244,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		fmt.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
-		fmt.Printf("Starting Skype API listener...\n")
-		http.ListenAndServe("localhost:3978", nil)
+		fmt.Printf("Starting Skype API listener on %s\n", tb.config.SkypeIncomingAddr)
+		http.ListenAndServe(tb.config.SkypeIncomingAddr, nil)
 }
 
 
@@ -357,8 +371,9 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 }
 
 
-func New() (bot *TorpedoBot) {
+func New(skype_incoming_addr string) (bot *TorpedoBot) {
 	bot = &TorpedoBot{}
 	bot.caches = make(map[string]*memcache.MemCacheType)
+	bot.config.SkypeIncomingAddr = skype_incoming_addr
 	return
 }

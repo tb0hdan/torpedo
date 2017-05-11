@@ -12,6 +12,7 @@ var (
 	telegram = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
 	jabber = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
 	skype = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
+	skype_incoming_addr = flag.String("skype_incoming_addr", "localhost:3978", "Listen on this address for incoming Skype messages")
 	handlers = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 )
 
@@ -45,7 +46,7 @@ func main() {
 	handlers["setimg"] = GetSetImageProcessMessage
 	handlers["rmimg"] = GetSetImageProcessMessage
 
-	bot := multibot.New()
+	bot := multibot.New(*skype_incoming_addr)
 	bot.RegisterHandlers(handlers)
 	bot.RunBotsCSV(bot.RunSlackBot, *token, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
