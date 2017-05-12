@@ -45,6 +45,8 @@ func main() {
 	handlers["listimg"] = GetSetImageProcessMessage
 	handlers["setimg"] = GetSetImageProcessMessage
 	handlers["rmimg"] = GetSetImageProcessMessage
+	// Games'n'stuff
+	handlers["steam"] = SteamProcessMessage
 
 	bot := multibot.New(*skype_incoming_addr)
 	bot.RegisterHandlers(handlers)
