@@ -11,6 +11,7 @@ import (
 	"torpedobot/common"
 )
 
+
 func GetCreateChannelDir(channel string) (channelDir string, err error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -24,7 +25,10 @@ func GetCreateChannelDir(channel string) (channelDir string, err error) {
 	return
 }
 
+
 func GetChannelFile(channel, message string) (channelFile, mimetype string, err error) {
+	cu := &common.Utils{}
+	cu.SetLogger(log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags))
 	wd, err := GetCreateChannelDir(channel)
 	if err != nil {
 		return
@@ -33,7 +37,7 @@ func GetChannelFile(channel, message string) (channelFile, mimetype string, err 
 	encoded := base64.URLEncoding.EncodeToString([]byte(strings.TrimSpace(message)))
 	fname := fmt.Sprintf("%s%s%s", wd, string(os.PathSeparator), encoded)
 	if common.FileExists(fname) {
-		mimetype, _, _, err = common.GetMIMEType(fname)
+		mimetype, _, _, err = cu.GetMIMEType(fname)
 		if err != nil {
 			return
 		}
@@ -42,7 +46,10 @@ func GetChannelFile(channel, message string) (channelFile, mimetype string, err 
 	return
 }
 
+
 func SetChannelFile(channel, message string) (result string, err error) {
+	cu := &common.Utils{}
+	cu.SetLogger(log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags))
 	wd, err := GetCreateChannelDir(channel)
 	if err != nil {
 		return
@@ -65,7 +72,7 @@ func SetChannelFile(channel, message string) (result string, err error) {
 		result = "Destination already exists, set skipped. Use `!rmimg destination` to remove."
 		return
 	}
-	fname, _, is_image, err := common.DownloadToTmp(url)
+	fname, _, is_image, err := cu.DownloadToTmp(url)
 	if is_image {
 		err = os.Rename(fname, new_name)
 		if err != nil {
@@ -76,6 +83,7 @@ func SetChannelFile(channel, message string) (result string, err error) {
 	}
 	return
 }
+
 
 func ListChannelFiles(channel string) (files []string, err error) {
 	wd, err := GetCreateChannelDir(channel)

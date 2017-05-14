@@ -9,44 +9,54 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nlopes/slack"
-	"gopkg.in/h2non/filetype.v1"
 	"crypto/md5"
-	"io"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"io"
+
+	"github.com/nlopes/slack"
+	"gopkg.in/h2non/filetype.v1"
 )
 
-func GetURLBytes(url string) (result []byte, err error) {
+type Utils struct {
+	logger *log.Logger
+}
+
+func (cu *Utils) SetLogger(logger *log.Logger) {
+	cu.logger = logger
+	return
+}
+
+func (cu *Utils) GetURLBytes(url string) (result []byte, err error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatalln(err)
+		cu.logger.Fatalln(err)
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (https://github.com/tb0hdan/torpedo; tb0hdan@gmail.com) Go-http-client/1.1")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		cu.logger.Fatalln(err)
 	}
 
 	defer resp.Body.Close()
 	result, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		cu.logger.Fatalln(err)
 	}
 	return
 }
 
-func GetMIMEType(fname string) (mimetype, extension string, is_image bool, err error) {
+func (cu *Utils) GetMIMEType(fname string) (mimetype, extension string, is_image bool, err error) {
 	// Read a file
 	buf, err := ioutil.ReadFile(fname)
 
 	if err != nil {
-		fmt.Printf("GetMIMEType could not read file %s", fname)
+		cu.logger.Printf("GetMIMEType could not read file %s", fname)
 		return
 	}
 
@@ -55,7 +65,7 @@ func GetMIMEType(fname string) (mimetype, extension string, is_image bool, err e
 
 	kind, err := filetype.Match(head)
 	if err != nil {
-		fmt.Printf("Mimetype unkwown: %s", err)
+		cu.logger.Printf("Mimetype unkwown: %s", err)
 		return
 	}
 
@@ -65,22 +75,22 @@ func GetMIMEType(fname string) (mimetype, extension string, is_image bool, err e
 	return
 }
 
-func DownloadToTmp(url string) (fname string, mimetype string, is_image bool, err error) {
-	img, _ := GetURLBytes(url)
+func (cu *Utils) DownloadToTmp(url string) (fname string, mimetype string, is_image bool, err error) {
+	img, _ := cu.GetURLBytes(url)
 	tmpfile, err := ioutil.TempFile("/tmp", "torpedo")
 	if err != nil {
-		log.Fatal(err)
+		cu.logger.Fatal(err)
 	}
 
 	if _, err := tmpfile.Write(img); err != nil {
-		log.Fatal(err)
+		cu.logger.Fatal(err)
 	}
 
 	if err := tmpfile.Close(); err != nil {
-		log.Fatal(err)
+		cu.logger.Fatal(err)
 	}
 	fname = tmpfile.Name()
-	mimetype, _, is_image, err = GetMIMEType(fname)
+	mimetype, _, is_image, err = cu.GetMIMEType(fname)
 	return
 }
 
@@ -119,7 +129,7 @@ func FileExists(fpath string) (exists bool) {
 	return
 }
 
-func MD5Hash(message string) (result string){
+func MD5Hash(message string) (result string) {
 	my_hash := md5.New()
 	io.WriteString(my_hash, message)
 	result = fmt.Sprintf("%x", my_hash.Sum(nil))

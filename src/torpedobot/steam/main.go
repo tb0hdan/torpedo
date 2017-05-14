@@ -8,6 +8,8 @@ import (
 	"strings"
 	"net/url"
 	"strconv"
+	"log"
+	"os"
 )
 
 
@@ -16,6 +18,8 @@ const StoreURL = "http://store.steampowered.com/explore/new/"
 
 type Client struct {
 	StoreURL string
+	logger *log.Logger
+	utils *common.Utils
 }
 
 
@@ -46,16 +50,16 @@ func parsedURL(full_url string) (result string) {
 
 func (cli *Client) ShowNew() (items []*GameItem){
 
-	data, err := common.GetURLBytes(cli.StoreURL)
+	data, err := cli.utils.GetURLBytes(cli.StoreURL)
 
 	if err != nil {
-		fmt.Printf("Fetching URL %s failed with %+v\n", cli.StoreURL, err)
+		cli.logger.Printf("Fetching URL %s failed with %+v\n", cli.StoreURL, err)
 	}
 
 	result, err := html.Parse(bytes.NewReader(data))
 
 	if err != nil {
-		fmt.Printf("Parsing URL %s failed with %+v\n", cli.StoreURL, err)
+		cli.logger.Printf("Parsing URL %s failed with %+v\n", cli.StoreURL, err)
 	}
 
 	var f func(*html.Node)
@@ -162,6 +166,9 @@ func (cli *Client) ShowNew() (items []*GameItem){
 
 func  NewClient() (client *Client){
 	client = &Client{}
+	client.logger = log.New(os.Stdout, "steam-plugin: ", log.Lshortfile|log.LstdFlags)
+	client.utils = &common.Utils{}
+	client.utils.SetLogger(client.logger)
 	client.StoreURL = StoreURL
 	return
 }

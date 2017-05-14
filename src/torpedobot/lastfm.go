@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"flag"
 	"fmt"
@@ -11,10 +12,12 @@ import (
 	"torpedobot/multibot"
 )
 
+
 var (
 	lastfm_key    = flag.String("lastfm_key", "", "Last.FM API Key")
 	lastfm_secret = flag.String("lastfm_secret", "", "Last.FM API Secret")
 )
+
 
 func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_url string) {
 	var tags string
@@ -48,6 +51,7 @@ func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_u
 	return
 }
 
+
 func lastfmTag(tag string) (result string) {
 	var artists string
 	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
@@ -67,6 +71,7 @@ func lastfmTag(tag string) (result string) {
 	}
 	return
 }
+
 
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string

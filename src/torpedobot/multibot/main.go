@@ -30,6 +30,7 @@ type TorpedoBot struct {
 	config          struct {
 		SkypeIncomingAddr string
 	}
+	logger *log.Logger
 }
 
 
@@ -50,10 +51,10 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, param
 		}
 		channelID, timestamp, err := api.PostMessage(channel.(string), message, params)
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			tba.Bot.logger.Printf("%s\n", err)
 			return
 		}
-		fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+		tba.Bot.logger.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 	case *tgbotapi.BotAPI:
 		msg := tgbotapi.NewMessage(channel.(int64), message)
 		api.Send(msg)
@@ -89,7 +90,7 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 				break
 			}
 		}
-		fmt.Printf("PROCESS! -> `%s`", command)
+		tb.logger.Printf("PROCESS! -> `%s`", command)
 		if found == 0 {
 			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send %shelp for list of valid commands.", api.CommandPrefix, command, api.CommandPrefix), api)
 		}
@@ -113,19 +114,19 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 	// TODO: Move this somewhere else
 	for msg := range rtm.IncomingEvents {
-		fmt.Print("Event Received: ")
+		logger.Print("Event Received: ")
 		switch ev := msg.Data.(type) {
 		case *slack.HelloEvent:
 			// Ignore hello
 
 		case *slack.ConnectedEvent:
-			fmt.Println("Infos:", ev.Info)
-			fmt.Println("Connection counter:", ev.ConnectionCount)
+			logger.Println("Infos:", ev.Info)
+			logger.Println("Connection counter:", ev.ConnectionCount)
 			// Replace #general with your Channel ID
 			// rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", "#general"))
 
 		case *slack.MessageEvent:
-			fmt.Printf("Message: %v\n", ev)
+			logger.Printf("Message: %v\n", ev)
 			channel := ev.Channel
 			incoming_message := ev.Text
 			messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)
@@ -135,21 +136,21 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 			}
 
 		case *slack.PresenceChangeEvent:
-			fmt.Printf("Presence Change: %v\n", ev)
+			logger.Printf("Presence Change: %v\n", ev)
 
 		case *slack.LatencyReport:
-			fmt.Printf("Current latency: %v\n", ev.Value)
+			logger.Printf("Current latency: %v\n", ev.Value)
 
 		case *slack.RTMError:
-			fmt.Printf("Error: %s\n", ev.Error())
+			logger.Printf("Error: %s\n", ev.Error())
 
 		case *slack.InvalidAuthEvent:
-			fmt.Printf("Invalid credentials")
+			logger.Printf("Invalid credentials")
 			return
 
 		default:
 			// Ignore other events..
-			//fmt.Printf("Unexpected: %v\n", msg.Data)
+			//logger.Printf("Unexpected: %v\n", msg.Data)
 		}
 	}
 
@@ -157,14 +158,16 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
+	logger := log.New(os.Stdout, "telegram-bot: ", log.Lshortfile|log.LstdFlags)
+
 	api, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 
 	api.Debug = true
 
-	log.Printf("Authorized on account %s", api.Self.UserName)
+	logger.Printf("Authorized on account %s", api.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -187,7 +190,7 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 			continue
 		}
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		logger.Printf("[%s] %s\n", update.Message.From.UserName, update.Message.Text)
 
 		go tb.processChannelEvent(botApi, update.Message.Chat.ID, update.Message.Text)
 
@@ -197,11 +200,13 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	skype_api := &SkypeAPI{}
+	logger := log.New(os.Stdout, "skype-bot: ", log.Lshortfile|log.LstdFlags)
+	skype_api.logger = logger
 	app_id := strings.Split(apiKey, ":")[0]
 	app_password := strings.Split(apiKey, ":")[1]
-	fmt.Printf("Waiting for Skype token...\n")
+	logger.Printf("Waiting for Skype token...\n")
 	token_response := skype_api.GetToken(app_id, app_password)
-	fmt.Printf("Got Token: %s\n", token_response.AccessToken)
+	logger.Printf("Got Token: %s\n", token_response.AccessToken)
 	skype_api.AccessToken = token_response.AccessToken
 	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
 
@@ -210,14 +215,14 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		defer r.Body.Close()
 		body_bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Fatalf("readAll errored with %+v\n", err)
+			tb.logger.Fatalf("readAll errored with %+v\n", err)
 			return
 		}
-		fmt.Printf("Skype incoming message: %s\n", string(body_bytes))
+		logger.Printf("Skype incoming message: %s\n", string(body_bytes))
 		message := &SkypeIncomingMessage{}
 		err = json.Unmarshal(body_bytes, message)
 		if err != nil {
-			log.Fatalf("JSON unmarshalling failed with %+v\n", err)
+			logger.Fatalf("JSON unmarshalling failed with %+v\n", err)
 			return
 		}
 
@@ -226,11 +231,11 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		if 1 + skype_api.ExpiresIn - int64(time.Now().Unix()) <= 0 {
 			// Get new token
 			token_response := skype_api.GetToken(app_id, app_password)
-			fmt.Printf("Got Token: %s\n", token_response.AccessToken)
+			logger.Printf("Got Token: %s\n", token_response.AccessToken)
 			skype_api.AccessToken = token_response.AccessToken
 			skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
 		} else {
-			fmt.Printf("Token expires in %vs\n", skype_api.ExpiresIn - int64(time.Now().Unix()))
+			logger.Printf("Token expires in %vs\n", skype_api.ExpiresIn - int64(time.Now().Unix()))
 		}
 
 
@@ -241,10 +246,10 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		botApi.CommandPrefix = cmd_prefix
 		re := regexp.MustCompile(`^(@(.+)\s)?`)
 		msg := re.ReplaceAllString(message.Text, "")
-		fmt.Printf("Message: `%s`\n", msg)
+		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
-		fmt.Printf("Starting Skype API listener on %s\n", tb.config.SkypeIncomingAddr)
+		logger.Printf("Starting Skype API listener on %s\n", tb.config.SkypeIncomingAddr)
 		http.ListenAndServe(tb.config.SkypeIncomingAddr, nil)
 }
 
@@ -252,6 +257,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
+	logger := log.New(os.Stdout, "jabber-bot: ", log.Lshortfile|log.LstdFlags)
 	str_jid := strings.Split(apiKey, ":")[0]
 	password := strings.Split(apiKey, ":")[1]
 	server := strings.Split(str_jid, "@")[1]
@@ -268,7 +274,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	talk, err = options.NewClient()
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	botApi := &TorpedoBotAPI{}
@@ -285,13 +291,13 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 		switch v := chat.(type) {
 		case xmpp.Chat:
 			passed := int64(time.Now().Unix()) - int64(startup_ts)
-			fmt.Println(v.Remote, v.Text, v.Stamp.Unix())
+			logger.Println(v.Remote, v.Text, v.Stamp.Unix())
 			// Since v.Stamp returns default value, use some time to catch up on messages
 			if passed > 30 {
 				go tb.processChannelEvent(botApi, v.Remote, v.Text)
 			}
 		case xmpp.Presence:
-			fmt.Println(v.From, v.Show)
+			logger.Println(v.From, v.Show)
 		}
 	}
 
@@ -341,7 +347,7 @@ func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType)
 func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	cache := *tb.GetCreateCache(name)
 	if cache.Len() > 0 {
-		fmt.Printf("\nUsing cached quote...%v\n", cache.Len())
+		tb.logger.Printf("\nUsing cached quote...%v\n", cache.Len())
 		key := ""
 		for key = range cache.Cache() {
 			break
@@ -373,6 +379,7 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 
 func New(skype_incoming_addr string) (bot *TorpedoBot) {
 	bot = &TorpedoBot{}
+	bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
 	bot.caches = make(map[string]*memcache.MemCacheType)
 	bot.config.SkypeIncomingAddr = skype_incoming_addr
 	return

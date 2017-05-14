@@ -47,42 +47,25 @@ make deps
 
 # Commands
 
-Help:
+## Command Prefix
+
+Slack: `!`
+
+Telegram: `/`
+
+Jbber: `!`
+
+Skype: `!` or @Botname `!`
+
+
+## Help
+
+P stands for prefix above
 
 ```
-!?
-!h
-!help
+P?
+Ph
+Phelp
 ```
 
-Encoding and crypto:
-
-`!b64e`   - Base64 encode
-
-`!b64d`   - Base64 decode
-
-`!md5`    - MD5 hash
-
-`!sha1`   - SHA1 hash
-
-`!sha256` - SHA256 hash
-
-`!sha512` - SHA512 hash
-
-Multimedia:
-
-`!lastfm` - Last.FM artist/tag search
-
-`!youtube` - Search Youtube, Track name -> Video URL
-
-`!bashim` - Bash.Im random quote
-
-`!bashorg` - Bash.Org random quote
-
-`!qr` - String to QR using Google API
-
-`!wiki` - Wikipedia search
-
-`!pinterest` - Pinterest boards
-
-`!tinyurl` - TinyURL shortener
+e.g. for Slack it's `!help`

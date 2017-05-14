@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"flag"
 	"fmt"
@@ -12,7 +13,9 @@ import (
 	"torpedobot/pinterest"
 )
 
+
 var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
+
 
 func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var params slack.PostMessageParameters

@@ -1,26 +1,14 @@
 package main
 
-import (
-	"bytes"
-	"fmt"
 
+import (
 	"golang.org/x/net/html"
 
-	"torpedobot/common"
+	"torpedobot/bashorg"
 	"torpedobot/multibot"
+	"fmt"
 )
 
-func get_bashorg_html(url string) (result *html.Node) {
-	res, err := common.GetURLBytes(url)
-	if err != nil {
-		return
-	}
-	result, err = html.Parse(bytes.NewReader(res))
-	if err != nil {
-		fmt.Printf("Error %s parsing html", err)
-	}
-	return
-}
 
 func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	item := api.Bot.GetCachedItem("bashorg")
@@ -29,7 +17,8 @@ func BashOrgProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inc
 		return
 	}
 
-	r := get_bashorg_html("http://bash.org/?random")
+	bashorg := bashorg.NewClient()
+	r := bashorg.Get_bashorg_html("http://bash.org/?random")
 	quotes := make(map[int]string)
 
 	i := 0

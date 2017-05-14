@@ -1,11 +1,13 @@
 package main
 
+
 import (
 	"flag"
 
 	"torpedobot/multibot"
 
 )
+
 
 var (
 	token    = flag.String("token", "", "Comma separated list of Slack legacy tokens")
@@ -15,6 +17,7 @@ var (
 	skype_incoming_addr = flag.String("skype_incoming_addr", "localhost:3978", "Listen on this address for incoming Skype messages")
 	handlers = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 )
+
 
 func main() {
 	flag.Parse()

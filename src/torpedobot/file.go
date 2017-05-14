@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"encoding/base64"
 	"fmt"
@@ -12,13 +13,14 @@ import (
 	"torpedobot/multibot"
 )
 
+
 func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{}, incoming_message string) {
 	var params slack.PostMessageParameters
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message)
 	channel := channel_i.(string)
 	if command != "" {
 		switch requestedFeature {
-		case "!getimg":
+		case fmt.Sprintf("%sgetimg", api.CommandPrefix):
 			fpath, mimetype, err := file.GetChannelFile(channel, command)
 			if fpath != "" {
 				common.ChannelsUploadImage([]string{channel}, command, fpath, mimetype, api)
@@ -26,14 +28,14 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 			} else {
 				message = fmt.Sprintf("%+v", err)
 			}
-		case "!setimg":
+		case fmt.Sprintf("%ssetimg", api.CommandPrefix):
 			msg, err := file.SetChannelFile(channel, command)
 			if err != nil {
 				message = fmt.Sprintf("%+v", err)
 			} else {
 				message = msg
 			}
-		case "!listimg", "!lsimg":
+		case fmt.Sprintf("%slistimg", api.CommandPrefix), fmt.Sprintf("%slsimg", api.CommandPrefix):
 			files, err := file.ListChannelFiles(channel)
 			if err != nil {
 				message = "An error occured while retrieving image file list"
@@ -52,7 +54,7 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 					message = fmt.Sprintf("Available image files:\n%s", message)
 				}
 			}
-		case "!rmimg":
+		case fmt.Sprintf("%srmimg", api.CommandPrefix):
 			fpath, _, _ := file.GetChannelFile(channel, command)
 			if fpath != "" {
 				err := os.Remove(fpath)

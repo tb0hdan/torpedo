@@ -1,5 +1,6 @@
 package youtube
 
+
 import (
 	"fmt"
 	"log"
@@ -19,15 +20,19 @@ type YoutubeVideo struct {
 	VideoScore int
 }
 
+
 func (y YoutubeVideo) String() string {
 	return fmt.Sprintf("%s: %d", y.VideoID, y.VideoScore)
 }
 
+
 type ByScore []YoutubeVideo
+
 
 func (s ByScore) Len() int           { return len(s) }
 func (s ByScore) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s ByScore) Less(i, j int) bool { return s[i].VideoScore > s[j].VideoScore }
+
 
 func CalculateVideoScore(title, query string) (score int) {
 	// Rulesets
@@ -43,6 +48,7 @@ func CalculateVideoScore(title, query string) (score int) {
 	//
 	return
 }
+
 
 func YoutubeSearch(query, developerKey string, maxResults int64) (videos []YoutubeVideo) {
 	client := &http.Client{

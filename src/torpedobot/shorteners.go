@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"encoding/base64"
 	"fmt"
@@ -9,16 +10,20 @@ import (
 
 	"torpedobot/common"
 	"torpedobot/multibot"
+	"log"
 )
 
+
 func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	cu := &common.Utils{}
+	cu.SetLogger(log.New(os.Stdout, "shorteners-plugin: ", log.Lshortfile|log.LstdFlags))
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
 
 	if command == "" {
 		api.Bot.PostMessage(channel, fmt.Sprint("Usage: %sqr query\n", api.CommandPrefix), api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
-		filepath, mimetype, _, _ := common.DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
+		filepath, mimetype, _, _ := cu.DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
 		defer os.Remove(filepath)
 		channels := []string{channel.(string)}
 		filename := fmt.Sprintf("%s.png", command)
@@ -26,7 +31,10 @@ func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 	}
 }
 
+
 func TinyURLProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	cu := &common.Utils{}
+	cu.SetLogger(log.New(os.Stdout, "shorteners-plugin: ", log.Lshortfile|log.LstdFlags))
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%stinyurl", api.CommandPrefix)))
 
 	if command == "" {
@@ -34,7 +42,7 @@ func TinyURLProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inc
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%stinyurl", api.CommandPrefix)))
 		query := url.QueryEscape(command)
-		result, err := common.GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
+		result, err := cu.GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
 		message := "An error occured during TinyURL encoding process"
 		if err == nil {
 			message = string(result)
@@ -42,6 +50,7 @@ func TinyURLProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inc
 		api.Bot.PostMessage(channel, message, api)
 	}
 }
+
 
 func CryptoProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message)

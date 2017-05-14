@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"strings"
+	"log"
 )
 
 type SkypeIncomingMessage struct {
@@ -59,6 +60,7 @@ type SkypeAPI struct {
 	ServiceURL string
 	AccessToken string
 	ExpiresIn int64
+	logger *log.Logger
 }
 
 
@@ -74,16 +76,16 @@ func (sapi *SkypeAPI) Send(channel, message string) {
 	req, err := http.NewRequest("POST",
 				     fmt.Sprintf("https://%s/v3/conversations/%s/activities", host, channel),
 				     bytes.NewReader(body))
-	fmt.Printf(sapi.AccessToken)
+	sapi.logger.Printf(sapi.AccessToken)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sapi.AccessToken))
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("%+v\n", err)
+		sapi.logger.Printf("%+v\n", err)
 		return
 	}
 	defer resp.Body.Close()
-	fmt.Println(resp)
+	sapi.logger.Println(resp)
 	return
 }
 
@@ -98,14 +100,14 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 	r, err := http.DefaultClient.Post("https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token",
 	"application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
 	if err != nil {
-		fmt.Printf("%+v\n", err)
+		sapi.logger.Printf("%+v\n", err)
 	}
 	defer r.Body.Close()
 	data, _ := ioutil.ReadAll(r.Body)
 	token_response = &SkypeTokenResponse{}
 	err = json.Unmarshal(data, token_response)
 	if err != nil {
-		fmt.Printf("An error occured during token unmarshalling: %+v\n", err)
+		sapi.logger.Printf("An error occured during token unmarshalling: %+v\n", err)
 	}
 	return
 }

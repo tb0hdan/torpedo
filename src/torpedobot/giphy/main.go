@@ -1,5 +1,13 @@
 package giphy
 
+import (
+	"log"
+	"os"
+	"torpedobot/common"
+	"net/url"
+	"fmt"
+	"encoding/json"
+)
 
 type GiphyUser struct {
 	AvatarURL   string `json:"avatar_url"`
@@ -279,3 +287,34 @@ type GiphyResponse struct {
 	Meta       *GiphyMeta               `json:"meta"`
 }
 
+
+type GiphyClient struct {
+	logger *log.Logger
+	utils *common.Utils
+}
+
+
+func (gic *GiphyClient) GiphySearch(command string) (response *GiphyResponse){
+
+	query := url.QueryEscape(command)
+	result, err := gic.utils.GetURLBytes(fmt.Sprintf("http://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC", query))
+	if err != nil {
+		gic.logger.Printf("Get Giphy URL failed with %+v", err)
+		return
+	}
+	err = json.Unmarshal(result, &response)
+	if err != nil {
+		gic.logger.Printf("Error unmarshalling Giphy: %+v", err)
+		return
+	}
+	return
+}
+
+
+func  NewClient() (client *GiphyClient){
+	client = &GiphyClient{}
+	client.logger = log.New(os.Stdout, "giphy-plugin: ", log.Lshortfile|log.LstdFlags)
+	client.utils = &common.Utils{}
+	client.utils.SetLogger(client.logger)
+	return
+}
