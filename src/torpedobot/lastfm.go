@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/nlopes/slack"
-	"github.com/shkh/lastfm-go/lastfm"
+	"github.com/tb0hdan/lastfm-go/lastfm"
 
 	"torpedobot/multibot"
 )
@@ -76,7 +76,7 @@ func lastfmTag(tag string) (result string) {
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
 	var params slack.PostMessageParameters
-	help := "Usage: !lastfm command\nAvailable commands: artist, tag"
+	help := fmt.Sprintf("Usage: %slastfm command\nAvailable commands: artist, tag", api.CommandPrefix)
 	command := strings.Split(strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%slastfm", api.CommandPrefix))), " ")[0]
 
 	switch command {
@@ -93,14 +93,14 @@ func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inco
 			}
 			params.Attachments = []slack.Attachment{attachment}
 		} else {
-			message = "Please supply artist: !lastfm artist artist_name"
+			message = fmt.Sprintf("Please supply artist: %slastfm artist artist_name", api.CommandPrefix)
 		}
 	case "tag":
-		tag := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("!lastfm %s", command)))
+		tag := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
 		if tag != "" {
 			message = lastfmTag(tag)
 		} else {
-			message = "Please supply tag: !lastfm tag tag_name"
+			message = fmt.Sprintf("Please supply tag: %slastfm tag tag_name", api.CommandPrefix)
 		}
 	default:
 		message = help
