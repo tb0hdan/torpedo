@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 	"regexp"
+	"torpedobot/common"
 )
 
 type SkypeIncomingMessage struct {
@@ -92,6 +93,7 @@ func (sapi *SkypeAPI) Send(channel, message string, attachments...*SkypeAttachme
 	sapi.logger.Printf(sapi.AccessToken)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sapi.AccessToken))
+	req.Header.Set("User-Agent", common.User_Agent)
 	resp, err := client.Do(req)
 	if err != nil {
 		sapi.logger.Printf("%+v\n", err)
