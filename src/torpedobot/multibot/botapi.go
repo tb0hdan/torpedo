@@ -47,7 +47,11 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		msg.Text = message
 		api.Send(msg)
 	case *SkypeAPI:
-		api.Send(channel.(string), message)
+		if len(richmsgs) > 0 {
+			api.Send(channel.(string), message, richmsgs[0].ToSkypeAttachment())
+		} else {
+			api.Send(channel.(string), message)
+		}
 	}
 }
 

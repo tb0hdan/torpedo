@@ -5,6 +5,7 @@ import (
 
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"os"
 )
 
 
@@ -37,6 +38,16 @@ func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattab
 	return
 }
 
-func (rm *RichMessage) ToSkypeAttachment() (msg SkypeOutgoingMessage) {
+func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
+	cu := &common.Utils{}
+	fname, mimetype, is_image, err := cu.DownloadToTmp(rm.ImageURL)
+	if is_image && err == nil {
+		attachment = &SkypeAttachment{
+			ContentType: mimetype,
+			ContentURL: rm.ImageURL,
+			Name: rm.Title,
+		}
+		defer os.Remove(fname)
+	}
 	return
 }

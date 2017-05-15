@@ -44,11 +44,20 @@ type SkypeIncomingMessage struct {
 	} `json:"channelData"`
 }
 
+type SkypeAttachment struct {
+	// base64 encoded content of media, this or ContentURL
+	// data:image/png;base64,iVBORw0KGgo…
+	Content string `json:"content,omitempty"`
+	ContentType string `json:"contentType"`
+	ContentURL string `json:"contentUrl"`
+	Name string `json:"name"`
+}
 
 type SkypeOutgoingMessage struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
 	TextFormat string `json:"textFormat"`
+	Attachments []*SkypeAttachment `json:"attachments,omitempty"`
 }
 
 type SkypeTokenResponse struct {
@@ -67,11 +76,12 @@ type SkypeAPI struct {
 }
 
 
-func (sapi *SkypeAPI) Send(channel, message string) {
+func (sapi *SkypeAPI) Send(channel, message string, attachments...*SkypeAttachment) {
 	client := &http.Client{}
 	outgoing_message := &SkypeOutgoingMessage{Text: message,
 		Type: "message",
-		TextFormat: "plain"}
+		TextFormat: "plain",
+		Attachments: attachments,}
 	parsed, _ := url.Parse(sapi.ServiceURL)
 	host := parsed.Host
 	body, _ := json.Marshal(outgoing_message)
