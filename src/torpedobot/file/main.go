@@ -47,7 +47,7 @@ func GetChannelFile(channel, message string) (channelFile, mimetype string, err 
 }
 
 
-func SetChannelFile(channel, message string) (result string, err error) {
+func SetChannelFile(channel, message, commandPrefix string) (result string, err error) {
 	cu := &common.Utils{}
 	cu.SetLogger(log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags))
 	wd, err := GetCreateChannelDir(channel)
@@ -69,7 +69,7 @@ func SetChannelFile(channel, message string) (result string, err error) {
 	encoded := base64.URLEncoding.EncodeToString([]byte(destination))
 	new_name := fmt.Sprintf("%s%s%s", wd, string(os.PathSeparator), encoded)
 	if common.FileExists(new_name) {
-		result = "Destination already exists, set skipped. Use `!rmimg destination` to remove."
+		result = fmt.Sprintf("Destination already exists, set skipped. Use `%srmimg destination` to remove.", commandPrefix)
 		return
 	}
 	fname, _, is_image, err := cu.DownloadToTmp(url)

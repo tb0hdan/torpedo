@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"strings"
 	"log"
+	"os"
+	"time"
+	"regexp"
 )
 
 type SkypeIncomingMessage struct {
@@ -110,4 +113,57 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 		sapi.logger.Printf("An error occured during token unmarshalling: %+v\n", err)
 	}
 	return
+}
+
+func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
+	skype_api := &SkypeAPI{}
+	logger := log.New(os.Stdout, "skype-bot: ", log.Lshortfile|log.LstdFlags)
+	skype_api.logger = logger
+	app_id := strings.Split(apiKey, ":")[0]
+	app_password := strings.Split(apiKey, ":")[1]
+	logger.Printf("Waiting for Skype token...\n")
+	token_response := skype_api.GetToken(app_id, app_password)
+	logger.Printf("Got Token: %s\n", token_response.AccessToken)
+	skype_api.AccessToken = token_response.AccessToken
+	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
+
+	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json")
+		defer r.Body.Close()
+		body_bytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			tb.logger.Fatalf("readAll errored with %+v\n", err)
+			return
+		}
+		logger.Printf("Skype incoming message: %s\n", string(body_bytes))
+		message := &SkypeIncomingMessage{}
+		err = json.Unmarshal(body_bytes, message)
+		if err != nil {
+			logger.Fatalf("JSON unmarshalling failed with %+v\n", err)
+			return
+		}
+
+		// Check token (ExpiresIn is in the future)
+		if 1+skype_api.ExpiresIn-int64(time.Now().Unix()) <= 0 {
+			// Get new token
+			token_response := skype_api.GetToken(app_id, app_password)
+			logger.Printf("Got Token: %s\n", token_response.AccessToken)
+			skype_api.AccessToken = token_response.AccessToken
+			skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
+		} else {
+			logger.Printf("Token expires in %vs\n", skype_api.ExpiresIn-int64(time.Now().Unix()))
+		}
+
+		botApi := &TorpedoBotAPI{}
+		skype_api.ServiceURL = message.ServiceURL
+		botApi.API = skype_api
+		botApi.Bot = tb
+		botApi.CommandPrefix = cmd_prefix
+		re := regexp.MustCompile(`^(@(.+)\s)?`)
+		msg := re.ReplaceAllString(message.Text, "")
+		logger.Printf("Message: `%s`\n", msg)
+		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
+	})
+	logger.Printf("Starting Skype API listener on %s\n", tb.config.SkypeIncomingAddr)
+	http.ListenAndServe(tb.config.SkypeIncomingAddr, nil)
 }

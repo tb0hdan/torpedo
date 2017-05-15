@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nlopes/slack"
-	"github.com/tb0hdan/lastfm-go/lastfm"
-
 	"torpedobot/multibot"
+
+	"github.com/tb0hdan/lastfm-go/lastfm"
 )
 
 
@@ -51,7 +50,6 @@ func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_u
 	return
 }
 
-
 func lastfmTag(tag string) (result string) {
 	var artists string
 	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
@@ -72,10 +70,9 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
-
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
-	var params slack.PostMessageParameters
+	var richmsg multibot.RichMessage
 	help := fmt.Sprintf("Usage: %slastfm command\nAvailable commands: artist, tag", api.CommandPrefix)
 	command := strings.Split(strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%slastfm", api.CommandPrefix))), " ")[0]
 
@@ -84,14 +81,11 @@ func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inco
 		artist := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
 		if artist != "" {
 			summary, artist_url, artist_corrected, image_url := lastfmArtist(artist)
-			attachment := slack.Attachment{
-				Color:     "#36a64f",
+			richmsg = multibot.RichMessage{BarColor: "#36a64f",
 				Text:      summary,
 				Title:     artist_corrected,
 				TitleLink: artist_url,
-				ImageURL:  image_url,
-			}
-			params.Attachments = []slack.Attachment{attachment}
+				ImageURL:  image_url}
 		} else {
 			message = fmt.Sprintf("Please supply artist: %slastfm artist artist_name", api.CommandPrefix)
 		}
@@ -106,5 +100,5 @@ func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inco
 		message = help
 	}
 
-	api.Bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, richmsg)
 }

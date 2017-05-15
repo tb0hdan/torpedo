@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nlopes/slack"
-
 	"torpedobot/common"
 	"torpedobot/multibot"
 	"torpedobot/pinterest"
@@ -18,7 +16,8 @@ var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
 
 func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
-	var params slack.PostMessageParameters
+	var richmsg multibot.RichMessage
+
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message, "board")
 	command = strings.Split(command, " ")[0]
 
@@ -31,14 +30,11 @@ func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 			if err != nil {
 				return
 			}
-			attachment := slack.Attachment{
-				Color:     "#36a64f",
-				Text:      board,
-				Title:     board,
-				TitleLink: pinterest.PINTEREST_API_BASE + board,
-				ImageURL:  images[0],
-			}
-			params.Attachments = []slack.Attachment{attachment}
+			richmsg = multibot.RichMessage{BarColor: "#36a64f",
+			                               Text: board,
+						       Title: board,
+						       TitleLink: pinterest.PINTEREST_API_BASE + board,
+			                               ImageURL: images[0],}
 		}
 	default:
 		if command != "" {
@@ -46,5 +42,5 @@ func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 		}
 	}
 
-	api.Bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, richmsg)
 }

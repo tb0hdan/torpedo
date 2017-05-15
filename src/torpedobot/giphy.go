@@ -2,8 +2,6 @@ package main
 
 
 import (
-	"github.com/nlopes/slack"
-
 	"torpedobot/giphy"
 	"torpedobot/common"
 	"torpedobot/multibot"
@@ -13,7 +11,7 @@ import (
 
 func GiphyProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
-	var params slack.PostMessageParameters
+	var richmsg multibot.RichMessage
 
 	client := giphy.NewClient()
 
@@ -21,17 +19,14 @@ func GiphyProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incom
 	if command != "" {
 		giphyResponse := client.GiphySearch(command)
 		if giphyResponse.Meta.Status == 200 {
-			attachment := slack.Attachment{
-				Color:     "#36a64f",
-				Title:     command,
-				TitleLink: giphyResponse.Data[0].URL,
-				ImageURL:  giphyResponse.Data[0].Images.OriginalImage.URL,
-			}
-			params.Attachments = []slack.Attachment{attachment}
+			richmsg = multibot.RichMessage{BarColor: "#36a64f",
+				                       Title: command,
+			                               TitleLink: giphyResponse.Data[0].URL,
+			                               ImageURL: giphyResponse.Data[0].Images.OriginalImage.URL, }
 			message = ""
 		} else {
 			message = "Your request to Giphy could not be processed"
 		}
 	}
-	api.Bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, richmsg)
 }

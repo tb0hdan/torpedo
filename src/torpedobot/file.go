@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nlopes/slack"
-
 	"torpedobot/common"
 	"torpedobot/file"
 	"torpedobot/multibot"
@@ -15,7 +13,7 @@ import (
 
 
 func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{}, incoming_message string) {
-	var params slack.PostMessageParameters
+
 	requestedFeature, command, message := common.GetRequestedFeature(incoming_message)
 	channel := channel_i.(string)
 	if command != "" {
@@ -29,7 +27,7 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 				message = fmt.Sprintf("%+v", err)
 			}
 		case fmt.Sprintf("%ssetimg", api.CommandPrefix):
-			msg, err := file.SetChannelFile(channel, command)
+			msg, err := file.SetChannelFile(channel, command, api.CommandPrefix)
 			if err != nil {
 				message = fmt.Sprintf("%+v", err)
 			} else {
@@ -49,7 +47,7 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 					message += fmt.Sprintf("`%s`\n", msg)
 				}
 				if message == "" {
-					message = "No files found, upload using !setimg first"
+					message = fmt.Sprint("No files found, upload using %ssetimg first", api.CommandPrefix)
 				} else {
 					message = fmt.Sprintf("Available image files:\n%s", message)
 				}
@@ -71,5 +69,5 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 			message = "Unknown feature requested"
 		}
 	}
-	api.Bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api)
 }

@@ -6,15 +6,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/nlopes/slack"
-
 	"torpedobot/multibot"
 	"torpedobot/wiki"
 )
 
 
 func WikiProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
-	var params slack.PostMessageParameters
+	var richmsg multibot.RichMessage
 	client := wiki.NewClient()
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%swiki", api.CommandPrefix)))
 	message := fmt.Sprintf("Usage: %swiki query\n", api.CommandPrefix)
@@ -24,15 +22,12 @@ func WikiProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incomi
 		if summary != "" {
 			message = ""
 			image_url, _ := client.GetWikiTitleImage(command)
-			attachment := slack.Attachment{
-				Color:     "#36a64f",
-				Text:      summary,
-				Title:     command,
-				TitleLink: fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.QueryEscape(command)),
-				ImageURL:  image_url,
-			}
-			params.Attachments = []slack.Attachment{attachment}
+			richmsg = multibot.RichMessage{BarColor: "#36a64f",
+				 			Text: summary,
+							Title: command,
+							TitleLink: fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.QueryEscape(command)),
+							ImageURL: image_url,}
 		}
 	}
-	api.Bot.PostMessage(channel, message, api, params)
+	api.Bot.PostMessage(channel, message, api, richmsg)
 }

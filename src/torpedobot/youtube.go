@@ -17,7 +17,7 @@ var (
 
 
 func YoutubeProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
-	message := "Usage: !youtube query\n"
+	message := fmt.Sprintf("Usage: %syoutube query\n", api.CommandPrefix)
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%syoutube", api.CommandPrefix)))
 	if command != "" {
 		searchResults := youtube.YoutubeSearch(command, *google_webapp_key, 25)
