@@ -23,11 +23,8 @@ func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 		api.Bot.PostMessage(channel, fmt.Sprint("Usage: %sqr query\n", api.CommandPrefix), api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
-		filepath, mimetype, _, _ := cu.DownloadToTmp(fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command))
-		defer os.Remove(filepath)
-		channels := []string{channel.(string)}
-		filename := fmt.Sprintf("%s.png", command)
-		common.ChannelsUploadImage(channels, filename, filepath, mimetype, api)
+		richmsg := multibot.RichMessage{ImageURL:fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command)}
+		api.Bot.PostMessage(channel, "", api, richmsg)
 	}
 }
 

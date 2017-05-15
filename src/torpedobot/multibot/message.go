@@ -1,12 +1,12 @@
 package multibot
 
 import (
-	"os"
 	"torpedobot/common"
 
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
+
 
 type RichMessage struct {
 	BarColor  string
@@ -28,10 +28,9 @@ func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) 
 	return
 }
 
-func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable) {
+func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable, fname string) {
 	cu := &common.Utils{}
 	fname, _, is_image, err := cu.DownloadToTmp(rm.ImageURL)
-	defer os.Remove(fname)
 	if is_image && err == nil {
 		msg = tgbotapi.NewPhotoUpload(channel, fname)
 	}

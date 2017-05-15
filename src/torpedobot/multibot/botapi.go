@@ -4,6 +4,7 @@ import (
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"github.com/mattn/go-xmpp"
+	"os"
 )
 
 type TorpedoBotAPI struct {
@@ -29,12 +30,17 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		tba.Bot.logger.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 	case *tgbotapi.BotAPI:
 		var msg tgbotapi.Chattable
+		var tmp string
 		if len(richmsgs) > 0 {
-			msg = richmsgs[0].ToTelegramAttachment(channel.(int64))
+			msg, tmp = richmsgs[0].ToTelegramAttachment(channel.(int64))
+			api.Send(tgbotapi.NewMessage(channel.(int64), richmsgs[0].Text))
 		} else {
 			msg = tgbotapi.NewMessage(channel.(int64), message)
 		}
 		api.Send(msg)
+		if tmp != "" {
+			os.Remove(tmp)
+		}
 	case *xmpp.Client:
 		msg := xmpp.Chat{}
 		msg.Remote = channel.(string)

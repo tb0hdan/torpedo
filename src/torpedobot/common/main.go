@@ -107,6 +107,10 @@ func GetRequestedFeature(full_command string, usage ...string) (requestedFeature
 }
 
 func ChannelsUploadImage(channels []string, fname, fpath, ftype string, api_i interface{}) {
+	/*
+			channels := []string{channel.(string)}
+		filename := fmt.Sprintf("%s.png", command)
+		common.ChannelsUploadImage(channels, filename, filepath, mimetype, api) */
 	parameters := slack.FileUploadParameters{File: fpath, Filetype: ftype,
 		Filename: fname, Title: fname,
 		Channels: channels}
