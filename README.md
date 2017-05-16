@@ -21,7 +21,7 @@ Get Skype channel creds (https://dev.botframework.com/)
 Optional parameters (all or any combination of)
 
 ```bash
-TOKEN="xxxttt,aaabbb"
+SLACK="xxxttt,aaabbb"
 TELEGRAM="xxx,yyy"
 JABBER="user@host.com:supersecret,user2@anotherhost.com:a1FvH12"
 SKYPE="app_id:app_password,app_id2:app_password2"
@@ -35,7 +35,7 @@ Mandatory parameters:
 LASTFM_KEY="aaa"
 LASTFM_SECRET="bbb"
 GOOGLE_WEBAPP_KEY="ccc"
-PINTEREST_TOKEN="ddd"
+PINTEREST="ddd"
 ```
 
 # Running
