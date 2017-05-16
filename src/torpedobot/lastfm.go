@@ -8,7 +8,7 @@ import (
 
 	"torpedobot/multibot"
 
-	"github.com/tb0hdan/lastfm-go/lastfm"
+	"github.com/shkh/lastfm-go/lastfm"
 )
 
 
