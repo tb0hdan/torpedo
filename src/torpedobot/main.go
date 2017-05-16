@@ -1,22 +1,30 @@
 package main
 
-
 import (
 	"flag"
+	"os"
+	"strings"
 
 	"torpedobot/multibot"
-
 )
 
 
 var (
-	token    = flag.String("token", "", "Comma separated list of Slack legacy tokens")
-	telegram = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
-	jabber = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
-	skype = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
+	slack               = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
+	telegram            = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+	jabber              = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
+	skype               = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
 	skype_incoming_addr = flag.String("skype_incoming_addr", "localhost:3978", "Listen on this address for incoming Skype messages")
-	handlers = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
+	handlers            = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 )
+
+
+func GetStripEnv(envvar string) (result string) {
+	result = os.Getenv(envvar)
+	result = strings.TrimLeft(result, "'")
+	result = strings.TrimRight(result, "'")
+	return
+}
 
 
 func main() {
@@ -53,7 +61,31 @@ func main() {
 
 	bot := multibot.New(*skype_incoming_addr)
 	bot.RegisterHandlers(handlers)
-	bot.RunBotsCSV(bot.RunSlackBot, *token, "!")
+	if *slack == "" {
+		*slack = GetStripEnv("SLACK")
+	}
+	if *telegram == "" {
+		*telegram = GetStripEnv("TELEGRAM")
+	}
+	if *jabber == "" {
+		*jabber = GetStripEnv("JABBER")
+	}
+	if *skype == "" {
+		*skype = GetStripEnv("SKYPE")
+	}
+	if *lastfm_key == "" {
+		*lastfm_key = GetStripEnv("LASTFM_KEY")
+	}
+	if *lastfm_secret == "" {
+		*lastfm_secret = GetStripEnv("LASTFM_SECRET")
+	}
+	if *pinterest_token == "" {
+		*pinterest_token = GetStripEnv("PINTEREST")
+	}
+	if *google_webapp_key == "" {
+		*google_webapp_key = GetStripEnv("GOOGLE_WEBAPP_KEY")
+	}
+	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
 	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
 	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")

@@ -13,3 +13,9 @@ test:
 
 clean:
 	rm -f bin/torpedobot
+
+dockerimage:
+	@docker build -t tb0hdan/torpedobot .
+
+dockerrun:
+	@docker run --env-file ./token.sh tb0hdan/torpedobot

@@ -12,7 +12,7 @@ import (
 )
 
 
-var Token = flag.String("pinterest_token", "", "Pinterest Client Token")
+var pinterest_token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
 
 func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
@@ -25,7 +25,7 @@ func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 	case "board":
 		board := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%s %s", requestedFeature, command)))
 		if board != "" {
-			api := pinterest.New(*Token)
+			api := pinterest.New(*pinterest_token)
 			images, err := api.GetImagesForBoard(board)
 			if err != nil {
 				return
