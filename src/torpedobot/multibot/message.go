@@ -17,6 +17,12 @@ type RichMessage struct {
 	ImageURL  string
 }
 
+
+func (rm *RichMessage) IsEmpty() bool {
+	return rm.Text == "" || rm.ImageURL == ""
+}
+
+
 func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) {
 	attachment := slack.Attachment{
 		Color:     rm.BarColor,

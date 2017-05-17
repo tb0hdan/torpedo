@@ -19,7 +19,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 
 	switch api := tba.API.(type) {
 	case *slack.Client:
-		if len(richmsgs) > 0 {
+		if len(richmsgs) > 0 && ! richmsgs[0].IsEmpty() {
 			params = richmsgs[0].ToSlackAttachment()
 		}
 		channelID, timestamp, err := api.PostMessage(channel.(string), message, params)
@@ -31,7 +31,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 	case *tgbotapi.BotAPI:
 		var msg tgbotapi.Chattable
 		var tmp string
-		if len(richmsgs) > 0 {
+		if len(richmsgs) > 0 && ! richmsgs[0].IsEmpty() {
 			msg, tmp = richmsgs[0].ToTelegramAttachment(channel.(int64))
 			api.Send(tgbotapi.NewMessage(channel.(int64), richmsgs[0].Text))
 		} else {
@@ -47,7 +47,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		msg.Text = message
 		api.Send(msg)
 	case *SkypeAPI:
-		if len(richmsgs) > 0 {
+		if len(richmsgs) > 0 && ! richmsgs[0].IsEmpty() {
 			api.Send(channel.(string), richmsgs[0].Text, richmsgs[0].ToSkypeAttachment())
 		} else {
 			api.Send(channel.(string), message)
