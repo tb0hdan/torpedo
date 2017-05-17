@@ -70,6 +70,28 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
+func lastfmUser(user string) (result string) {
+	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
+	r, err := lastfm_api.User.GetInfo(lastfm.P{"user": user})
+	result = "An error occured while processing your request"
+	if err == nil {
+		result = fmt.Sprintf("Profile information for: %s\n", r.Url)
+		result += fmt.Sprintf("Play count: %+v track(s)\n", r.PlayCount)
+		result += fmt.Sprintf("\nTop artists:\n")
+		r2, _ := lastfm_api.User.GetTopArtists(lastfm.P{"user": user, "limit": 10})
+		for idx, artist := range r2.Artists {
+			result += fmt.Sprintf("%+v - %s - %s play(s)\n", idx + 1, artist.Name, artist.PlayCount)
+		}
+		result += fmt.Sprintf("\nTop tracks:\n")
+		r3, _ := lastfm_api.User.GetTopTracks(lastfm.P{"user": user, "limit": 10})
+		for idx, track := range r3.Tracks {
+			result += fmt.Sprintf("%+v - %s - %s - %s play(s)\n", idx + 1, track.Artist.Name, track.Name, track.PlayCount)
+		}
+	}
+	return
+}
+
+
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
 	var richmsg multibot.RichMessage
@@ -95,6 +117,13 @@ func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inco
 			message = lastfmTag(tag)
 		} else {
 			message = fmt.Sprintf("Please supply tag: %slastfm tag tag_name", api.CommandPrefix)
+		}
+	case "user":
+		user := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
+		if user != "" {
+			message = lastfmUser(user)
+		} else {
+			message = fmt.Sprintf("Please supply user name: %slastfm user user_name", api.CommandPrefix)
 		}
 	default:
 		message = help
