@@ -11,6 +11,8 @@ import (
 	"torpedobot/common"
 	"torpedobot/memcache"
 	"sync"
+
+	"github.com/getsentry/raven-go"
 )
 
 var bot *TorpedoBot
@@ -58,12 +60,23 @@ func (tb *TorpedoBot) RunLoop() {
 	}
 }
 
-func (tb *TorpedoBot) RunBotsCSV(method func(apiKey string, cmd_prefix string), CSV, cmd_prefix string) {
+func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
+	wrapped := func(a, b string) {}
+	if os.Getenv("SENTRY_DSN") != "" {
+		tb.logger.Print("Using Sentry error reporting...\n")
+		wrapped = func(apiKey, cmd_prefix string) {
+			raven.CapturePanic(func() {
+				method(apiKey, cmd_prefix)
+			}, nil)
+		}
+	} else {
+		wrapped = method
+	}
 	for _, key := range strings.Split(CSV, ",") {
 		if key == "" {
 			continue
 		}
-		go method(key, cmd_prefix)
+		go wrapped(key, cmd_prefix)
 	}
 }
 

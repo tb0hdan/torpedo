@@ -5,8 +5,12 @@ Jabber/Skype/Slack/Telegram bot
 
 Torpedo uses multiple Jabber/Skype/Slack/Telegram accounts (at least one is required)
 
+# Using Docker image
 
-# Configuration
+Please refer to: https://hub.docker.com/r/tb0hdan/torpedo/
+
+
+# Running locally
 
 Get Slack token(s):
 
@@ -18,6 +22,8 @@ Get Telegram/Jabber accounts.
 
 Get Skype channel creds (https://dev.botframework.com/)
 
+Get Sentry.io DSN: https://sentry.io
+
 Optional parameters (all or any combination of)
 
 ```bash
@@ -25,6 +31,7 @@ SLACK="xxxttt,aaabbb"
 TELEGRAM="xxx,yyy"
 JABBER="user@host.com:supersecret,user2@anotherhost.com:a1FvH12"
 SKYPE="app_id:app_password,app_id2:app_password2"
+SENTRY_DSN="https://xxx:yyy"
 ```
 
 
