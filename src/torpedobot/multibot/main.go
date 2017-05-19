@@ -62,10 +62,12 @@ func (tb *TorpedoBot) RunLoop() {
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
 	wrapped := func(a, b string) {}
-	if os.Getenv("SENTRY_DSN") != "" {
+	env_dsn := os.Getenv("SENTRY_DSN")
+	if  env_dsn != "" {
 		tb.logger.Print("Using Sentry error reporting...\n")
+		raven.SetDSN(env_dsn)
 		wrapped = func(apiKey, cmd_prefix string) {
-			raven.CapturePanic(func() {
+			raven.CapturePanicAndWait(func() {
 				method(apiKey, cmd_prefix)
 			}, nil)
 		}
