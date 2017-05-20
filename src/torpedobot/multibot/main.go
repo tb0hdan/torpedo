@@ -22,6 +22,7 @@ type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
 	config          struct {
+		FacebookIncomingAddr string
 		SkypeIncomingAddr string
 	}
 	logger *log.Logger
@@ -134,12 +135,13 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 }
 
 
-func New(skype_incoming_addr string) *TorpedoBot {
+func New(facebook_incoming_addr, skype_incoming_addr string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
 		bot.caches = make(map[string]*memcache.MemCacheType)
 		bot.config.SkypeIncomingAddr = skype_incoming_addr
+		bot.config.FacebookIncomingAddr = facebook_incoming_addr
 	})
 	return bot
 }

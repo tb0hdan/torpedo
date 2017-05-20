@@ -4,6 +4,7 @@ import (
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"github.com/mattn/go-xmpp"
+	"github.com/paked/messenger"
 	"os"
 )
 
@@ -52,6 +53,8 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		} else {
 			api.Send(channel.(string), message)
 		}
+	case *messenger.Response:
+		api.Text(message)
 	}
 }
 

@@ -15,6 +15,8 @@ var (
 	jabber              = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
 	skype               = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
 	skype_incoming_addr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
+	facebook = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+	facebook_incoming_addr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
 	handlers            = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 )
 
@@ -59,7 +61,7 @@ func main() {
 	// Games'n'stuff
 	handlers["steam"] = SteamProcessMessage
 
-	bot := multibot.New(*skype_incoming_addr)
+	bot := multibot.New(*facebook_incoming_addr, *skype_incoming_addr)
 	bot.RegisterHandlers(handlers)
 	if *slack == "" {
 		*slack = GetStripEnv("SLACK")
@@ -72,6 +74,9 @@ func main() {
 	}
 	if *skype == "" {
 		*skype = GetStripEnv("SKYPE")
+	}
+	if *facebook == "" {
+		*facebook = GetStripEnv("FACEBOOK")
 	}
 	if *lastfm_key == "" {
 		*lastfm_key = GetStripEnv("LASTFM_KEY")
@@ -89,5 +94,6 @@ func main() {
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
 	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
 	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
+	bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
 	bot.RunLoop()
 }
