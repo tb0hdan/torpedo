@@ -1,9 +1,27 @@
 # torpedo
-Jabber/Skype/Slack/Telegram bot
+Multiprotocol bot
 
 # Intro
 
-Torpedo uses multiple Jabber/Skype/Slack/Telegram accounts (at least one is required)
+Torpedo uses multiple accounts (at least one is required). Supported transports:
+
+- Facebook
+- Jabber
+- Skype
+- Slack
+- Telegram
+
+
+# See it in action
+
+Facebook: https://www.facebook.com/TorpedoBot/
+
+Jabber: torpedobot@jabber.cz
+
+Skype: https://join.skype.com/bot/f61c6815-438d-4795-8aaa-9b1d8d2a342a
+
+Telegram: http://t.me/TorpedoTelegramBot
+
 
 # Using Docker image
 
@@ -60,10 +78,11 @@ Slack: `!`
 
 Telegram: `/`
 
-Jbber: `!`
+Jabber: `!`
 
 Skype: `!` or @Botname `!`
 
+Facebook: `!`
 
 ## Help
 

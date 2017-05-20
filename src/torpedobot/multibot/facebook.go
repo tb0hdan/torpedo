@@ -41,7 +41,7 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		tb.logger.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	tb.logger.Println("Serving messenger bot on %s\n", tb.config.FacebookIncomingAddr)
+	tb.logger.Printf("Serving messenger bot on %s\n", tb.config.FacebookIncomingAddr)
 
 	http.ListenAndServe(tb.config.FacebookIncomingAddr, client.Handler())
 }
