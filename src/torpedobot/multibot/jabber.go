@@ -7,7 +7,44 @@ import (
 	"time"
 
 	"github.com/mattn/go-xmpp"
+	"strconv"
 )
+
+
+func (tb *TorpedoBot) JabberServerInfo(jid, server string, c *xmpp.Client) (string, error) {
+	const namespace = "http://jabber.org/protocol/disco#info"
+	// use getCookie for a pseudo random id.
+	reqID := strconv.FormatUint(uint64(time.Now().Unix()), 10)
+	return c.RawInformationQuery(jid, server, reqID, xmpp.IQTypeGet, namespace, "")
+}
+
+
+func (tb *TorpedoBot) SendJabberDisco(jid, server string, client *xmpp.Client) {
+	_, err := tb.JabberServerInfo(jid, server, client)
+	if err != nil {
+		tb.logger.Printf("%+v\n", err)
+	}
+	return
+}
+
+
+func (tb *TorpedoBot) WaitAndSendJabberDisco(jid, server string, client *xmpp.Client) {
+	// Wait for event loop to start
+	time.Sleep(10 * time.Second)
+	tb.SendJabberDisco(jid, server, client)
+	return
+}
+
+
+func (tb *TorpedoBot) JabberPinger(jid, server string, client *xmpp.Client) {
+	sleep := 60
+	tb.logger.Printf("Sending ping every %d seconds\n", sleep)
+	for {
+		client.PingC2S(jid, server)
+		time.Sleep(time.Duration(sleep) * time.Second)
+	}
+}
+
 
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
@@ -38,6 +75,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	botApi.CommandPrefix = cmd_prefix
 
 	startup_ts := time.Now().Unix()
+	go tb.WaitAndSendJabberDisco(str_jid, server, talk)
 	for {
 		chat, err := talk.Recv()
 		if err != nil {
@@ -53,6 +91,15 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 			}
 		case xmpp.Presence:
 			logger.Println(v.From, v.Show)
+		case xmpp.IQ:
+			if v.Type == "result" && v.ID == "c2s1" {
+				logger.Printf("Got pong from %s to %s\n", v.From, v.To)
+			}
+			if strings.Contains(string(v.Query), "urn:xmpp:ping") {
+				go tb.JabberPinger(str_jid, server, talk)
+			}
+		default:
+			logger.Printf("Unknown event: %T\n", v)
 		}
 	}
 
