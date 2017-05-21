@@ -6,17 +6,17 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"torpedobot/common"
 	"torpedobot/memcache"
-	"sync"
 
 	"github.com/getsentry/raven-go"
 )
 
 var bot *TorpedoBot
 var once sync.Once
+
 
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
@@ -26,7 +26,9 @@ type TorpedoBot struct {
 		SkypeIncomingAddr string
 	}
 	logger *log.Logger
+	throttle *memcache.MemCacheType
 }
+
 
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, richmsgs ...RichMessage) {
 	if len(richmsgs) > 0 {
@@ -37,8 +39,9 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *Torp
 
 }
 
+
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
-	if strings.HasPrefix(incoming_message, api.CommandPrefix) {
+	if strings.HasPrefix(incoming_message, api.CommandPrefix) && tb.NoSpam(channel, incoming_message) {
 		command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
 		found := 0
 		for handler := range tb.commandHandlers {
@@ -55,11 +58,13 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 	}
 }
 
+
 func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
 	}
 }
+
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
 	wrapped := func(a, b string) {}
@@ -83,55 +88,15 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 	}
 }
 
+
 func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
+
 func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	return tb.commandHandlers
-}
-
-func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
-	value, success := tb.caches[name]
-	if !success {
-		cache = memcache.New()
-		tb.caches[name] = cache
-	} else {
-		cache = value
-	}
-	return
-}
-
-func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
-	cache := *tb.GetCreateCache(name)
-	if cache.Len() > 0 {
-		tb.logger.Printf("\nUsing cached quote...%v\n", cache.Len())
-		key := ""
-		for key = range cache.Cache() {
-			break
-		}
-		quote, _ := cache.Get(key)
-		cache.Delete(key)
-		item = quote
-	}
-	return
-}
-
-func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string) {
-	cache := *tb.GetCreateCache(name)
-	for idx := range items {
-		message := common.MD5Hash(items[idx])
-		_, ok := cache.Get(message)
-		if !ok {
-			cache.Set(message, items[idx])
-		}
-	}
-
-	item = items[0]
-	message := common.MD5Hash(item)
-	cache.Delete(message)
-	return
 }
 
 
@@ -142,6 +107,7 @@ func New(facebook_incoming_addr, skype_incoming_addr string) *TorpedoBot {
 		bot.caches = make(map[string]*memcache.MemCacheType)
 		bot.config.SkypeIncomingAddr = skype_incoming_addr
 		bot.config.FacebookIncomingAddr = facebook_incoming_addr
+		bot.throttle = memcache.New()
 	})
 	return bot
 }
