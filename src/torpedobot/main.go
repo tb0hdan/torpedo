@@ -52,12 +52,12 @@ func main() {
 	handlers["sha1"] = CryptoProcessMessage
 	handlers["sha256"] = CryptoProcessMessage
 	handlers["sha512"] = CryptoProcessMessage
-	// File category
-	handlers["getimg"] = GetSetImageProcessMessage
-	handlers["lsimg"] = GetSetImageProcessMessage
-	handlers["listimg"] = GetSetImageProcessMessage
-	handlers["setimg"] = GetSetImageProcessMessage
-	handlers["rmimg"] = GetSetImageProcessMessage
+	// File category (broken!)
+	//handlers["getimg"] = GetSetImageProcessMessage
+	//handlers["lsimg"] = GetSetImageProcessMessage
+	//handlers["listimg"] = GetSetImageProcessMessage
+	//handlers["setimg"] = GetSetImageProcessMessage
+	//handlers["rmimg"] = GetSetImageProcessMessage
 	// Games'n'stuff
 	handlers["steam"] = SteamProcessMessage
 
