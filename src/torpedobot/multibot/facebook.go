@@ -17,18 +17,11 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		tb.logger.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
-		/*
-		p, err := client.ProfileByID(m.Sender.ID)
-		if err != nil {
-			tb.logger.Println("Something went wrong!", err)
-		}
-		*/
 		botApi := &TorpedoBotAPI{}
 		botApi.API = r
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
 
-		//r.Text(fmt.Sprintf("Hello, %v!", p.FirstName))
 		go tb.processChannelEvent(botApi, m.Sender.ID, m.Text)
 	})
 	// Setup a handler to be triggered when a message is delivered

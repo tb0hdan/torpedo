@@ -36,7 +36,8 @@ func main() {
 	handlers["lastfm"] = LastFmProcessMessage
 	handlers["qr"] = QREncoderProcessMessage
 	handlers["tinyurl"] = TinyURLProcessMessage
-	handlers["pinterest"] = PinterestProcessMessage
+	// in progress
+	// handlers["pinterest"] = PinterestProcessMessage
 	// Help handlers
 	handlers["?"] = HelpProcessMessage
 	handlers["h"] = HelpProcessMessage
@@ -44,7 +45,8 @@ func main() {
 	// Multimedia
 	handlers["wiki"] = WikiProcessMessage
 	handlers["youtube"] = YoutubeProcessMessage
-	handlers["giphy"] = GiphyProcessMessage
+	// in progress
+	// handlers["giphy"] = GiphyProcessMessage
 	// Probably useless stuff
 	handlers["b64e"] = CryptoProcessMessage
 	handlers["b64d"] = CryptoProcessMessage
@@ -59,7 +61,8 @@ func main() {
 	//handlers["setimg"] = GetSetImageProcessMessage
 	//handlers["rmimg"] = GetSetImageProcessMessage
 	// Games'n'stuff
-	handlers["steam"] = SteamProcessMessage
+	// needs better formatting + Facebook rework
+	//handlers["steam"] = SteamProcessMessage
 
 	bot := multibot.New(*facebook_incoming_addr, *skype_incoming_addr)
 	bot.RegisterHandlers(handlers)

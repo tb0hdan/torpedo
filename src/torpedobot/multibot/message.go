@@ -2,7 +2,6 @@ package multibot
 
 import (
 	"torpedobot/common"
-
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"os"
@@ -55,5 +54,11 @@ func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
 		}
 		defer os.Remove(fname)
 	}
+	return
+}
+
+func (rm *RichMessage) ToFacebookAttachment() (msg, url string) {
+	msg = rm.Text
+	url = rm.ImageURL
 	return
 }
