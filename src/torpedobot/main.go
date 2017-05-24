@@ -67,8 +67,6 @@ func main() {
 	// needs better formatting + Facebook rework
 	//handlers["steam"] = SteamProcessMessage
 
-	bot := multibot.New(*facebook_incoming_addr, *skype_incoming_addr, *kik_incoming_addr, *kik_webhook_url)
-	bot.RegisterHandlers(handlers)
 	if *slack == "" {
 		*slack = GetStripEnv("SLACK")
 	}
@@ -102,6 +100,10 @@ func main() {
 	if *google_webapp_key == "" {
 		*google_webapp_key = GetStripEnv("GOOGLE_WEBAPP_KEY")
 	}
+
+	bot := multibot.New(*facebook_incoming_addr, *skype_incoming_addr, *kik_incoming_addr, *kik_webhook_url)
+	bot.RegisterHandlers(handlers)
+
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
 	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
