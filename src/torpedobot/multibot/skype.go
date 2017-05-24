@@ -144,7 +144,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		defer r.Body.Close()
 		body_bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			tb.logger.Fatalf("readAll errored with %+v\n", err)
+			tb.logger.Fatalf("readAll failed with %+v\n", err)
 			return
 		}
 		logger.Printf("Skype incoming message: %s\n", string(body_bytes))

@@ -7,6 +7,7 @@ Torpedo uses multiple accounts (at least one is required). Supported transports:
 
 - Facebook
 - Jabber
+- Kik
 - Skype
 - Slack
 - Telegram
@@ -50,6 +51,8 @@ TELEGRAM="xxx,yyy"
 JABBER="user@host.com:supersecret,user2@anotherhost.com:a1FvH12"
 SKYPE="app_id:app_password,app_id2:app_password2"
 SENTRY_DSN="https://xxx:yyy"
+FACEBOOK="aaabbb:ccc"
+KIK="ddd:eee"
 ```
 
 
@@ -83,6 +86,8 @@ Jabber: `!`
 Skype: `!` or @Botname `!`
 
 Facebook: `!`
+
+Kik: `!`
 
 ## Help
 

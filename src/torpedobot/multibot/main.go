@@ -23,6 +23,8 @@ type TorpedoBot struct {
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
 	config          struct {
 		FacebookIncomingAddr string
+		KikIncomingAddr string
+		KikWebHook string
 		SkypeIncomingAddr string
 	}
 	logger *log.Logger
@@ -100,13 +102,15 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBot
 }
 
 
-func New(facebook_incoming_addr, skype_incoming_addr string) *TorpedoBot {
+func New(facebook_incoming_addr, skype_incoming_addr, kik_incoming_addr, kik_webhook_url string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
 		bot.caches = make(map[string]*memcache.MemCacheType)
 		bot.config.SkypeIncomingAddr = skype_incoming_addr
 		bot.config.FacebookIncomingAddr = facebook_incoming_addr
+		bot.config.KikIncomingAddr = kik_incoming_addr
+		bot.config.KikWebHook = kik_webhook_url
 		bot.throttle = memcache.New()
 	})
 	return bot

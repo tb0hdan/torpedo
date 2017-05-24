@@ -14,6 +14,7 @@ type TorpedoBotAPI struct {
 	API           interface{}
 	CommandPrefix string
 	Bot           *TorpedoBot
+	From string
 }
 
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
@@ -78,6 +79,14 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 			api.Attachment(messenger.ImageAttachment, url)
 		} else {
 			api.Text(message)
+		}
+	case *KikAPI:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToKikAttachment()
+			api.Image(channel.(string), tba.From, url)
+			api.Text(channel.(string), tba.From, msg)
+		} else {
+			api.Text(channel.(string), tba.From, message)
 		}
 	}
 }
