@@ -176,6 +176,6 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
-	logger.Printf("Starting Skype API listener on %s\n", tb.config.SkypeIncomingAddr)
-	http.ListenAndServe(tb.config.SkypeIncomingAddr, nil)
+	logger.Printf("Starting Skype API listener on %s\n", tb.Config.SkypeIncomingAddr)
+	http.ListenAndServe(tb.Config.SkypeIncomingAddr, nil)
 }

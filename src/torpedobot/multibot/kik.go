@@ -143,7 +143,7 @@ func (tb *TorpedoBot) RunKikBot (apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "kik-bot: ", log.Lshortfile|log.LstdFlags)
 	api := &KikAPI{}
 	api.logger = logger
-	api.WebHook = tb.config.KikWebHook
+	api.WebHook = tb.Config.KikWebHook
 	api.GetToken(strings.Split(apiKey, ":")[0], strings.Split(apiKey, ":")[1])
 	api.Configure()
 	http.HandleFunc("/incoming", func(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +171,6 @@ func (tb *TorpedoBot) RunKikBot (apiKey, cmd_prefix string) {
 			go tb.processChannelEvent(botApi, message.ChatID, message.Body)
 		}
 	})
-	logger.Printf("Starting Kik API listener on %s\n", tb.config.KikIncomingAddr)
-	http.ListenAndServe(tb.config.KikIncomingAddr, nil)
+	logger.Printf("Starting Kik API listener on %s\n", tb.Config.KikIncomingAddr)
+	http.ListenAndServe(tb.Config.KikIncomingAddr, nil)
 }

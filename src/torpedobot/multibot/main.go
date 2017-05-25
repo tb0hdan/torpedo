@@ -21,11 +21,15 @@ var once sync.Once
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
-	config          struct {
+	Config          struct {
 		FacebookIncomingAddr string
+		GoogleWebAppKey string
 		KikIncomingAddr string
 		KikWebHook string
+		LastFmKey string
+		LastFmSecret string
 		SkypeIncomingAddr string
+		PinterestToken string
 	}
 	logger *log.Logger
 	throttle *memcache.MemCacheType
@@ -102,15 +106,19 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBot
 }
 
 
-func New(facebook_incoming_addr, skype_incoming_addr, kik_incoming_addr, kik_webhook_url string) *TorpedoBot {
+func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, pinterest_token string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
 		bot.caches = make(map[string]*memcache.MemCacheType)
-		bot.config.SkypeIncomingAddr = skype_incoming_addr
-		bot.config.FacebookIncomingAddr = facebook_incoming_addr
-		bot.config.KikIncomingAddr = kik_incoming_addr
-		bot.config.KikWebHook = kik_webhook_url
+		bot.Config.SkypeIncomingAddr = skype_incoming_addr
+		bot.Config.FacebookIncomingAddr = facebook_incoming_addr
+		bot.Config.GoogleWebAppKey = google_webapp_key
+		bot.Config.KikIncomingAddr = kik_incoming_addr
+		bot.Config.KikWebHook = kik_webhook_url
+		bot.Config.LastFmKey = lastfm_key
+		bot.Config.LastFmSecret = lastfm_secret
+		bot.Config.PinterestToken = pinterest_token
 		bot.throttle = memcache.New()
 	})
 	return bot

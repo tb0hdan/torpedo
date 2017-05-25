@@ -2,7 +2,6 @@ package main
 
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
@@ -11,16 +10,11 @@ import (
 )
 
 
-var (
-	google_webapp_key = flag.String("google_webapp_key", "", "Google Data API Web Application Key")
-)
-
-
 func YoutubeProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	message := fmt.Sprintf("Usage: %syoutube query\n", api.CommandPrefix)
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%syoutube", api.CommandPrefix)))
 	if command != "" {
-		searchResults := youtube.YoutubeSearch(command, *google_webapp_key, 25)
+		searchResults := youtube.YoutubeSearch(command, api.Bot.Config.GoogleWebAppKey, 25)
 		message = fmt.Sprintf("https://youtu.be/%s", searchResults[0].VideoID)
 	}
 	api.Bot.PostMessage(channel, message, api)

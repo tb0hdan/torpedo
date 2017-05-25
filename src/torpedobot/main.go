@@ -9,20 +9,6 @@ import (
 )
 
 
-var (
-	slack               = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
-	telegram            = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
-	jabber              = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
-	skype               = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
-	kik               = flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
-	skype_incoming_addr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
-	facebook = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
-	facebook_incoming_addr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
-	kik_incoming_addr = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
-	kik_webhook_url = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
-	handlers            = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
-)
-
 
 func GetStripEnv(envvar string) (result string) {
 	result = os.Getenv(envvar)
@@ -33,6 +19,24 @@ func GetStripEnv(envvar string) (result string) {
 
 
 func main() {
+	var (
+		slack               = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
+		telegram            = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+		jabber              = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
+		skype               = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
+		kik               = flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
+		skype_incoming_addr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
+		facebook = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+		google_webapp_key = flag.String("google_webapp_key", "", "Google Data API Web Application Key")
+		facebook_incoming_addr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
+		kik_incoming_addr = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
+		kik_webhook_url = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
+		handlers            = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
+		lastfm_key    = flag.String("lastfm_key", "", "Last.FM API Key")
+		lastfm_secret = flag.String("lastfm_secret", "", "Last.FM API Secret")
+		pinterest_token = flag.String("pinterest_token", "", "Pinterest Client Token")
+
+	)
 	flag.Parse()
 	handlers["bashim"] = BashProcessMessage
 	handlers["bashorg"] = BashOrgProcessMessage
@@ -101,7 +105,10 @@ func main() {
 		*google_webapp_key = GetStripEnv("GOOGLE_WEBAPP_KEY")
 	}
 
-	bot := multibot.New(*facebook_incoming_addr, *skype_incoming_addr, *kik_incoming_addr, *kik_webhook_url)
+	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
+		            *skype_incoming_addr, *kik_incoming_addr,
+			    *kik_webhook_url,
+	                    *lastfm_key, *lastfm_secret, *pinterest_token)
 	bot.RegisterHandlers(handlers)
 
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")

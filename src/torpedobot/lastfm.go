@@ -2,7 +2,6 @@ package main
 
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
@@ -12,15 +11,17 @@ import (
 )
 
 
-var (
-	lastfm_key    = flag.String("lastfm_key", "", "Last.FM API Key")
-	lastfm_secret = flag.String("lastfm_secret", "", "Last.FM API Secret")
-)
 
 
-func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_url string) {
+type LastFmWrapper struct {
+	LastFmKey string
+	LastFmSecret string
+}
+
+
+func (lfw *LastFmWrapper) LastfmArtist(artist string) (summary, artist_url, artist_corrected, image_url string) {
 	var tags string
-	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
+	lastfm_api := lastfm.New(lfw.LastFmKey, lfw.LastFmSecret)
 	r, err := lastfm_api.Artist.GetInfo(lastfm.P{"artist": artist})
 	summary = "An error occured while processing your request"
 	if err == nil {
@@ -50,9 +51,10 @@ func lastfmArtist(artist string) (summary, artist_url, artist_corrected, image_u
 	return
 }
 
-func lastfmTag(tag string) (result string) {
+
+func (lfw *LastFmWrapper) LastfmTag(tag string) (result string) {
 	var artists string
-	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
+	lastfm_api := lastfm.New(lfw.LastFmKey, lfw.LastFmSecret)
 	r, err := lastfm_api.Tag.GetTopArtists(lastfm.P{"tag": tag})
 	result = "An error occured while processing your request"
 	if err == nil {
@@ -70,8 +72,9 @@ func lastfmTag(tag string) (result string) {
 	return
 }
 
-func lastfmUser(user string) (result string) {
-	lastfm_api := lastfm.New(*lastfm_key, *lastfm_secret)
+
+func (lfw *LastFmWrapper) LastfmUser(user string) (result string) {
+	lastfm_api := lastfm.New(lfw.LastFmKey, lfw.LastFmSecret)
 	r, err := lastfm_api.User.GetInfo(lastfm.P{"user": user})
 	result = "An error occured while processing your request"
 	if err == nil {
@@ -95,14 +98,15 @@ func lastfmUser(user string) (result string) {
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
 	var richmsg multibot.RichMessage
-	help := fmt.Sprintf("Usage: %slastfm command\nAvailable commands: artist, tag", api.CommandPrefix)
+	lfm := &LastFmWrapper{LastFmKey:api.Bot.Config.LastFmKey, LastFmSecret:api.Bot.Config.LastFmSecret}
+	help := fmt.Sprintf("Usage: %slastfm command\nAvailable commands: artist, tag, user", api.CommandPrefix)
 	command := strings.Split(strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%slastfm", api.CommandPrefix))), " ")[0]
 
 	switch command {
 	case "artist":
 		artist := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
 		if artist != "" {
-			summary, artist_url, artist_corrected, image_url := lastfmArtist(artist)
+			summary, artist_url, artist_corrected, image_url := lfm.LastfmArtist(artist)
 			richmsg = multibot.RichMessage{BarColor: "#36a64f",
 				Text:      summary,
 				Title:     artist_corrected,
@@ -114,14 +118,14 @@ func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inco
 	case "tag":
 		tag := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
 		if tag != "" {
-			message = lastfmTag(tag)
+			message = lfm.LastfmTag(tag)
 		} else {
 			message = fmt.Sprintf("Please supply tag: %slastfm tag tag_name", api.CommandPrefix)
 		}
 	case "user":
 		user := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%slastfm %s", api.CommandPrefix, command)))
 		if user != "" {
-			message = lastfmUser(user)
+			message = lfm.LastfmUser(user)
 		} else {
 			message = fmt.Sprintf("Please supply user name: %slastfm user user_name", api.CommandPrefix)
 		}
