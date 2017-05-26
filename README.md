@@ -25,7 +25,7 @@ Telegram: http://t.me/TorpedoTelegramBot
 
 Line:
 
-![Trpdbt](https://raw.githubusercontent.com/tb0hdan/voiceplay/master/doc/UDvNqA-29o.png)
+![Trpdbt](https://raw.githubusercontent.com/tb0hdan/torpedo/master/doc/UDvNqA-29o.png)
 
 
 # Using Docker image
