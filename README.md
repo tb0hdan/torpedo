@@ -23,7 +23,7 @@ Skype: https://join.skype.com/bot/f61c6815-438d-4795-8aaa-9b1d8d2a342a
 
 Telegram: http://t.me/TorpedoTelegramBot
 
-Line: ![Trpdbt](http://qr-official.line.me/M/UDvNqA-29o.png)
+Line: ![Trpdbt](doc/UDvNqA-29o.png)
 
 
 # Using Docker image
