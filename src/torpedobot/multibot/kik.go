@@ -151,7 +151,7 @@ func (tb *TorpedoBot) RunKikBot (apiKey, cmd_prefix string) {
 		defer r.Body.Close()
 		body_bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			tb.logger.Fatalf("readAll failed with %+v\n", err)
+			logger.Fatalf("readAll failed with %+v\n", err)
 			return
 		}
 		logger.Printf("Kik incoming message: %s\n", string(body_bytes))
@@ -172,5 +172,7 @@ func (tb *TorpedoBot) RunKikBot (apiKey, cmd_prefix string) {
 		}
 	})
 	logger.Printf("Starting Kik API listener on %s\n", tb.Config.KikIncomingAddr)
-	http.ListenAndServe(tb.Config.KikIncomingAddr, nil)
+	if err := http.ListenAndServe(tb.Config.KikIncomingAddr, nil); err != nil {
+		logger.Fatal(err)
+	}
 }

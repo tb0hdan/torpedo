@@ -8,6 +8,7 @@ import (
 	"github.com/paked/messenger"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 type TorpedoBotAPI struct {
@@ -83,10 +84,23 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 	case *KikAPI:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
 			msg, url := richmsgs[0].ToKikAttachment()
-			api.Image(channel.(string), tba.From, url)
 			api.Text(channel.(string), tba.From, msg)
+			api.Image(channel.(string), tba.From, url)
 		} else {
 			api.Text(channel.(string), tba.From, message)
 		}
+	case *linebot.Client:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToLineAttachment()
+			// Use replyToken as channel
+			api.PushMessage(channel.(string), linebot.NewTextMessage(msg)).Do()
+			api.PushMessage(channel.(string), linebot.NewImageMessage(url, url)).Do()
+
+		} else {
+			// Use replyToken as channel
+			api.PushMessage(channel.(string), linebot.NewTextMessage(message)).Do()
+		}
+	default:
+		tba.Bot.logger.Printf("Unsupported bot API: %T\n", api)
 	}
 }

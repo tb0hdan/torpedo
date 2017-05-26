@@ -5,8 +5,12 @@ import (
 	"strings"
 	"time"
 	"net/http"
+	"log"
+	"os"
 )
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
+	logger := log.New(os.Stdout, "facebook-bot: ", log.Lshortfile|log.LstdFlags)
+
 	pageToken := strings.Split(apiKey, ":")[0]
 	verifyToken := strings.Split(apiKey, ":")[1]
 	client := messenger.New(messenger.Options{
@@ -15,7 +19,7 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		Token:       pageToken,
 	})
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
-		tb.logger.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
+		logger.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
 		botApi := &TorpedoBotAPI{}
 		botApi.API = r
@@ -26,15 +30,17 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	})
 	// Setup a handler to be triggered when a message is delivered
 	client.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
-		tb.logger.Println("Delivered at:", d.Watermark().Format(time.UnixDate))
+		logger.Println("Delivered at:", d.Watermark().Format(time.UnixDate))
 	})
 
 	// Setup a handler to be triggered when a message is read
 	client.HandleRead(func(m messenger.Read, r *messenger.Response) {
-		tb.logger.Println("Read at:", m.Watermark().Format(time.UnixDate))
+		logger.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	tb.logger.Printf("Serving messenger bot on %s\n", tb.Config.FacebookIncomingAddr)
+	logger.Printf("Serving messenger bot on %s\n", tb.Config.FacebookIncomingAddr)
 
-	http.ListenAndServe(tb.Config.FacebookIncomingAddr, client.Handler())
+	if err := http.ListenAndServe(tb.Config.FacebookIncomingAddr, client.Handler()); err != nil {
+		logger.Fatal(err)
+	}
 }

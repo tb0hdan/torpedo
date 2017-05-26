@@ -68,3 +68,9 @@ func (rm *RichMessage) ToKikAttachment() (msg, url string) {
 	url = rm.ImageURL
 	return
 }
+
+func (rm *RichMessage) ToLineAttachment() (msg, url string) {
+	msg = rm.Text
+	url = rm.ImageURL
+	return
+}

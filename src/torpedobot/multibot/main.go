@@ -28,6 +28,7 @@ type TorpedoBot struct {
 		KikWebHook string
 		LastFmKey string
 		LastFmSecret string
+		LineIncomingAddr string
 		SkypeIncomingAddr string
 		PinterestToken string
 	}
@@ -106,7 +107,7 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBot
 }
 
 
-func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, pinterest_token string) *TorpedoBot {
+func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
@@ -118,6 +119,7 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 		bot.Config.KikWebHook = kik_webhook_url
 		bot.Config.LastFmKey = lastfm_key
 		bot.Config.LastFmSecret = lastfm_secret
+		bot.Config.LineIncomingAddr = line_incoming_addr
 		bot.Config.PinterestToken = pinterest_token
 		bot.throttle = memcache.New()
 	})

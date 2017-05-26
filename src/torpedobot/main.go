@@ -34,6 +34,8 @@ func main() {
 		handlers            = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
 		lastfm_key    = flag.String("lastfm_key", "", "Last.FM API Key")
 		lastfm_secret = flag.String("lastfm_secret", "", "Last.FM API Secret")
+		line_creds = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
+		line_incoming_addr = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 		pinterest_token = flag.String("pinterest_token", "", "Pinterest Client Token")
 
 	)
@@ -98,6 +100,9 @@ func main() {
 	if *lastfm_secret == "" {
 		*lastfm_secret = GetStripEnv("LASTFM_SECRET")
 	}
+	if *line_creds == "" {
+		*line_creds = GetStripEnv("LINE")
+	}
 	if *pinterest_token == "" {
 		*pinterest_token = GetStripEnv("PINTEREST")
 	}
@@ -108,7 +113,7 @@ func main() {
 	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
 		            *skype_incoming_addr, *kik_incoming_addr,
 			    *kik_webhook_url,
-	                    *lastfm_key, *lastfm_secret, *pinterest_token)
+	                    *lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token)
 	bot.RegisterHandlers(handlers)
 
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
@@ -117,5 +122,6 @@ func main() {
 	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
 	bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
 	bot.RunBotsCSV(bot.RunKikBot, *kik, "!")
+	bot.RunBotsCSV(bot.RunLineBot, *line_creds, "!")
 	bot.RunLoop()
 }
