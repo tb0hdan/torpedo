@@ -28,6 +28,7 @@ _testmain.go
 .DS_*
 .idea/*
 bin/*
+build/*
 src/github.com/*
 src/golang.org/*
 src/google.golang.org/*
