@@ -47,7 +47,7 @@ func GetSetImageProcessMessage(api *multibot.TorpedoBotAPI, channel_i interface{
 					message += fmt.Sprintf("`%s`\n", msg)
 				}
 				if message == "" {
-					message = fmt.Sprint("No files found, upload using %ssetimg first", api.CommandPrefix)
+					message = fmt.Sprintf("No files found, upload using %ssetimg first", api.CommandPrefix)
 				} else {
 					message = fmt.Sprintf("Available image files:\n%s", message)
 				}

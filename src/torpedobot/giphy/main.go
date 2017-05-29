@@ -297,7 +297,7 @@ type GiphyClient struct {
 func (gic *GiphyClient) GiphySearch(command string) (response *GiphyResponse){
 
 	query := url.QueryEscape(command)
-	result, err := gic.utils.GetURLBytes(fmt.Sprintf("http://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC", query))
+	result, err := gic.utils.GetURLBytes(fmt.Sprintf("https://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC", query))
 	if err != nil {
 		gic.logger.Printf("Get Giphy URL failed with %+v", err)
 		return

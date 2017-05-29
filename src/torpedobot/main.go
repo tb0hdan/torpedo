@@ -55,7 +55,7 @@ func main() {
 	handlers["wiki"] = WikiProcessMessage
 	handlers["youtube"] = YoutubeProcessMessage
 	// in progress
-	// handlers["giphy"] = GiphyProcessMessage
+	handlers["giphy"] = GiphyProcessMessage
 	// Probably useless stuff
 	handlers["b64e"] = CryptoProcessMessage
 	handlers["b64d"] = CryptoProcessMessage
@@ -117,11 +117,11 @@ func main() {
 	bot.RegisterHandlers(handlers)
 
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
-	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
-	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
-	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
-	bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
-	bot.RunBotsCSV(bot.RunKikBot, *kik, "!")
-	bot.RunBotsCSV(bot.RunLineBot, *line_creds, "!")
+	//bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
+	//bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
+	//bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
+	//bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
+	///bot.RunBotsCSV(bot.RunKikBot, *kik, "!")
+	//bot.RunBotsCSV(bot.RunLineBot, *line_creds, "!")
 	bot.RunLoop()
 }

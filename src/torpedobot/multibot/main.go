@@ -107,7 +107,7 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBot
 }
 
 
-func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token string) *TorpedoBot {
+func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addrg, pinterest_token string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)

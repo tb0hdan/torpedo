@@ -20,7 +20,7 @@ func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
 
 	if command == "" {
-		api.Bot.PostMessage(channel, fmt.Sprint("Usage: %sqr query\n", api.CommandPrefix), api)
+		api.Bot.PostMessage(channel, fmt.Sprintf("Usage: %sqr query\n", api.CommandPrefix), api)
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
 		richmsg := multibot.RichMessage{ImageURL:fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=M|2&chl=%s", command), Text:command}
