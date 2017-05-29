@@ -1,18 +1,15 @@
 package wiki
 
-
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"regexp"
 	"strings"
 
 	"torpedobot/common"
-	"log"
-	"os"
 )
-
 
 type WikiRevision struct {
 	ContentFormat  string `json:"contentformat"`
@@ -20,13 +17,11 @@ type WikiRevision struct {
 	LatestRevision string `json:"*"`
 }
 
-
 type WikiThumbnail struct {
 	Source string `json:"source"`
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
 }
-
 
 type WikiPage struct {
 	PageID    int             `json:"pageid"`
@@ -36,23 +31,19 @@ type WikiPage struct {
 	Thumbnail *WikiThumbnail  `json:"thumbnail,omitempty"`
 }
 
-
 type WikiQuery struct {
 	Pages map[int]*WikiPage `json:"pages"`
 }
-
 
 type WikiResponse struct {
 	BatchComplete string     `json:"batchcomplete"`
 	Query         *WikiQuery `json:"query"`
 }
 
-
 type WikiClient struct {
 	logger *log.Logger
-	utils *common.Utils
+	utils  *common.Utils
 }
-
 
 func (wic *WikiClient) GetWikiPage(query string) (result string, err error) {
 	var wikiResponse WikiResponse
@@ -72,7 +63,6 @@ func (wic *WikiClient) GetWikiPage(query string) (result string, err error) {
 	return
 }
 
-
 func (wic *WikiClient) GetWikiTitleImage(query string) (result string, err error) {
 	var wikiResponse WikiResponse
 	new_query := url.QueryEscape(query)
@@ -90,7 +80,6 @@ func (wic *WikiClient) GetWikiTitleImage(query string) (result string, err error
 	}
 	return
 }
-
 
 func (wic *WikiClient) GetWikiPageExcerpt(query string) (result string) {
 	skipped := 0
@@ -116,11 +105,9 @@ func (wic *WikiClient) GetWikiPageExcerpt(query string) (result string) {
 	return
 }
 
-
-func  NewClient() (client *WikiClient){
+func NewClient() (client *WikiClient) {
 	client = &WikiClient{}
-	client.logger = log.New(os.Stdout, "wiki-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("wiki-plugin")
 	return
 }

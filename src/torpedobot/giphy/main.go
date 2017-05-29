@@ -2,7 +2,6 @@ package giphy
 
 import (
 	"log"
-	"os"
 	"torpedobot/common"
 	"net/url"
 	"fmt"
@@ -313,8 +312,7 @@ func (gic *GiphyClient) GiphySearch(command string) (response *GiphyResponse){
 
 func  NewClient() (client *GiphyClient){
 	client = &GiphyClient{}
-	client.logger = log.New(os.Stdout, "giphy-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("giphy-plugin")
 	return
 }

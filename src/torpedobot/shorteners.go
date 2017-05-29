@@ -16,7 +16,7 @@ import (
 
 func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	cu := &common.Utils{}
-	cu.SetLogger(log.New(os.Stdout, "shorteners-plugin: ", log.Lshortfile|log.LstdFlags))
+	cu.SetLoggerPrefix("shorteners-plugin")
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%sqr", api.CommandPrefix)))
 
 	if command == "" {

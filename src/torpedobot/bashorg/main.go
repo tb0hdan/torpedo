@@ -3,7 +3,6 @@ package bashorg
 import (
 	"bytes"
 	"log"
-	"os"
 
 	"torpedobot/common"
 
@@ -32,8 +31,7 @@ func (bo *BashOrg) Get_bashorg_html(url string) (result *html.Node) {
 
 func NewClient() (client *BashOrg) {
 	client = &BashOrg{}
-	client.logger = log.New(os.Stdout, "bashorg-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("bashorg-plugin")
 	return
 }

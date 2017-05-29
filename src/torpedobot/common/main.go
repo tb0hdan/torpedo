@@ -25,6 +25,17 @@ type Utils struct {
 	logger *log.Logger
 }
 
+func (cu *Utils) SetLoggerPrefix(prefix string) {
+	logger := cu.NewLog(prefix)
+	cu.SetLogger(logger)
+	return
+}
+
+func (cu *Utils) NewLog(prefix string) (logger *log.Logger){
+	logger = log.New(os.Stdout, fmt.Sprintf("%s: ", prefix), log.Lshortfile|log.LstdFlags)
+	return
+}
+
 func (cu *Utils) SetLogger(logger *log.Logger) {
 	cu.logger = logger
 	return

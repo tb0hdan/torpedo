@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 	"torpedobot/common"
-	"os"
 	"log"
 )
 
@@ -212,9 +211,8 @@ func (api *PinterestClient) RandState() (err error) {
 
 func New(client_token string) (client *PinterestClient) {
 	client = &PinterestClient{}
-	client.logger = log.New(os.Stdout, "pinterest-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("pinterest-plugin")
 	client.config.client_token = client_token
 	return
 }

@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"torpedobot/common"
 
@@ -55,8 +54,7 @@ func (bi *BashIM) Get_html(url string) (result *html.Node) {
 
 func NewClient() (client *BashIM) {
 	client = &BashIM{}
-	client.logger = log.New(os.Stdout, "bashim-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("bashim-plugin")
 	return
 }

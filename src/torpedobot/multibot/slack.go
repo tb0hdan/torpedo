@@ -1,17 +1,17 @@
 package multibot
 
 import (
-	"log"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/nlopes/slack"
+	"torpedobot/common"
 )
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	api := slack.New(apiKey)
-	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("slack-bot")
 	slack.SetLogger(logger)
 	api.SetDebug(true)
 

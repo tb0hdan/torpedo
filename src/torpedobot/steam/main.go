@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 	"log"
-	"os"
 )
 
 
@@ -166,9 +165,8 @@ func (cli *Client) ShowNew() (items []*GameItem){
 
 func  NewClient() (client *Client){
 	client = &Client{}
-	client.logger = log.New(os.Stdout, "steam-plugin: ", log.Lshortfile|log.LstdFlags)
 	client.utils = &common.Utils{}
-	client.utils.SetLogger(client.logger)
+	client.utils.SetLoggerPrefix("steam-plugin")
 	client.StoreURL = StoreURL
 	return
 }

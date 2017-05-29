@@ -28,7 +28,7 @@ func GetCreateChannelDir(channel string) (channelDir string, err error) {
 
 func GetChannelFile(channel, message string) (channelFile, mimetype string, err error) {
 	cu := &common.Utils{}
-	cu.SetLogger(log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags))
+	cu.SetLoggerPrefix("file-plugin")
 	wd, err := GetCreateChannelDir(channel)
 	if err != nil {
 		return
