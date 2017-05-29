@@ -14,6 +14,7 @@ source ${FNAME}
 
 while :; do
     git pull
-    GOPATH=$(pwd) go run src/torpedobot/*.go -slack ${SLACK} -telegram ${TELEGRAM} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST} -jabber ${JABBER} -skype ${SKYPE} -facebook ${FACEBOOK} -kik ${KIK} -kik_webhook_url ${KIK_WEBHOOK_URL} -line ${LINE}
+    make build
+    bin/torpedobot -slack ${SLACK} -telegram ${TELEGRAM} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST} -jabber ${JABBER} -skype ${SKYPE} -facebook ${FACEBOOK} -kik ${KIK} -kik_webhook_url ${KIK_WEBHOOK_URL} -line ${LINE}
     sleep 3
 done
