@@ -51,6 +51,7 @@ report:	clean deps
 	@bin/goreporter -p ./src/torpedobot -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
 
 dockerimage:
+	@cp -r /usr/local/etc/openssl ./ssl
 	@docker build -t tb0hdan/torpedo .
 
 dockerrun:

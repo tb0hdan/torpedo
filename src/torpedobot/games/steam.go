@@ -1,44 +1,16 @@
-package steam
+package games
 
 import (
-	"torpedobot/common"
-	"fmt"
-	"golang.org/x/net/html"
 	"bytes"
-	"strings"
+	"fmt"
 	"net/url"
 	"strconv"
-	"log"
+	"strings"
+
+	"golang.org/x/net/html"
 )
 
-
-const StoreURL = "http://store.steampowered.com/explore/new/"
-
-
-type Client struct {
-	StoreURL string
-	logger *log.Logger
-	utils *common.Utils
-}
-
-
-type GameItem struct {
-	GameURL string
-	GameThumbnail string
-	CurrentPrice float64
-	RegularPrice float64
-	DiscountPercentage int
-	Platforms []string
-}
-
-
-func (gi *GameItem) IsComplete() (result bool) {
-	if gi.GameURL != "" && gi.GameThumbnail != "" {
-		result = true
-	}
-	return
-}
-
+const SteamStoreURL = "http://store.steampowered.com/explore/new/"
 
 func parsedURL(full_url string) (result string) {
 	parsed, _ := url.Parse(full_url)
@@ -46,8 +18,7 @@ func parsedURL(full_url string) (result string) {
 	return
 }
 
-
-func (cli *Client) ShowNew() (items []*GameItem){
+func (cli *Client) SteamShowNew() (items []*GameItem) {
 
 	data, err := cli.utils.GetURLBytes(cli.StoreURL)
 
@@ -84,10 +55,10 @@ func (cli *Client) ShowNew() (items []*GameItem){
 					// <div><img..></div>
 					if mc.Data == "div" && len(mc.Attr) > 0 && mc.Attr[0].Val == "tab_item_cap" {
 						for zc := mc.FirstChild; zc != nil; zc = zc.NextSibling {
-							if zc.Data != "img" || len(zc.Attr) != 2{
+							if zc.Data != "img" || len(zc.Attr) != 2 {
 								continue
 							}
- 							game_item.GameThumbnail = zc.Attr[1].Val
+							game_item.GameThumbnail = zc.Attr[1].Val
 							break
 						}
 					}
@@ -98,7 +69,7 @@ func (cli *Client) ShowNew() (items []*GameItem){
 						for yc := mc.FirstChild; yc != nil; yc = yc.NextSibling {
 
 							// <div class="discount_pct
-							if yc.Data == "div" && len(yc.Attr) >0 && yc.Attr[0].Val == "discount_pct" {
+							if yc.Data == "div" && len(yc.Attr) > 0 && yc.Attr[0].Val == "discount_pct" {
 								price := strings.TrimRight(yc.FirstChild.Data, "%")
 								result, err := strconv.Atoi(price)
 								if err == nil {
@@ -137,10 +108,10 @@ func (cli *Client) ShowNew() (items []*GameItem){
 								continue
 							}
 							for dt := zc.FirstChild; dt != nil; dt = dt.NextSibling {
-								if len(dt.Attr) == 0 || ! strings.HasPrefix(dt.Attr[0].Val, "platform_img") {
+								if len(dt.Attr) == 0 || !strings.HasPrefix(dt.Attr[0].Val, "platform_img") {
 									continue
 								}
-								platform :=  strings.TrimSpace(strings.TrimLeft(dt.Attr[0].Val, "platform_img"))
+								platform := strings.TrimSpace(strings.TrimLeft(dt.Attr[0].Val, "platform_img"))
 								if platform == "hmd_separator" {
 									continue
 								}
@@ -162,11 +133,3 @@ func (cli *Client) ShowNew() (items []*GameItem){
 	return
 }
 
-
-func  NewClient() (client *Client){
-	client = &Client{}
-	client.utils = &common.Utils{}
-	client.utils.SetLoggerPrefix("steam-plugin")
-	client.StoreURL = StoreURL
-	return
-}

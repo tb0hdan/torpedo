@@ -71,7 +71,7 @@ func main() {
 	//handlers["rmimg"] = GetSetImageProcessMessage
 	// Games'n'stuff
 	// needs better formatting + Facebook rework
-	//handlers["steam"] = SteamProcessMessage
+	handlers["steam"] = SteamProcessMessage
 
 	if *slack == "" {
 		*slack = GetStripEnv("SLACK")

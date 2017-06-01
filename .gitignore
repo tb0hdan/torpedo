@@ -25,6 +25,7 @@ _testmain.go
 
 
 # Local
+*.bkp
 .DS_*
 .idea/*
 bin/*
@@ -33,5 +34,6 @@ src/github.com/*
 src/golang.org/*
 src/google.golang.org/*
 src/gopkg.in/*
+ssl/*
 token.sh
 token.sh.*
