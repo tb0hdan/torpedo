@@ -6,6 +6,9 @@ env:
   - secure: qRl66kozg2bLT0neqjFstlTz7FiXcOEWZ27j5ZoJaGmznhcklTu60xijt/nRHpesDfrcOIz+CUAo4Aex+JFNmzXrYOUuLJB9kWuvvfgYZGUmjg1E8XjBkICFGa5A4Eltj35OPGbnFd7oeZDe3wBY0u+vKeGdjRk6HoNxljtWOW+wIOpy9+NptUhHTfq3TFYGdRB0Q+kAThPZSlVL11l/BQTW+Tc0qqEZw6PhrKzc4DbU+NDmg9TdFVRAFAfjpO81R9OiRIkWvuy+f8xV4omjKqtfWHfZvNHgekmeRtM+1sioLYNgfwc3nzC5I0L4nVrMCGl+FVdi12lme5PA44G+Tq9mwU0uJa8BtLPg6BzCKeyg7HTtekXgBiUjTRFShHN9ubakxG4JS46RrPLfyhKtARmbYHS4WcNJxI2fRsZBzEt3DTKxm+aJObGGpmttOTLS1cFISsF+3jswnUfiUXHvbJ7kUj+dQs+0GH8uOMVnnJhq3kmExLNPHPVp9O0WcAV2+n2fcAt9S5ciWjFx34uKAT8/EMNa6FPbsAgBY/ON7Myu7g4TlAef2+Rq7IqYgGrIUBFdzImq2ejSJHbATrQla1UhNYpG31C2pUyRkSx5QkDFfWFBD8/ZbVLLpVhLtHhAwLzTgiqcJFmdRALwXQuO81knNtWWS4YDXxBo5X7ETaE=
   - COMMIT=${TRAVIS_COMMIT::8}
 language: go
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
 install: make build
 after_success:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
