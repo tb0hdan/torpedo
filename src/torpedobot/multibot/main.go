@@ -31,6 +31,7 @@ type TorpedoBot struct {
 		LineIncomingAddr string
 		SkypeIncomingAddr string
 		PinterestToken string
+		RavenEnabled bool
 	}
 	logger *log.Logger
 	throttle *memcache.MemCacheType
@@ -54,7 +55,13 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		for handler := range tb.commandHandlers {
 			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
 				found += 1
-				tb.commandHandlers[handler](api, channel, incoming_message)
+				if tb.Config.RavenEnabled {
+					raven.CapturePanicAndWait(func() {
+						tb.commandHandlers[handler](api, channel, incoming_message)
+					}, nil)
+				} else {
+					tb.commandHandlers[handler](api, channel, incoming_message)
+				}
 				break
 			}
 		}
@@ -75,11 +82,9 @@ func (tb *TorpedoBot) RunLoop() {
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
 	wrapped := func(a, b string) {}
-	env_dsn := os.Getenv("SENTRY_DSN")
-	if  env_dsn != "" {
-		tb.logger.Print("Using Sentry error reporting...\n")
-		raven.SetDSN(env_dsn)
+	if tb.Config.RavenEnabled {
 		wrapped = func(apiKey, cmd_prefix string) {
+			// this should (!) capture bot protocol panic
 			raven.CapturePanicAndWait(func() {
 				method(apiKey, cmd_prefix)
 			}, nil)
@@ -122,6 +127,12 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 		bot.Config.LineIncomingAddr = line_incoming_addr
 		bot.Config.PinterestToken = pinterest_token
 		bot.throttle = memcache.New()
+		env_dsn := os.Getenv("SENTRY_DSN")
+		if env_dsn != "" {
+			bot.logger.Print("Using Sentry error reporting...\n")
+			raven.SetDSN(env_dsn)
+			bot.Config.RavenEnabled = true
+		}
 	})
 	return bot
 }
