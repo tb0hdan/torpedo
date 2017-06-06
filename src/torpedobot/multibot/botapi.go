@@ -9,6 +9,7 @@ import (
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"github.com/line/line-bot-sdk-go/linebot"
+	"github.com/matrix-org/gomatrix"
 )
 
 type TorpedoBotAPI struct {
@@ -61,7 +62,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		}
 	case *messenger.Response:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			msg, url := richmsgs[0].ToFacebookAttachment()
+			msg, url := richmsgs[0].ToGenericAttachment()
 			if len(msg) > FACEBOOK_TEXT_MAX {
 				var new_str string
 				for i := 0; i < len(msg); i++ {
@@ -83,7 +84,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		}
 	case *KikAPI:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			msg, url := richmsgs[0].ToKikAttachment()
+			msg, url := richmsgs[0].ToGenericAttachment()
 			api.Text(channel.(string), tba.From, msg)
 			api.Image(channel.(string), tba.From, url)
 		} else {
@@ -91,7 +92,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		}
 	case *linebot.Client:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			msg, url := richmsgs[0].ToLineAttachment()
+			msg, url := richmsgs[0].ToGenericAttachment()
 			// Use replyToken as channel
 			api.PushMessage(channel.(string), linebot.NewTextMessage(msg)).Do()
 			api.PushMessage(channel.(string), linebot.NewImageMessage(url, url)).Do()
@@ -99,6 +100,13 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		} else {
 			// Use replyToken as channel
 			api.PushMessage(channel.(string), linebot.NewTextMessage(message)).Do()
+		}
+	case *gomatrix.Client:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			api.SendImage(channel.(string), msg, url)
+		} else {
+			api.SendText(channel.(string), message)
 		}
 	default:
 		tba.Bot.logger.Printf("Unsupported bot API: %T\n", api)

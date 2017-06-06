@@ -37,6 +37,7 @@ func main() {
 		line_creds = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
 		line_incoming_addr = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 		pinterest_token = flag.String("pinterest_token", "", "Pinterest Client Token")
+		matrix = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
 
 	)
 	flag.Parse()
@@ -109,13 +110,15 @@ func main() {
 	if *google_webapp_key == "" {
 		*google_webapp_key = GetStripEnv("GOOGLE_WEBAPP_KEY")
 	}
+	if *matrix == "" {
+		*matrix = GetStripEnv("MATRIX")
+	}
 
 	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
 		            *skype_incoming_addr, *kik_incoming_addr,
 			    *kik_webhook_url,
 	                    *lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token)
 	bot.RegisterHandlers(handlers)
-
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
 	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
@@ -123,5 +126,6 @@ func main() {
 	bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
 	bot.RunBotsCSV(bot.RunKikBot, *kik, "!")
 	bot.RunBotsCSV(bot.RunLineBot, *line_creds, "!")
+	bot.RunBotsCSV(bot.RunMatrixBot, *matrix, "!")
 	bot.RunLoop()
 }

@@ -57,19 +57,7 @@ func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
 	return
 }
 
-func (rm *RichMessage) ToFacebookAttachment() (msg, url string) {
-	msg = rm.Text
-	url = rm.ImageURL
-	return
-}
-
-func (rm *RichMessage) ToKikAttachment() (msg, url string) {
-	msg = rm.Text
-	url = rm.ImageURL
-	return
-}
-
-func (rm *RichMessage) ToLineAttachment() (msg, url string) {
+func (rm *RichMessage) ToGenericAttachment() (msg, url string) {
 	msg = rm.Text
 	url = rm.ImageURL
 	return
