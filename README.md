@@ -9,6 +9,7 @@ Torpedo uses multiple accounts (at least one is required). Supported transports:
 - Jabber
 - Kik
 - Line
+- Matrix (matrix.org only atm)
 - Skype
 - Slack
 - Telegram
@@ -27,6 +28,8 @@ Telegram: http://t.me/TorpedoTelegramBot
 Line:
 
 ![Trpdbt](https://raw.githubusercontent.com/tb0hdan/torpedo/master/doc/UDvNqA-29o.png)
+
+Matrix: @TorpedoBot:matrix.org
 
 
 # Using Docker image
@@ -59,6 +62,7 @@ SENTRY_DSN="https://xxx:yyy"
 FACEBOOK="aaabbb:ccc"
 KIK="ddd:eee"
 LINE="chat_secret:chat_token"
+MATRIX="aaa:MDAxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 
@@ -96,6 +100,8 @@ Facebook: `!`
 Kik: `!`
 
 Line: `!`
+
+Matrix: `!`
 
 ## Help
 
