@@ -147,7 +147,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	skype_api.AccessToken = token_response.AccessToken
 	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
 
-	tb.RegisteredProtocols["*Skype"] = HandleSkypeMessage
+	tb.RegisteredProtocols["*multibot.SkypeAPI"] = HandleSkypeMessage
 
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")

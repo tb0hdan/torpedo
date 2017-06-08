@@ -155,7 +155,7 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	api.GetToken(strings.Split(apiKey, ":")[0], strings.Split(apiKey, ":")[1])
 	api.Configure()
 
-	tb.RegisteredProtocols["*KikAPI"] = HandleKikMessage
+	tb.RegisteredProtocols["*multibot.KikAPI"] = HandleKikMessage
 
 	http.HandleFunc("/incoming", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
