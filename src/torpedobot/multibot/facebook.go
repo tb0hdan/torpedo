@@ -43,6 +43,8 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "facebook-bot: ", log.Lshortfile|log.LstdFlags)
 
+	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
+
 	pageToken := strings.Split(apiKey, ":")[0]
 	verifyToken := strings.Split(apiKey, ":")[1]
 	client := messenger.New(messenger.Options{
