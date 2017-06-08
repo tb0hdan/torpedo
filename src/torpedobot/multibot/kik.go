@@ -1,28 +1,27 @@
 package multibot
 
 import (
-	"net/http"
-	"encoding/json"
-	"encoding/base64"
-	"fmt"
 	"bytes"
-	"torpedobot/common"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strings"
-	"io/ioutil"
+	"torpedobot/common"
 )
 
 type KikAttachment struct {
-
 }
 
 type KikMessage struct {
-	Body string `json:"body,omitempty"`
+	Body       string `json:"body,omitempty"`
 	PictureURL string `json:"picUrl,omitempty"`
-	To string `json:"to"`
-	Type string `json:"type"`
-	ChatID string `json:"chatId"`
+	To         string `json:"to"`
+	Type       string `json:"type"`
+	ChatID     string `json:"chatId"`
 }
 
 type KikMessages struct {
@@ -30,17 +29,17 @@ type KikMessages struct {
 }
 
 type KikIncomingMessage struct {
-	ChatID string `json:"chatId"`
-	ID string `json:"id"`
-	Type string `json:"type"`
-	From string `json:"from"`
-	Participants []string `json:"participants"`
-	Body string `json:"body"`
-	Timestamp int64 `json:"timestamp"`
-	ReadReceiptRequested bool `json:"readReceiptRequested"`
-	Mention string `json:"mention"`
-	PictureURL string `json:"picUrl,omitempty"`
-	MetaData struct {
+	ChatID               string   `json:"chatId"`
+	ID                   string   `json:"id"`
+	Type                 string   `json:"type"`
+	From                 string   `json:"from"`
+	Participants         []string `json:"participants"`
+	Body                 string   `json:"body"`
+	Timestamp            int64    `json:"timestamp"`
+	ReadReceiptRequested bool     `json:"readReceiptRequested"`
+	Mention              string   `json:"mention"`
+	PictureURL           string   `json:"picUrl,omitempty"`
+	MetaData             struct {
 		Product string `json:"product"`
 	} `json:"metadata"`
 	ChatType string `json:"chatType"`
@@ -51,24 +50,21 @@ type KikIncomingMessages struct {
 }
 
 type KikFeatures struct {
-	ReceiveReadReceipts bool `json:"receiveReadReceipts"`
-	ReceiveIsTyping bool `json:"receiveIsTyping"`
-	ManuallySendReceipts bool `json:"manuallySendReadReceipts"`
+	ReceiveReadReceipts     bool `json:"receiveReadReceipts"`
+	ReceiveIsTyping         bool `json:"receiveIsTyping"`
+	ManuallySendReceipts    bool `json:"manuallySendReadReceipts"`
 	ReceiveDeliveryReceipts bool `json:"receiveDeliveryReceipts"`
 }
 
-
 type KikAPIConfig struct {
-	Webhook string `json:"webhook"`
+	Webhook  string      `json:"webhook"`
 	Features KikFeatures `json:"features"`
-
 }
-
 
 type KikAPI struct {
 	AccessToken string
-	WebHook string
-	logger *log.Logger
+	WebHook     string
+	logger      *log.Logger
 }
 
 func (ka *KikAPI) GetToken(app_id, app_password string) {
@@ -81,10 +77,10 @@ func (ka *KikAPI) GetToken(app_id, app_password string) {
 func (ka *KikAPI) Configure() {
 	client := &http.Client{}
 	config := &KikAPIConfig{Webhook: ka.WebHook,
-		                Features: KikFeatures{ReceiveReadReceipts:false,
-						   ReceiveIsTyping:false,
-						   ManuallySendReceipts:false,
-						   ReceiveDeliveryReceipts:false}}
+		Features: KikFeatures{ReceiveReadReceipts: false,
+			ReceiveIsTyping:         false,
+			ManuallySendReceipts:    false,
+			ReceiveDeliveryReceipts: false}}
 	config_json, err := json.Marshal(&config)
 	if err != nil {
 		return
@@ -103,7 +99,7 @@ func (ka *KikAPI) Configure() {
 	return
 }
 
-func (ka *KikAPI) SendMessages(messages *KikMessages)  {
+func (ka *KikAPI) SendMessages(messages *KikMessages) {
 	client := &http.Client{}
 	config_json, err := json.Marshal(messages)
 	if err != nil {
@@ -127,25 +123,40 @@ func (ka *KikAPI) SendMessages(messages *KikMessages)  {
 func (ka *KikAPI) Text(channel, to, message string) {
 	msgs := make([]*KikMessage, 1)
 	msgs[0] = &KikMessage{Body: message, To: to, Type: "text", ChatID: channel}
-	messages := &KikMessages{Messages:msgs}
+	messages := &KikMessages{Messages: msgs}
 	ka.SendMessages(messages)
 }
 
 func (ka *KikAPI) Image(channel, to, url string) {
 	msgs := make([]*KikMessage, 1)
 	msgs[0] = &KikMessage{PictureURL: url, To: to, Type: "picture", ChatID: channel}
-	messages := &KikMessages{Messages:msgs}
+	messages := &KikMessages{Messages: msgs}
 	ka.SendMessages(messages)
 }
 
+func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *KikAPI:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			api.Text(channel.(string), tba.From, msg)
+			api.Image(channel.(string), tba.From, url)
+		} else {
+			api.Text(channel.(string), tba.From, message)
+		}
+	}
+}
 
-func (tb *TorpedoBot) RunKikBot (apiKey, cmd_prefix string) {
+func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "kik-bot: ", log.Lshortfile|log.LstdFlags)
 	api := &KikAPI{}
 	api.logger = logger
 	api.WebHook = tb.Config.KikWebHook
 	api.GetToken(strings.Split(apiKey, ":")[0], strings.Split(apiKey, ":")[1])
 	api.Configure()
+
+	tb.RegisteredProtocols["*KikAPI"] = HandleKikMessage
+
 	http.HandleFunc("/incoming", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 		defer r.Body.Close()

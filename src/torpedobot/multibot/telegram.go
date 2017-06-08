@@ -3,9 +3,28 @@ package multibot
 import (
 	"log"
 	"os"
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"time"
+
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
+
+func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *tgbotapi.BotAPI:
+		var msg tgbotapi.Chattable
+		var tmp string
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, tmp = richmsgs[0].ToTelegramAttachment(channel.(int64))
+			api.Send(tgbotapi.NewMessage(channel.(int64), richmsgs[0].Text))
+		} else {
+			msg = tgbotapi.NewMessage(channel.(int64), message)
+		}
+		api.Send(msg)
+		if tmp != "" {
+			os.Remove(tmp)
+		}
+	}
+}
 
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "telegram-bot: ", log.Lshortfile|log.LstdFlags)
@@ -28,6 +47,8 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	botApi.API = api
 	botApi.Bot = tb
 	botApi.CommandPrefix = cmd_prefix
+
+	tb.RegisteredProtocols["*tgbotapi.BotAPI"] = HandleTelegramMessage
 
 	for update := range updates {
 		if update.Message == nil {

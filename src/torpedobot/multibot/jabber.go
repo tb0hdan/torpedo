@@ -3,13 +3,12 @@ package multibot
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/mattn/go-xmpp"
-	"strconv"
 )
-
 
 func (tb *TorpedoBot) JabberServerInfo(jid, server string, c *xmpp.Client) (string, error) {
 	const namespace = "http://jabber.org/protocol/disco#info"
@@ -17,7 +16,6 @@ func (tb *TorpedoBot) JabberServerInfo(jid, server string, c *xmpp.Client) (stri
 	reqID := strconv.FormatUint(uint64(time.Now().Unix()), 10)
 	return c.RawInformationQuery(jid, server, reqID, xmpp.IQTypeGet, namespace, "")
 }
-
 
 func (tb *TorpedoBot) SendJabberDisco(jid, server string, client *xmpp.Client) {
 	_, err := tb.JabberServerInfo(jid, server, client)
@@ -27,14 +25,12 @@ func (tb *TorpedoBot) SendJabberDisco(jid, server string, client *xmpp.Client) {
 	return
 }
 
-
 func (tb *TorpedoBot) WaitAndSendJabberDisco(jid, server string, client *xmpp.Client) {
 	// Wait for event loop to start
 	time.Sleep(10 * time.Second)
 	tb.SendJabberDisco(jid, server, client)
 	return
 }
-
 
 func (tb *TorpedoBot) JabberPinger(jid, server string, client *xmpp.Client) {
 	sleep := 60
@@ -45,6 +41,15 @@ func (tb *TorpedoBot) JabberPinger(jid, server string, client *xmpp.Client) {
 	}
 }
 
+func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *xmpp.Client:
+		msg := xmpp.Chat{}
+		msg.Remote = channel.(string)
+		msg.Text = message
+		api.Send(msg)
+	}
+}
 
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
@@ -64,6 +69,8 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	}
 
 	talk, err = options.NewClient()
+
+	tb.RegisteredProtocols["*xmpp.Client"] = HandleJabberMessage
 
 	if err != nil {
 		logger.Fatal(err)

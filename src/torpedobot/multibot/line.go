@@ -1,22 +1,40 @@
 package multibot
 
 import (
-	"github.com/line/line-bot-sdk-go/linebot"
-	"os"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
+func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *linebot.Client:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			// Use replyToken as channel
+			api.PushMessage(channel.(string), linebot.NewTextMessage(msg)).Do()
+			api.PushMessage(channel.(string), linebot.NewImageMessage(url, url)).Do()
+
+		} else {
+			// Use replyToken as channel
+			api.PushMessage(channel.(string), linebot.NewTextMessage(message)).Do()
+		}
+	}
+}
 
 func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "line-bot: ", log.Lshortfile|log.LstdFlags)
 
 	bot, err := linebot.New(strings.Split(apiKey, ":")[0],
-				strings.Split(apiKey, ":")[1])
+		strings.Split(apiKey, ":")[1])
 	if err != nil {
 		logger.Fatal(err)
 	}
+
+	tb.RegisteredProtocols["*linebot.Client"] = HandleLineMessage
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, req *http.Request) {
 		events, err := bot.ParseRequest(req)
@@ -61,4 +79,3 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 		logger.Fatal(err)
 	}
 }
-

@@ -12,6 +12,18 @@ import (
 	"github.com/matrix-org/gomatrix"
 )
 
+func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *gomatrix.Client:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			api.SendImage(channel.(string), msg, url)
+		} else {
+			api.SendText(channel.(string), message)
+		}
+	}
+}
+
 func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "matrix-bot: ", log.Lshortfile|log.LstdFlags)
 
@@ -53,6 +65,9 @@ func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 	})
 
 	logger.Printf("Starting Matrix.Org bot...")
+
+	tb.RegisteredProtocols["*gomatrix.Client"] = HandleMatrixMessage
+
 	for {
 		if err := cli.Sync(); err != nil {
 			logger.Printf("Sync() failed with: %+v\n", err)

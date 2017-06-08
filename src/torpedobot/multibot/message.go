@@ -1,12 +1,12 @@
 package multibot
 
 import (
+	"os"
 	"torpedobot/common"
+
 	"github.com/nlopes/slack"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
-	"os"
 )
-
 
 type RichMessage struct {
 	BarColor  string
@@ -16,11 +16,9 @@ type RichMessage struct {
 	ImageURL  string
 }
 
-
 func (rm *RichMessage) IsEmpty() bool {
 	return rm.Text == "" || rm.ImageURL == ""
 }
-
 
 func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) {
 	attachment := slack.Attachment{
@@ -49,8 +47,8 @@ func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
 	if is_image && err == nil {
 		attachment = &SkypeAttachment{
 			ContentType: mimetype,
-			ContentURL: rm.ImageURL,
-			Name: rm.Title,
+			ContentURL:  rm.ImageURL,
+			Name:        rm.Title,
 		}
 		defer os.Remove(fname)
 	}

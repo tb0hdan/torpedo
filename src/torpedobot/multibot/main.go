@@ -1,6 +1,5 @@
 package multibot
 
-
 import (
 	"fmt"
 	"log"
@@ -8,7 +7,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	"torpedobot/memcache"
 
 	"github.com/getsentry/raven-go"
@@ -17,26 +15,25 @@ import (
 var bot *TorpedoBot
 var once sync.Once
 
-
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
 	Config          struct {
 		FacebookIncomingAddr string
-		GoogleWebAppKey string
-		KikIncomingAddr string
-		KikWebHook string
-		LastFmKey string
-		LastFmSecret string
-		LineIncomingAddr string
-		SkypeIncomingAddr string
-		PinterestToken string
-		RavenEnabled bool
+		GoogleWebAppKey      string
+		KikIncomingAddr      string
+		KikWebHook           string
+		LastFmKey            string
+		LastFmSecret         string
+		LineIncomingAddr     string
+		SkypeIncomingAddr    string
+		PinterestToken       string
+		RavenEnabled         bool
 	}
-	logger *log.Logger
-	throttle *memcache.MemCacheType
+	logger              *log.Logger
+	throttle            *memcache.MemCacheType
+	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage)
 }
-
 
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, richmsgs ...RichMessage) {
 	if len(richmsgs) > 0 {
@@ -46,7 +43,6 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *Torp
 	}
 
 }
-
 
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) && tb.NoSpam(channel, incoming_message) {
@@ -72,13 +68,11 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 	}
 }
 
-
 func (tb *TorpedoBot) RunLoop() {
 	for {
 		time.Sleep(time.Second)
 	}
 }
-
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
 	wrapped := func(a, b string) {}
@@ -100,17 +94,36 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 	}
 }
 
-
 func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
-
 func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	return tb.commandHandlers
 }
 
+type TorpedoBotAPI struct {
+	API           interface{}
+	CommandPrefix string
+	Bot           *TorpedoBot
+	From          string
+}
+
+func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {
+	ran := 0
+	for proto := range tba.Bot.RegisteredProtocols {
+		if proto == fmt.Sprintf("%T", tba.API) {
+			ran += 1
+			tba.Bot.RegisteredProtocols[proto](channel, message, tba, richmsgs)
+			break
+		}
+	}
+	if ran == 0 {
+		tba.Bot.logger.Printf("Unsupported bot API: %T\n", tba.API)
+
+	}
+}
 
 func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token string) *TorpedoBot {
 	once.Do(func() {
@@ -133,6 +146,7 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 			raven.SetDSN(env_dsn)
 			bot.Config.RavenEnabled = true
 		}
+		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage))
 	})
 	return bot
 }

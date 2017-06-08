@@ -1,44 +1,44 @@
 package multibot
 
 import (
-	"net/url"
-	"net/http"
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"bytes"
 	"io/ioutil"
-	"strings"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
-	"time"
 	"regexp"
+	"strings"
+	"time"
 	"torpedobot/common"
 )
 
 type SkypeIncomingMessage struct {
-	Text string `json:"text"`
-	Type string `json:"type"`
-	Timestamp string `json:"timestamp"`
+	Text           string `json:"text"`
+	Type           string `json:"type"`
+	Timestamp      string `json:"timestamp"`
 	LocalTimestamp string `json:"localTimestamp"`
-	ID string `json:"id"`
-	ChannelID string `json:"channelId"`
-	ServiceURL string `json:"serviceUrl"`
-	From struct {
-		ID string `json:"id"`
+	ID             string `json:"id"`
+	ChannelID      string `json:"channelId"`
+	ServiceURL     string `json:"serviceUrl"`
+	From           struct {
+		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"from"`
 	Conversation struct {
 		ID string `json:"id"`
 	} `json:"conversation"`
 	Recipient struct {
-		ID string `json:"id"`
+		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"recipient"`
 	Entities []struct {
-		Locale string `json:"locale"`
-		Country string `json:"country"`
+		Locale   string `json:"locale"`
+		Country  string `json:"country"`
 		Platform string `json:"platform"`
-		Type string `json:"type"`
+		Type     string `json:"type"`
 	} `json:"entities"`
 	ChannelData struct {
 		Text string `json:"text"`
@@ -48,48 +48,45 @@ type SkypeIncomingMessage struct {
 type SkypeAttachment struct {
 	// base64 encoded content of media, this or ContentURL
 	// data:image/png;base64,iVBORw0KGgo…
-	Content string `json:"content,omitempty"`
+	Content     string `json:"content,omitempty"`
 	ContentType string `json:"contentType"`
-	ContentURL string `json:"contentUrl"`
-	Name string `json:"name"`
+	ContentURL  string `json:"contentUrl"`
+	Name        string `json:"name"`
 }
 
 type SkypeOutgoingMessage struct {
-	Text string `json:"text"`
-	Type string `json:"type"`
-	TextFormat string `json:"textFormat"`
+	Text        string             `json:"text"`
+	Type        string             `json:"type"`
+	TextFormat  string             `json:"textFormat"`
 	Attachments []*SkypeAttachment `json:"attachments,omitempty"`
 }
 
 type SkypeTokenResponse struct {
-	TokenType string `json:"token_type"`
-	ExpiresIn int `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
 	AccessToken string `json:"access_token"`
-
 }
-
 
 type SkypeAPI struct {
-	ServiceURL string
+	ServiceURL  string
 	AccessToken string
-	ExpiresIn int64
-	logger *log.Logger
+	ExpiresIn   int64
+	logger      *log.Logger
 }
 
-
-func (sapi *SkypeAPI) Send(channel, message string, attachments...*SkypeAttachment) {
+func (sapi *SkypeAPI) Send(channel, message string, attachments ...*SkypeAttachment) {
 	client := &http.Client{}
 	outgoing_message := &SkypeOutgoingMessage{Text: message,
-		Type: "message",
-		TextFormat: "plain",
-		Attachments: attachments,}
+		Type:        "message",
+		TextFormat:  "plain",
+		Attachments: attachments}
 	parsed, _ := url.Parse(sapi.ServiceURL)
 	host := parsed.Host
 	body, _ := json.Marshal(outgoing_message)
 
 	req, err := http.NewRequest("POST",
-				     fmt.Sprintf("https://%s/v3/conversations/%s/activities", host, channel),
-				     bytes.NewReader(body))
+		fmt.Sprintf("https://%s/v3/conversations/%s/activities", host, channel),
+		bytes.NewReader(body))
 	sapi.logger.Printf(sapi.AccessToken)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sapi.AccessToken))
@@ -104,8 +101,7 @@ func (sapi *SkypeAPI) Send(channel, message string, attachments...*SkypeAttachme
 	return
 }
 
-
-func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *SkypeTokenResponse){
+func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *SkypeTokenResponse) {
 	form := url.Values{}
 	form.Add("grant_type", "client_credentials")
 	form.Add("client_id", app_id)
@@ -113,7 +109,7 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 	form.Add("scope", "https://api.botframework.com/.default")
 
 	r, err := http.DefaultClient.Post("https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token",
-	"application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
+		"application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
 	if err != nil {
 		sapi.logger.Printf("%+v\n", err)
 	}
@@ -127,6 +123,18 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 	return
 }
 
+func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *SkypeAPI:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			api.Send(channel.(string), richmsgs[0].Text, richmsgs[0].ToSkypeAttachment())
+		} else {
+			api.Send(channel.(string), message)
+		}
+
+	}
+}
+
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	skype_api := &SkypeAPI{}
 	logger := log.New(os.Stdout, "skype-bot: ", log.Lshortfile|log.LstdFlags)
@@ -138,6 +146,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	logger.Printf("Got Token: %s\n", token_response.AccessToken)
 	skype_api.AccessToken = token_response.AccessToken
 	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
+
+	tb.RegisteredProtocols["*Skype"] = HandleSkypeMessage
 
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")

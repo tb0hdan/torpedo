@@ -4,9 +4,27 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nlopes/slack"
 	"torpedobot/common"
+
+	"github.com/nlopes/slack"
 )
+
+func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	var params slack.PostMessageParameters
+	if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+		params = richmsgs[0].ToSlackAttachment()
+	}
+
+	switch api := tba.API.(type) {
+	case *slack.Client:
+		channelID, timestamp, err := api.PostMessage(channel.(string), message, params)
+		if err != nil {
+			tba.Bot.logger.Printf("%s\n", err)
+			return
+		}
+		tba.Bot.logger.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+	}
+}
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	api := slack.New(apiKey)
@@ -22,6 +40,8 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	botApi.API = api
 	botApi.Bot = tb
 	botApi.CommandPrefix = cmd_prefix
+
+	tb.RegisteredProtocols["*slack.Client"] = HandleSlackMessage
 
 	for msg := range rtm.IncomingEvents {
 		logger.Print("Event Received: ")

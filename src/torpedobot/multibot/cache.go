@@ -1,8 +1,8 @@
 package multibot
 
 import (
-	"torpedobot/memcache"
 	"torpedobot/common"
+	"torpedobot/memcache"
 )
 
 func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
@@ -15,7 +15,6 @@ func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType)
 	}
 	return
 }
-
 
 func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	cache := *tb.GetCreateCache(name)
@@ -31,7 +30,6 @@ func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 	}
 	return
 }
-
 
 func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item string) {
 	cache := *tb.GetCreateCache(name)
@@ -50,4 +48,3 @@ func (tb *TorpedoBot) SetCachedItems(name string, items map[int]string) (item st
 	cache.Delete(message)
 	return
 }
-

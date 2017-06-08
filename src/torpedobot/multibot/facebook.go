@@ -1,13 +1,45 @@
 package multibot
 
 import (
-	"github.com/paked/messenger"
+	"log"
+	"net/http"
+	"os"
 	"strings"
 	"time"
-	"net/http"
-	"log"
-	"os"
+
+	"github.com/paked/messenger"
 )
+
+// https://developers.facebook.com/docs/messenger-platform/send-api-reference
+const FACEBOOK_TEXT_MAX = 640
+
+func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+	switch api := tba.API.(type) {
+	case *messenger.Response:
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			if len(msg) > FACEBOOK_TEXT_MAX {
+				var new_str string
+				for i := 0; i < len(msg); i++ {
+					if len(new_str) < FACEBOOK_TEXT_MAX {
+						new_str += string(msg[i])
+					} else {
+						api.Text(new_str)
+						new_str = ""
+						new_str += string(msg[i])
+					}
+				}
+				api.Text(new_str)
+			} else {
+				api.Text(msg)
+			}
+			api.Attachment(messenger.ImageAttachment, url)
+		} else {
+			api.Text(message)
+		}
+	}
+}
+
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	logger := log.New(os.Stdout, "facebook-bot: ", log.Lshortfile|log.LstdFlags)
 
