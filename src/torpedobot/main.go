@@ -60,6 +60,14 @@ func main() {
 	handlers["sha1"] = CryptoProcessMessage
 	handlers["sha256"] = CryptoProcessMessage
 	handlers["sha512"] = CryptoProcessMessage
+	// entertainment :)
+	handlers["sudo"] = FunProcessMessage
+	handlers["rm"] = FunProcessMessage
+	handlers["shutdown"] = FunProcessMessage
+	handlers["halt"] = FunProcessMessage
+	handlers["reboot"] = FunProcessMessage
+	handlers["poweroff"] = FunProcessMessage
+	handlers["kill"] = FunProcessMessage
 	// statistics
 	handlers["stats"] = StatsProcessMessage
 	// File category (broken!)

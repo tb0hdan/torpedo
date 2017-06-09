@@ -156,20 +156,20 @@ func MD5Hash(message string) (result string) {
 func SHA1Hash(message string) (result string) {
 	my_hash := sha1.New()
 	io.WriteString(my_hash, message)
-	message = fmt.Sprintf("%x", my_hash.Sum(nil))
+	result = fmt.Sprintf("%x", my_hash.Sum(nil))
 	return
 }
 
 func SHA256Hash(message string) (result string) {
 	my_hash := sha256.New()
 	io.WriteString(my_hash, message)
-	message = fmt.Sprintf("%x", my_hash.Sum(nil))
+	result = fmt.Sprintf("%x", my_hash.Sum(nil))
 	return
 }
 
 func SHA512Hash(message string) (result string) {
 	my_hash := sha512.New()
 	io.WriteString(my_hash, message)
-	message = fmt.Sprintf("%x", my_hash.Sum(nil))
+	result = fmt.Sprintf("%x", my_hash.Sum(nil))
 	return
 }
