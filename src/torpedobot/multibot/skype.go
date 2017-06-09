@@ -136,6 +136,8 @@ func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 }
 
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	skype_api := &SkypeAPI{}
 	logger := log.New(os.Stdout, "skype-bot: ", log.Lshortfile|log.LstdFlags)
 	skype_api.logger = logger
@@ -190,4 +192,5 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	if err := http.ListenAndServe(tb.Config.SkypeIncomingAddr, nil); err != nil {
 		logger.Fatal(err)
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }

@@ -27,6 +27,8 @@ func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotA
 }
 
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	logger := log.New(os.Stdout, "telegram-bot: ", log.Lshortfile|log.LstdFlags)
 
 	api, err := tgbotapi.NewBotAPI(apiKey)
@@ -66,4 +68,5 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 		go tb.processChannelEvent(botApi, update.Message.Chat.ID, update.Message.Text)
 
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }

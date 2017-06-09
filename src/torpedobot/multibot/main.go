@@ -15,6 +15,13 @@ import (
 var bot *TorpedoBot
 var once sync.Once
 
+type BotStats struct {
+	StartTimestamp    int64
+	ProcessedMessages int64
+	ConnectedAccounts int32
+	TotalAccounts     int32
+}
+
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
@@ -33,6 +40,7 @@ type TorpedoBot struct {
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage)
+	Stats               *BotStats
 }
 
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, richmsgs ...RichMessage) {
@@ -46,6 +54,7 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *Torp
 
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) && tb.NoSpam(channel, incoming_message) {
+		tb.Stats.ProcessedMessages += 1
 		command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
 		found := 0
 		for handler := range tb.commandHandlers {
@@ -90,6 +99,7 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 		if key == "" {
 			continue
 		}
+		tb.Stats.TotalAccounts += 1
 		go wrapped(key, cmd_prefix)
 	}
 }
@@ -147,6 +157,8 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 			bot.Config.RavenEnabled = true
 		}
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage))
+		bot.Stats = &BotStats{}
+		bot.Stats.StartTimestamp = int64(time.Now().Unix())
 	})
 	return bot
 }

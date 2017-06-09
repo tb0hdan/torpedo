@@ -54,6 +54,7 @@ func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
+	tb.Stats.ConnectedAccounts += 1
 	logger := log.New(os.Stdout, "jabber-bot: ", log.Lshortfile|log.LstdFlags)
 	str_jid := strings.Split(apiKey, ":")[0]
 	password := strings.Split(apiKey, ":")[1]
@@ -109,5 +110,6 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 			logger.Printf("Unknown event: %T\n", v)
 		}
 	}
+	tb.Stats.ConnectedAccounts -= 1
 
 }

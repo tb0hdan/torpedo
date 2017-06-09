@@ -26,6 +26,8 @@ func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, 
 }
 
 func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	logger := log.New(os.Stdout, "line-bot: ", log.Lshortfile|log.LstdFlags)
 
 	bot, err := linebot.New(strings.Split(apiKey, ":")[0],
@@ -78,4 +80,5 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 	if err := http.ListenAndServe(tb.Config.LineIncomingAddr, nil); err != nil {
 		logger.Fatal(err)
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }

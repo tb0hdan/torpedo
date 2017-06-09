@@ -148,6 +148,8 @@ func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, r
 }
 
 func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	logger := log.New(os.Stdout, "kik-bot: ", log.Lshortfile|log.LstdFlags)
 	api := &KikAPI{}
 	api.logger = logger
@@ -186,4 +188,5 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	if err := http.ListenAndServe(tb.Config.KikIncomingAddr, nil); err != nil {
 		logger.Fatal(err)
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }

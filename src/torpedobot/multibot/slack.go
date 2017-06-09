@@ -27,6 +27,8 @@ func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 }
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	api := slack.New(apiKey)
 	cu := &common.Utils{}
 	logger := cu.NewLog("slack-bot")
@@ -76,12 +78,12 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 		case *slack.InvalidAuthEvent:
 			logger.Printf("Invalid credentials")
-			return
+			break
 
 		default:
 			// Ignore other events..
 			//logger.Printf("Unexpected: %v\n", msg.Data)
 		}
 	}
-
+	tb.Stats.ConnectedAccounts -= 1
 }

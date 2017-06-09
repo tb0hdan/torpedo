@@ -25,6 +25,8 @@ func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI
 }
 
 func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
+
 	logger := log.New(os.Stdout, "matrix-bot: ", log.Lshortfile|log.LstdFlags)
 
 	clientID := fmt.Sprintf("@%s:matrix.org", strings.Split(apiKey, ":")[0])
@@ -75,4 +77,5 @@ func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 		// Optional: Wait a period of time before trying to sync again.
 		time.Sleep(10 * time.Second)
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }

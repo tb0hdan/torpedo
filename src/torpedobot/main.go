@@ -60,6 +60,8 @@ func main() {
 	handlers["sha1"] = CryptoProcessMessage
 	handlers["sha256"] = CryptoProcessMessage
 	handlers["sha512"] = CryptoProcessMessage
+	// statistics
+	handlers["stats"] = StatsProcessMessage
 	// File category (broken!)
 	//handlers["getimg"] = GetSetImageProcessMessage
 	//handlers["lsimg"] = GetSetImageProcessMessage

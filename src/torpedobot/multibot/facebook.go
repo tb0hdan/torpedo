@@ -41,6 +41,7 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 }
 
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
+	tb.Stats.ConnectedAccounts += 1
 	logger := log.New(os.Stdout, "facebook-bot: ", log.Lshortfile|log.LstdFlags)
 
 	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
@@ -77,4 +78,5 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	if err := http.ListenAndServe(tb.Config.FacebookIncomingAddr, client.Handler()); err != nil {
 		logger.Fatal(err)
 	}
+	tb.Stats.ConnectedAccounts -= 1
 }
