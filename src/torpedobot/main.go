@@ -121,7 +121,13 @@ func main() {
 		*matrix = GetStripEnv("MATRIX")
 	}
 	if *mongo == "" {
+		// try supplied one first
 		*mongo = GetStripEnv("MONGO")
+		// docker...
+		if *mongo == "" {
+			*mongo = GetStripEnv("MONGO_PORT_27017_TCP_ADDR")
+		}
+
 	}
 
 	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
