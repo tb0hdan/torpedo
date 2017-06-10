@@ -114,10 +114,11 @@ func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBot
 }
 
 type TorpedoBotAPI struct {
-	API           interface{}
-	CommandPrefix string
-	Bot           *TorpedoBot
-	From          string
+	API             interface{}
+	CommandPrefix   string
+	Bot             *TorpedoBot
+	From            string
+	Type 		string
 }
 
 func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {

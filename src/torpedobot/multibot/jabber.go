@@ -46,7 +46,11 @@ func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI
 	case *xmpp.Client:
 		msg := xmpp.Chat{}
 		msg.Remote = channel.(string)
+		msg.Type = tba.Type
 		msg.Text = message
+		if tba.Type == "groupchat" {
+			msg.Remote = strings.Split(msg.Remote, "/")[0]
+		}
 		api.Send(msg)
 	}
 }
@@ -92,13 +96,24 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 		switch v := chat.(type) {
 		case xmpp.Chat:
 			passed := int64(time.Now().Unix()) - int64(startup_ts)
-			logger.Println(v.Remote, v.Text, v.Stamp.Unix())
+			logger.Println(v.Remote, v.Text, v.Stamp.Unix(), v.Type, v.Other, v.OtherElem)
+			for _, element := range v.OtherElem {
+				if element.XMLName.Space == "jabber:x:conference" {
+					// TODO: Save and rejoin after restart
+					talk.JoinMUCNoHistory(v.Remote, "TorpedoBot")
+					break
+				}
+			}
 			// Since v.Stamp returns default value, use some time to catch up on messages
 			if passed > 30 {
+				botApi.Type = v.Type
 				go tb.processChannelEvent(botApi, v.Remote, v.Text)
 			}
 		case xmpp.Presence:
-			logger.Println(v.From, v.Show)
+			if v.Type == "subscribe" {
+				talk.ApproveSubscription(v.From)
+			}
+			logger.Println(v.From, v.Show, v.Type)
 		case xmpp.IQ:
 			if v.Type == "result" && v.ID == "c2s1" {
 				logger.Printf("Got pong from %s to %s\n", v.From, v.To)
