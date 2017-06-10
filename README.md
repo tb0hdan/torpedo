@@ -76,6 +76,10 @@ GOOGLE_WEBAPP_KEY="ccc"
 PINTEREST="ddd"
 ```
 
+# Requirements
+
+An accessible MongoDB instance (defaults to localhost)
+
 # Running
 
 ```bash

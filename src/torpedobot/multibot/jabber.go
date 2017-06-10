@@ -8,7 +8,13 @@ import (
 	"time"
 
 	"github.com/mattn/go-xmpp"
+	"gopkg.in/mgo.v2/bson"
 )
+
+type JabberChatroom struct {
+	MyJID string
+	Chatroom string
+}
 
 func (tb *TorpedoBot) JabberServerInfo(jid, server string, c *xmpp.Client) (string, error) {
 	const namespace = "http://jabber.org/protocol/disco#info"
@@ -55,6 +61,12 @@ func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI
 	}
 }
 
+func GetStrippedJID(cli *xmpp.Client) (jid string) {
+	jid = strings.Split(cli.JID(), "/")[0]
+	return
+}
+
+
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
@@ -88,6 +100,22 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 
 	startup_ts := time.Now().Unix()
 	go tb.WaitAndSendJabberDisco(str_jid, server, talk)
+	// join rooms
+	session, collection, err := tb.Database.GetCollection("jabberChatrooms")
+	if err != nil {
+		logger.Fatal("Could not connect to database: %+v\n", err)
+	}
+	results := make([]*JabberChatroom, 0)
+	err = collection.Find(bson.M{"myjid": GetStrippedJID(talk)}).All(&results)
+	if err != nil {
+		logger.Printf("No rooms available to join: %+v\n", err)
+	}
+	session.Close()
+	for _, room := range results {
+		logger.Printf("Joining chatroom: %s\n", room.Chatroom)
+		talk.JoinMUCNoHistory(room.Chatroom, "TorpedoBot")
+	}
+	//
 	for {
 		chat, err := talk.Recv()
 		if err != nil {
@@ -99,8 +127,23 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 			logger.Println(v.Remote, v.Text, v.Stamp.Unix(), v.Type, v.Other, v.OtherElem)
 			for _, element := range v.OtherElem {
 				if element.XMLName.Space == "jabber:x:conference" {
-					// TODO: Save and rejoin after restart
-					talk.JoinMUCNoHistory(v.Remote, "TorpedoBot")
+					session, collection, err := tb.Database.GetCollection("jabberChatrooms")
+					if err != nil {
+						logger.Fatal("Could not connect to database: %+v\n", err)
+					}
+					result := JabberChatroom{}
+					err = collection.Find(bson.M{"myjid": GetStrippedJID(talk), "chatroom": v.Remote}).One(&result)
+					if err != nil {
+						log.Println(err)
+						// no record, insert new one
+						err = collection.Insert(&JabberChatroom{GetStrippedJID(talk), v.Remote})
+						if err != nil {
+							log.Fatal(err)
+						}
+						// join new room
+						talk.JoinMUCNoHistory(v.Remote, "TorpedoBot")
+					}
+					session.Close()
 					break
 				}
 			}

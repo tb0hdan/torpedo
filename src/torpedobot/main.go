@@ -35,6 +35,7 @@ func main() {
 		line_incoming_addr     = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 		pinterest_token        = flag.String("pinterest_token", "", "Pinterest Client Token")
 		matrix                 = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
+		mongo 		       = flag.String("mongo", "", "MongoDB server hostname")
 	)
 	flag.Parse()
 	handlers["bashim"] = BashProcessMessage
@@ -119,11 +120,15 @@ func main() {
 	if *matrix == "" {
 		*matrix = GetStripEnv("MATRIX")
 	}
+	if *mongo == "" {
+		*mongo = GetStripEnv("MONGO")
+	}
 
 	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
 		*skype_incoming_addr, *kik_incoming_addr,
 		*kik_webhook_url,
-		*lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token)
+		*lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token,
+		*mongo)
 	bot.RegisterHandlers(handlers)
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")

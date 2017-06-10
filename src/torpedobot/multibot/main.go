@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 	"torpedobot/memcache"
-
+	"torpedobot/common/database"
 	"github.com/getsentry/raven-go"
 )
 
@@ -25,6 +25,7 @@ type BotStats struct {
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
+	Database *database.MongoDB
 	Config          struct {
 		FacebookIncomingAddr string
 		GoogleWebAppKey      string
@@ -136,7 +137,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 	}
 }
 
-func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token string) *TorpedoBot {
+func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token, mongo string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
@@ -160,6 +161,8 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage))
 		bot.Stats = &BotStats{}
 		bot.Stats.StartTimestamp = int64(time.Now().Unix())
+		bot.Database = database.New(mongo, "")
+
 	})
 	return bot
 }
