@@ -183,7 +183,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		botApi.API = skype_api
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
-		re := regexp.MustCompile(`^(@(.+)\s)?`)
+		re := regexp.MustCompile(`^(@[^\s]+\s)?`)
 		msg := re.ReplaceAllString(message.Text, "")
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)

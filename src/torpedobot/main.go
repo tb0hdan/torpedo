@@ -70,8 +70,8 @@ func main() {
 	handlers["poweroff"] = FunProcessMessage
 	handlers["kill"] = FunProcessMessage
 	//
-	handlers["so"] = StrackOverflowProcessMessage
-	handlers["stackoverflow"] = StatsProcessMessage
+	handlers["so"] = StackOverflowProcessMessage
+	handlers["stackoverflow"] = StackOverflowProcessMessage
 	// statistics
 	handlers["stats"] = StatsProcessMessage
 	// File category (broken!)
