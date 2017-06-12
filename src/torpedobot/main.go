@@ -69,6 +69,9 @@ func main() {
 	handlers["reboot"] = FunProcessMessage
 	handlers["poweroff"] = FunProcessMessage
 	handlers["kill"] = FunProcessMessage
+	//
+	handlers["so"] = StrackOverflowProcessMessage
+	handlers["stackoverflow"] = StatsProcessMessage
 	// statistics
 	handlers["stats"] = StatsProcessMessage
 	// File category (broken!)
