@@ -1,17 +1,22 @@
 package database
 
 import (
+	"log"
+
 	"gopkg.in/mgo.v2"
-	//"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type MongoDB struct {
-	Server string
+	Server   string
 	Database string
 }
 
+type TorpedoStats struct {
+	ProcessedMessagesTotal int64
+}
 
-func (mdb *MongoDB) GetSession() (session *mgo.Session, err error){
+func (mdb *MongoDB) GetSession() (session *mgo.Session, err error) {
 	session, err = mgo.Dial(mdb.Server)
 	if err != nil {
 		panic(err)
@@ -30,42 +35,41 @@ func (mdb *MongoDB) GetCollection(collectionName string) (session *mgo.Session, 
 	return
 }
 
-func New(server, database string) (mongodb *MongoDB){
+func (mdb *MongoDB) GetUpdateTotalMessages(step int64) (count int64){
+	session, collection, err := mdb.GetCollection("messagestats")
+	if err != nil {
+		log.Printf("GetUpdateTotalMessages failed with: %+v\n", err)
+		return
+	}
+	defer session.Close()
+	result := TorpedoStats{}
+	err = collection.Find(bson.M{}).One(&result)
+	if err != nil {
+		log.Printf("No stats available: %+v\n", err)
+		count = 1
+		err = collection.Insert(&result)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		count = result.ProcessedMessagesTotal
+	}
+	result = TorpedoStats{ProcessedMessagesTotal:count + step}
+	err = collection.Update(bson.M{}, result)
+	if err != nil {
+		log.Printf("Failed to update stats: %+v\n", err)
+	}
+	return
+}
+
+func New(server, database string) (mongodb *MongoDB) {
 	if server == "" {
 		server = "localhost"
 	}
 	if database == "" {
 		database = "torpedobot"
 	}
-	mongodb = &MongoDB{Server:server,
-		           Database:database}
+	mongodb = &MongoDB{Server: server,
+		Database: database}
 	return
 }
-
-/*
-func main() {
-	session, err := mgo.Dial("server1.example.com,server2.example.com")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-
-	c := session.DB("test").C("people")
-	err = c.Insert(&Person{"Ale", "+55 53 8116 9639"},
-		&Person{"Cla", "+55 53 8402 8510"})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	result := Person{}
-	err = c.Find(bson.M{"name": "Ale"}).One(&result)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Phone:", result.Phone)
-}
-*/

@@ -18,6 +18,7 @@ var once sync.Once
 type BotStats struct {
 	StartTimestamp    int64
 	ProcessedMessages int64
+	ProcessedMessagesTotal int64
 	ConnectedAccounts int32
 	TotalAccounts     int32
 }
@@ -25,6 +26,7 @@ type BotStats struct {
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
+	help map[string]string
 	Database *database.MongoDB
 	Config          struct {
 		FacebookIncomingAddr string
@@ -56,10 +58,14 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *Torp
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) && tb.NoSpam(channel, incoming_message) {
 		tb.Stats.ProcessedMessages += 1
+		// is it good idea to store it here?
+		// TODO: find better way
+		tb.Stats.ProcessedMessagesTotal = tb.Database.GetUpdateTotalMessages(1)
+		//
 		command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
 		found := 0
 		for handler := range tb.commandHandlers {
-			if strings.HasPrefix(strings.Split(command, " ")[0], handler) {
+			if strings.ToLower(strings.Split(command, " ")[0]) == handler {
 				found += 1
 				if tb.Config.RavenEnabled {
 					raven.CapturePanicAndWait(func() {
@@ -73,7 +79,7 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		}
 		tb.logger.Printf("PROCESS! -> `%s`", command)
 		if found == 0 {
-			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send %shelp for list of valid commands.", api.CommandPrefix, command, api.CommandPrefix))
+			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send `%shelp` for list of valid commands and `%shelp command` for details.", api.CommandPrefix, command, api.CommandPrefix, api.CommandPrefix))
 		}
 	}
 }
@@ -113,6 +119,16 @@ func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, 
 func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
 	return tb.commandHandlers
 }
+
+func (tb *TorpedoBot) RegisterHelp(help map[string]string) {
+	tb.help = help
+	return
+}
+
+func (tb *TorpedoBot) GetHelp() (help map[string]string) {
+	return tb.help
+}
+
 
 type TorpedoBotAPI struct {
 	API             interface{}

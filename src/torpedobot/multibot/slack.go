@@ -9,6 +9,18 @@ import (
 	"github.com/nlopes/slack"
 )
 
+func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) {
+	attachment := slack.Attachment{
+		Color:     rm.BarColor,
+		Text:      rm.Text,
+		Title:     rm.Title,
+		TitleLink: rm.TitleLink,
+		ImageURL:  rm.ImageURL,
+	}
+	params.Attachments = []slack.Attachment{attachment}
+	return
+}
+
 func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
 	var params slack.PostMessageParameters
 	if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {

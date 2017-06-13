@@ -123,6 +123,20 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 	return
 }
 
+func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
+	cu := &common.Utils{}
+	fname, mimetype, is_image, err := cu.DownloadToTmp(rm.ImageURL)
+	if is_image && err == nil {
+		attachment = &SkypeAttachment{
+			ContentType: mimetype,
+			ContentURL:  rm.ImageURL,
+			Name:        rm.Title,
+		}
+		defer os.Remove(fname)
+	}
+	return
+}
+
 func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
 	switch api := tba.API.(type) {
 	case *SkypeAPI:

@@ -6,7 +6,17 @@ import (
 	"time"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"torpedobot/common"
 )
+
+func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable, fname string) {
+	cu := &common.Utils{}
+	fname, _, is_image, err := cu.DownloadToTmp(rm.ImageURL)
+	if is_image && err == nil {
+		msg = tgbotapi.NewPhotoUpload(channel, fname)
+	}
+	return
+}
 
 func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
 	switch api := tba.API.(type) {

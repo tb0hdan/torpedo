@@ -51,7 +51,8 @@ func StatsProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incom
 	ts := int64(time.Now().Unix()) - api.Bot.Stats.StartTimestamp
 	d, h, m, s := FormatTDiff(ts)
 	message := fmt.Sprintf("Uptime: %v day(s) %v hour(s) %v minute(s) %v second(s)\n", d, h, m, s)
-	message += fmt.Sprintf("Processed messages: %v\n", api.Bot.Stats.ProcessedMessages)
+	message += fmt.Sprintf("Processed messages (session): %v\n", api.Bot.Stats.ProcessedMessages)
+	message += fmt.Sprintf("Processed messages (total): %v\n", api.Bot.Stats.ProcessedMessagesTotal)
 	//message += fmt.Sprintf("Message rate: %s\n", CalculateMessageRate(ts, api.Bot.Stats.ProcessedMessages))
 	message += fmt.Sprintf("Accounts connected/total: %v/%v\n", api.Bot.Stats.ConnectedAccounts, api.Bot.Stats.TotalAccounts)
 	message += fmt.Sprintf("Memory info:%s\n", GetMemStats())
