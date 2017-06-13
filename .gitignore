@@ -32,6 +32,7 @@ bin/*
 build/*
 src/github.com/*
 src/golang.org/*
+src/googlemaps.github.io/*
 src/google.golang.org/*
 src/gopkg.in/*
 ssl/*

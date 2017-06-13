@@ -99,6 +99,9 @@ func main() {
 	help["so"] = "Search for solution on StackOverflow.com"
 	handlers["stackoverflow"] = StackOverflowProcessMessage
 	help["stackoverflow"] = "Search for solution on StackOverflow.com"
+	// maps
+	handlers["distance"] = DistanceProcessMessage
+	help["distance"] = "Get driving distance between cities"
 	// statistics
 	handlers["stats"] = StatsProcessMessage
 	help["stats"] = "Just system stats, nothing interesting"
