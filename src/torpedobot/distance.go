@@ -31,7 +31,7 @@ func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, in
 			return
 		}
 		for _, item := range resp {
-			message += fmt.Sprintf("Roads: %s\n", item.Summary)
+			message = fmt.Sprintf("Roads: %s\n", item.Summary)
 			for _, lg := range item.Legs {
 				message += fmt.Sprintf("Duration: %s\n", lg.Duration)
 				message += fmt.Sprintf("Distance: %s\n", lg.Distance.HumanReadable)
