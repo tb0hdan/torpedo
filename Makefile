@@ -7,7 +7,9 @@ PLATFORMS = darwin linux windows
 GOPATH = $(shell pwd)
 PKGNAME = "torpedobot"
 DEST = $(PKGNAME)
-
+BUILD = $(shell git rev-parse HEAD)
+BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
+VERSION = $(shell cat ./VERSION)
 BUILD_CMD = go build
 
 ifneq ($(strip $(PLATFORM)),)
@@ -32,7 +34,7 @@ deps:
 build:  deps build_only
 
 build_only:
-	@$(BUILD_CMD) -o bin/$(DEST) $(PKGNAME)
+	@$(BUILD_CMD) -ldflags "-X main.BUILD=$(BUILD) -X main.BUILD_DATE=$(BDATE) -X main.VERSION=$(VERSION)" -o bin/$(DEST) $(PKGNAME)
 
 
 clean:

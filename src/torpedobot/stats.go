@@ -50,7 +50,10 @@ func GetMemStats() (result string) {
 func StatsProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	ts := int64(time.Now().Unix()) - api.Bot.Stats.StartTimestamp
 	d, h, m, s := FormatTDiff(ts)
-	message := fmt.Sprintf("Uptime: %v day(s) %v hour(s) %v minute(s) %v second(s)\n", d, h, m, s)
+	message := fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
+	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuldDate)
+	message += fmt.Sprintf("Build version: %s\n", api.Bot.Build.Version)
+	message += fmt.Sprintf("Uptime: %v day(s) %v hour(s) %v minute(s) %v second(s)\n", d, h, m, s)
 	message += fmt.Sprintf("Processed messages (session): %v\n", api.Bot.Stats.ProcessedMessages)
 	message += fmt.Sprintf("Processed messages (total): %v\n", api.Bot.Stats.ProcessedMessagesTotal)
 	//message += fmt.Sprintf("Message rate: %s\n", CalculateMessageRate(ts, api.Bot.Stats.ProcessedMessages))

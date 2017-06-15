@@ -7,8 +7,9 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"torpedobot/memcache"
 	"torpedobot/common/database"
+	"torpedobot/memcache"
+
 	"github.com/getsentry/raven-go"
 )
 
@@ -16,18 +17,18 @@ var bot *TorpedoBot
 var once sync.Once
 
 type BotStats struct {
-	StartTimestamp    int64
-	ProcessedMessages int64
+	StartTimestamp         int64
+	ProcessedMessages      int64
 	ProcessedMessagesTotal int64
-	ConnectedAccounts int32
-	TotalAccounts     int32
+	ConnectedAccounts      int32
+	TotalAccounts          int32
 }
 
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
 	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
-	help map[string]string
-	Database *database.MongoDB
+	help            map[string]string
+	Database        *database.MongoDB
 	Config          struct {
 		FacebookIncomingAddr string
 		GoogleWebAppKey      string
@@ -44,6 +45,11 @@ type TorpedoBot struct {
 	throttle            *memcache.MemCacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage)
 	Stats               *BotStats
+	Build               struct {
+		Build    string
+		BuldDate string
+		Version  string
+	}
 }
 
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, richmsgs ...RichMessage) {
@@ -129,13 +135,12 @@ func (tb *TorpedoBot) GetHelp() (help map[string]string) {
 	return tb.help
 }
 
-
 type TorpedoBotAPI struct {
-	API             interface{}
-	CommandPrefix   string
-	Bot             *TorpedoBot
-	From            string
-	Type 		string
+	API           interface{}
+	CommandPrefix string
+	Bot           *TorpedoBot
+	From          string
+	Type          string
 }
 
 func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {
@@ -151,6 +156,13 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 		tba.Bot.logger.Printf("Unsupported bot API: %T\n", tba.API)
 
 	}
+}
+
+func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
+	tb.Build.Build = build
+	tb.Build.BuldDate = buildDate
+	tb.Build.Version = version
+	return
 }
 
 func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token, mongo string) *TorpedoBot {

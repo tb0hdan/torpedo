@@ -15,6 +15,13 @@ func GetStripEnv(envvar string) (result string) {
 	return
 }
 
+// Global vars for versioning
+var (
+	BUILD      = "Not available"
+	BUILD_DATE = "Not available"
+	VERSION    = "Not available"
+)
+
 func main() {
 	var (
 		slack                  = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
@@ -29,14 +36,14 @@ func main() {
 		kik_incoming_addr      = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
 		kik_webhook_url        = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
 		handlers               = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
-		help				   = make(map[string]string)
+		help                   = make(map[string]string)
 		lastfm_key             = flag.String("lastfm_key", "", "Last.FM API Key")
 		lastfm_secret          = flag.String("lastfm_secret", "", "Last.FM API Secret")
 		line_creds             = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
 		line_incoming_addr     = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 		pinterest_token        = flag.String("pinterest_token", "", "Pinterest Client Token")
 		matrix                 = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
-		mongo 		       = flag.String("mongo", "", "MongoDB server hostname")
+		mongo                  = flag.String("mongo", "", "MongoDB server hostname")
 	)
 	flag.Parse()
 	handlers["bashim"] = BashProcessMessage
@@ -115,6 +122,9 @@ func main() {
 	// needs better formatting + Facebook rework
 	handlers["steam"] = SteamProcessMessage
 	help["steam"] = "Get http://store.steampowered.com/ deals"
+	//
+	handlers["xkcd"] = XKCDProcessMessage
+	help["xkcd"] = "Get XKCD random strip. Provide integer ID to get specific one."
 
 	if *slack == "" {
 		*slack = GetStripEnv("SLACK")
@@ -170,6 +180,7 @@ func main() {
 		*kik_webhook_url,
 		*lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token,
 		*mongo)
+	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION)
 	bot.RegisterHandlers(handlers)
 	bot.RegisterHelp(help)
 	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
