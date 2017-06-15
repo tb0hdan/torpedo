@@ -5,6 +5,7 @@ WORKDIR /
 ADD ./ssl /etc/ssl
 ADD ./Makefile /
 ADD ./VERSION /
+ADD ./.git /
 ADD ./src/torpedobot /src/torpedobot
 RUN apk update
 RUN apk add git
