@@ -11,17 +11,21 @@ import (
 )
 
 func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
-	message := fmt.Sprintf("Usage: `%sdistance city_A city_B` or `%sdistance city_A,country_A city_B,country_B`\n", api.CommandPrefix, api.CommandPrefix)
+	message := fmt.Sprintf("Usage: `%sdistance address_A -> address_B`\n", api.CommandPrefix, api.CommandPrefix)
 	_, command, _ := common.GetRequestedFeature(incoming_message)
-	if command != "" && len(strings.Split(command, " ")) == 2 {
+	separator := "->"
+	if command != "" && strings.Contains(command, "-&gt;") {
+		separator = "-&gt;"
+	}
+	if command != "" && len(strings.Split(command, separator)) == 2 {
 		c, err := maps.NewClient(maps.WithAPIKey(api.Bot.Config.GoogleWebAppKey))
 		if err != nil {
 			// Okay, fatal here...
 			log.Fatalf("fatal error: %+v\n", err)
 		}
 		r := &maps.DirectionsRequest{
-			Origin:      strings.Split(command, " ")[0],
-			Destination: strings.Split(command, " ")[1],
+			Origin:      strings.TrimSpace(strings.Split(command, separator)[0]),
+			Destination: strings.TrimSpace(strings.Split(command, separator)[1]),
 		}
 		resp, _, err := c.Directions(context.Background(), r)
 		if err != nil {
