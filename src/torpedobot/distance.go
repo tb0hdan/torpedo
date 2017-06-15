@@ -11,7 +11,7 @@ import (
 )
 
 func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
-	message := fmt.Sprintf("Usage: `%sdistance address_A -> address_B`\n", api.CommandPrefix, api.CommandPrefix)
+	message := fmt.Sprintf("Usage: `%sdistance address_A -> address_B`\n", api.CommandPrefix)
 	_, command, _ := common.GetRequestedFeature(incoming_message)
 	separator := "->"
 	if command != "" && strings.Contains(command, "-&gt;") {
