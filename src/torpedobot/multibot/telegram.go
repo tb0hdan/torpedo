@@ -7,6 +7,7 @@ import (
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"torpedobot/common"
+	"regexp"
 )
 
 func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable, fname string) {
@@ -73,9 +74,13 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 			continue
 		}
 
-		logger.Printf("[%s] %s\n", update.Message.From.UserName, update.Message.Text)
+		// handle multible bot presence
+		r := regexp.MustCompile(`(?i)@(.+)bot`)
+		message := r.ReplaceAllString(update.Message.Text, "")
 
-		go tb.processChannelEvent(botApi, update.Message.Chat.ID, update.Message.Text)
+		logger.Printf("[%s] %s\n", update.Message.From.UserName, message)
+
+		go tb.processChannelEvent(botApi, update.Message.Chat.ID, message)
 
 	}
 	tb.Stats.ConnectedAccounts -= 1
