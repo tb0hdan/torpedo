@@ -17,6 +17,7 @@ import (
 
 	"github.com/nlopes/slack"
 	"gopkg.in/h2non/filetype.v1"
+	"encoding/json"
 )
 
 const User_Agent = "Mozilla/5.0 (https://github.com/tb0hdan/torpedo; tb0hdan@gmail.com) Go-http-client/1.1"
@@ -25,8 +26,8 @@ type Utils struct {
 	logger *log.Logger
 }
 
-func (cu *Utils) SetLoggerPrefix(prefix string) {
-	logger := cu.NewLog(prefix)
+func (cu *Utils) SetLoggerPrefix(prefix string) (logger *log.Logger){
+	logger = cu.NewLog(prefix)
 	cu.SetLogger(logger)
 	return
 }
@@ -63,6 +64,17 @@ func (cu *Utils) GetURLBytes(url string) (result []byte, err error) {
 	}
 	return
 }
+
+func (cu *Utils) GetURLUnmarshal(url string, result interface{}) (err error) {
+	data, err := cu.GetURLBytes(url)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, result)
+	return
+}
+
+
 
 func (cu *Utils) GetMIMEType(fname string) (mimetype, extension string, is_image bool, err error) {
 	// Read a file

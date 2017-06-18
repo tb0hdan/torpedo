@@ -5,12 +5,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 
 	"torpedobot/common"
 	"torpedobot/multibot"
-	"log"
 )
 
 
@@ -31,7 +29,7 @@ func QREncoderProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 
 func TinyURLProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	cu := &common.Utils{}
-	cu.SetLogger(log.New(os.Stdout, "shorteners-plugin: ", log.Lshortfile|log.LstdFlags))
+	cu.SetLoggerPrefix("shorteners-plugin")
 	command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%stinyurl", api.CommandPrefix)))
 
 	if command == "" {
@@ -39,7 +37,7 @@ func TinyURLProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, inc
 	} else {
 		command := strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%stinyurl", api.CommandPrefix)))
 		query := url.QueryEscape(command)
-		result, err := cu.GetURLBytes(fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", query))
+		result, err := cu.GetURLBytes(fmt.Sprintf("https://tinyurl.com/api-create.php?url=%s", query))
 		message := "An error occured during TinyURL encoding process"
 		if err == nil {
 			message = string(result)

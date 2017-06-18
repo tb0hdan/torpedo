@@ -5,16 +5,14 @@ import (
 	"torpedobot/giphy"
 	"torpedobot/common"
 	"torpedobot/multibot"
-
-	"log"
-	"os"
 )
 
 
 func GiphyProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
 	var richmsg multibot.RichMessage
-	logger := log.New(os.Stdout, "giphy-process-message: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("giphy-process-message")
 
 	client := giphy.NewClient()
 

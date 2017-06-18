@@ -153,7 +153,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	skype_api := &SkypeAPI{}
-	logger := log.New(os.Stdout, "skype-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("skype-bot")
 	skype_api.logger = logger
 	app_id := strings.Split(apiKey, ":")[0]
 	app_password := strings.Split(apiKey, ":")[1]

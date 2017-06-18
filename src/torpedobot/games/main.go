@@ -3,8 +3,6 @@ package games
 import (
 	"log"
 	"torpedobot/common"
-	"os"
-	"fmt"
 )
 
 type Client struct {
@@ -30,8 +28,9 @@ func (gi *GameItem) IsComplete() (result bool) {
 }
 
 func  NewClient(prefix, store_url string) (client *Client){
+	cu := &common.Utils{}
 	client = &Client{}
-	client.logger = log.New(os.Stdout, fmt.Sprintf("%s: ", prefix), log.Lshortfile|log.LstdFlags)
+	client.logger = cu.NewLog(prefix)
 	client.utils = &common.Utils{}
 	client.utils.SetLoggerPrefix(prefix)
 	client.StoreURL = store_url

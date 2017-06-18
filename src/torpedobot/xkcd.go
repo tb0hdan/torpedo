@@ -10,6 +10,7 @@ import (
 
 	"torpedobot/common"
 	"torpedobot/multibot"
+	"strings"
 )
 
 type XKCDResponse struct {
@@ -24,17 +25,20 @@ type XKCDResponse struct {
 	Alt        string `json:"alt"`
 	Img        string `json:"img"`
 	Title      string `json:"title"`
+	PostID	   string  `json:"postid,omitempty"`
 }
 
-func GetXKCD(postId string) (result XKCDResponse, err error) {
+func GetXKCD(postId string, logger *log.Logger) (result XKCDResponse, err error) {
 	URL := fmt.Sprintf("https://xkcd.com/%s/info.0.json", postId)
 	if postId == "" || postId == "0" {
 		resp, err := http.Get("https://c.xkcd.com/random/comic/")
 		defer resp.Body.Close()
 		if err != nil {
-			log.Printf("http.Get => %v", err.Error())
+			logger.Printf("http.Get => %v", err.Error())
 		} else {
-			URL = fmt.Sprintf("%s/info.0.json", resp.Request.URL.String())
+			finalURL := resp.Request.URL.String()
+			URL = fmt.Sprintf("%s/info.0.json", finalURL)
+			postId = strings.TrimPrefix(finalURL, "https://xkcd.com/")
 		}
 	} else if _, err = strconv.ParseInt(postId, 10, 64); err != nil {
 		return
@@ -57,18 +61,21 @@ func GetXKCD(postId string) (result XKCDResponse, err error) {
 		log.Printf("json.Unmarshal => %v", err)
 		return
 	}
+	result.PostID = postId
 	return
 }
 
 func XKCDProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
+	cu := &common.Utils{}
+	logger := cu.NewLog("xkcd-process-message")
 	_, command, _ := common.GetRequestedFeature(incoming_message)
-	result, err := GetXKCD(command)
+	result, err := GetXKCD(command, logger)
 	if err != nil {
 		message = fmt.Sprintf("An error occured while processing XKCD request: %+v\n", err)
 		api.Bot.PostMessage(channel, message, api)
 	} else {
 		richmsg := multibot.RichMessage{ImageURL: result.Img, Text: result.SafeTitle}
-		api.Bot.PostMessage(channel, "XKCD", api, richmsg)
+		api.Bot.PostMessage(channel, fmt.Sprintf("XKCD %s", result.PostID), api, richmsg)
 	}
 }

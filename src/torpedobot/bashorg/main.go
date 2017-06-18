@@ -32,6 +32,6 @@ func (bo *BashOrg) Get_bashorg_html(url string) (result *html.Node) {
 func NewClient() (client *BashOrg) {
 	client = &BashOrg{}
 	client.utils = &common.Utils{}
-	client.utils.SetLoggerPrefix("bashorg-plugin")
+	client.logger = client.utils.SetLoggerPrefix("bashorg-plugin")
 	return
 }

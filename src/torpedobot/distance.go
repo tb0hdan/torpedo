@@ -1,16 +1,19 @@
 package main
 
 import (
-	"torpedobot/multibot"
-	"torpedobot/common"
-	"log"
-	"googlemaps.github.io/maps"
-	"golang.org/x/net/context"
-	"strings"
 	"fmt"
+	"strings"
+
+	"torpedobot/common"
+	"torpedobot/multibot"
+
+	"golang.org/x/net/context"
+	"googlemaps.github.io/maps"
 )
 
 func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	cu := &common.Utils{}
+	logger := cu.NewLog("distance-process-message")
 	message := fmt.Sprintf("Usage: `%sdistance address_A -> address_B`\n", api.CommandPrefix)
 	_, command, _ := common.GetRequestedFeature(incoming_message)
 	separator := "->"
@@ -21,7 +24,7 @@ func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, in
 		c, err := maps.NewClient(maps.WithAPIKey(api.Bot.Config.GoogleWebAppKey))
 		if err != nil {
 			// Okay, fatal here...
-			log.Fatalf("fatal error: %+v\n", err)
+			logger.Fatalf("fatal error: %+v\n", err)
 		}
 		r := &maps.DirectionsRequest{
 			Origin:      strings.TrimSpace(strings.Split(command, separator)[0]),
@@ -29,7 +32,7 @@ func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, in
 		}
 		resp, _, err := c.Directions(context.Background(), r)
 		if err != nil {
-			log.Printf("fatal error: %+v\n", err)
+			logger.Printf("fatal error: %+v\n", err)
 			message = "Start / Destination could not be processed"
 			api.Bot.PostMessage(channel, message, api)
 			return

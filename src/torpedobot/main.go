@@ -44,6 +44,7 @@ func main() {
 		pinterest_token        = flag.String("pinterest_token", "", "Pinterest Client Token")
 		matrix                 = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
 		mongo                  = flag.String("mongo", "", "MongoDB server hostname")
+		soundcloud_client_id   = flag.String("soundcloud_id", "", "SoundCloud client ID")
 	)
 	flag.Parse()
 	handlers["bashim"] = BashProcessMessage
@@ -70,6 +71,10 @@ func main() {
 	help["wiki"] = "Get article excerpt from Wikipedia.org"
 	handlers["youtube"] = YoutubeProcessMessage
 	help["youtube"] = "Get Youtube.com URL for specified track"
+	handlers["soundcloud"] = SoundCloudProcessMessage
+	handlers["sc"] = SoundCloudProcessMessage
+	help["soundcloud"] = "Search for track on SoundCloud"
+	help["sc"] = "Search for track on SoundCloud"
 	// in progress
 	handlers["giphy"] = GiphyProcessMessage
 	help["giphy"] = "Get Giphy.com image"
@@ -174,12 +179,15 @@ func main() {
 		}
 
 	}
+	if *soundcloud_client_id == "" {
+		*soundcloud_client_id = GetStripEnv("SOUNDCLOUD_ID")
+	}
 
 	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
 		*skype_incoming_addr, *kik_incoming_addr,
 		*kik_webhook_url,
 		*lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token,
-		*mongo)
+		*mongo, *soundcloud_client_id)
 	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION)
 	bot.RegisterHandlers(handlers)
 	bot.RegisterHelp(help)

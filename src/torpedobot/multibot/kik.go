@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"torpedobot/common"
 )
@@ -150,7 +149,8 @@ func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, r
 func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
-	logger := log.New(os.Stdout, "kik-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("kik-bot")
 	api := &KikAPI{}
 	api.logger = logger
 	api.WebHook = tb.Config.KikWebHook

@@ -11,6 +11,7 @@ import (
 	"torpedobot/memcache"
 
 	"github.com/getsentry/raven-go"
+	"torpedobot/common"
 )
 
 var bot *TorpedoBot
@@ -40,6 +41,7 @@ type TorpedoBot struct {
 		SkypeIncomingAddr    string
 		PinterestToken       string
 		RavenEnabled         bool
+		SoundCloudClientID	 string
 	}
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
@@ -165,10 +167,11 @@ func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
 	return
 }
 
-func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token, mongo string) *TorpedoBot {
+func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token, mongo, soundcloud_client_id string) *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
-		bot.logger = log.New(os.Stdout, "torpedo-bot: ", log.Lshortfile|log.LstdFlags)
+		cu := &common.Utils{}
+		bot.logger = cu.NewLog("torpedo-bot")
 		bot.caches = make(map[string]*memcache.MemCacheType)
 		bot.Config.SkypeIncomingAddr = skype_incoming_addr
 		bot.Config.FacebookIncomingAddr = facebook_incoming_addr
@@ -179,6 +182,7 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 		bot.Config.LastFmSecret = lastfm_secret
 		bot.Config.LineIncomingAddr = line_incoming_addr
 		bot.Config.PinterestToken = pinterest_token
+		bot.Config.SoundCloudClientID = soundcloud_client_id
 		bot.throttle = memcache.New()
 		env_dsn := os.Getenv("SENTRY_DSN")
 		if env_dsn != "" {

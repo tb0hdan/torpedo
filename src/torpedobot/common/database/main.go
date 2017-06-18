@@ -5,9 +5,11 @@ import (
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"torpedobot/common"
 )
 
 type MongoDB struct {
+	logger *log.Logger
 	Server   string
 	Database string
 }
@@ -19,7 +21,7 @@ type TorpedoStats struct {
 func (mdb *MongoDB) GetSession() (session *mgo.Session, err error) {
 	session, err = mgo.Dial(mdb.Server)
 	if err != nil {
-		panic(err)
+		mdb.logger.Panic(err)
 	}
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
@@ -38,18 +40,18 @@ func (mdb *MongoDB) GetCollection(collectionName string) (session *mgo.Session, 
 func (mdb *MongoDB) GetUpdateTotalMessages(step int64) (count int64){
 	session, collection, err := mdb.GetCollection("messagestats")
 	if err != nil {
-		log.Printf("GetUpdateTotalMessages failed with: %+v\n", err)
+		mdb.logger.Printf("GetUpdateTotalMessages failed with: %+v\n", err)
 		return
 	}
 	defer session.Close()
 	result := TorpedoStats{}
 	err = collection.Find(bson.M{}).One(&result)
 	if err != nil {
-		log.Printf("No stats available: %+v\n", err)
+		mdb.logger.Printf("No stats available: %+v\n", err)
 		count = 1
 		err = collection.Insert(&result)
 		if err != nil {
-			log.Fatal(err)
+			mdb.logger.Fatal(err)
 		}
 	} else {
 		count = result.ProcessedMessagesTotal
@@ -57,12 +59,13 @@ func (mdb *MongoDB) GetUpdateTotalMessages(step int64) (count int64){
 	result = TorpedoStats{ProcessedMessagesTotal:count + step}
 	err = collection.Update(bson.M{}, result)
 	if err != nil {
-		log.Printf("Failed to update stats: %+v\n", err)
+		mdb.logger.Printf("Failed to update stats: %+v\n", err)
 	}
 	return
 }
 
 func New(server, database string) (mongodb *MongoDB) {
+	cu := &common.Utils{}
 	if server == "" {
 		server = "localhost"
 	}
@@ -71,5 +74,6 @@ func New(server, database string) (mongodb *MongoDB) {
 	}
 	mongodb = &MongoDB{Server: server,
 		Database: database}
+	mongodb.logger = cu.NewLog("MongoDB")
 	return
 }

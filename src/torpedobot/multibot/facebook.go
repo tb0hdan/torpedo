@@ -1,13 +1,12 @@
 package multibot
 
 import (
-	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/paked/messenger"
+	"torpedobot/common"
 )
 
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
@@ -42,7 +41,8 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
-	logger := log.New(os.Stdout, "facebook-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("facebook-bot")
 
 	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
 

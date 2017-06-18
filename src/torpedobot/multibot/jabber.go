@@ -1,14 +1,13 @@
 package multibot
 
 import (
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/mattn/go-xmpp"
 	"gopkg.in/mgo.v2/bson"
+	"torpedobot/common"
 )
 
 type JabberChatroom struct {
@@ -71,7 +70,8 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
 	tb.Stats.ConnectedAccounts += 1
-	logger := log.New(os.Stdout, "jabber-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("jabber-bot")
 	str_jid := strings.Split(apiKey, ":")[0]
 	password := strings.Split(apiKey, ":")[1]
 	server := strings.Split(str_jid, "@")[1]
@@ -119,7 +119,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	for {
 		chat, err := talk.Recv()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 		switch v := chat.(type) {
 		case xmpp.Chat:
@@ -134,11 +134,11 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 					result := JabberChatroom{}
 					err = collection.Find(bson.M{"myjid": GetStrippedJID(talk), "chatroom": v.Remote}).One(&result)
 					if err != nil {
-						log.Println(err)
+						logger.Println(err)
 						// no record, insert new one
 						err = collection.Insert(&JabberChatroom{GetStrippedJID(talk), v.Remote})
 						if err != nil {
-							log.Fatal(err)
+							logger.Fatal(err)
 						}
 						// join new room
 						talk.JoinMUCNoHistory(v.Remote, "TorpedoBot")

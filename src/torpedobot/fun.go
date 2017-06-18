@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 	"torpedobot/common"
@@ -40,8 +39,10 @@ Try 'rm --help' for more information.
 }
 
 func FunProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+	cu := &common.Utils{}
+	logger := cu.NewLog("fun-process-message")
 	requestedFeature, command, _ := common.GetRequestedFeature(incoming_message)
-	log.Printf("Feature: %s, command: %s\n", requestedFeature, command)
+	logger.Printf("Feature: %s, command: %s\n", requestedFeature, command)
 	message := ParseFunCommand(strings.TrimLeft(requestedFeature, api.CommandPrefix), command)
 	api.Bot.PostMessage(channel, message, api)
 }

@@ -55,6 +55,6 @@ func (bi *BashIM) Get_html(url string) (result *html.Node) {
 func NewClient() (client *BashIM) {
 	client = &BashIM{}
 	client.utils = &common.Utils{}
-	client.utils.SetLoggerPrefix("bashim-plugin")
+	client.logger = client.utils.SetLoggerPrefix("bashim-plugin")
 	return
 }

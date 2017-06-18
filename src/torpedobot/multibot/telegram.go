@@ -1,7 +1,6 @@
 package multibot
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -40,7 +39,8 @@ func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotA
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
-	logger := log.New(os.Stdout, "telegram-bot: ", log.Lshortfile|log.LstdFlags)
+	cu := &common.Utils{}
+	logger := cu.NewLog("telegram-bot")
 
 	api, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/google/google-api-go-client/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
 
+	"torpedobot/common"
 )
 
 
@@ -51,13 +52,17 @@ func CalculateVideoScore(title, query string) (score int) {
 
 
 func YoutubeSearch(query, developerKey string, maxResults int64) (videos []YoutubeVideo) {
+
+	cu := &common.Utils{}
+	logger := cu.NewLog("youtube-search")
+
 	client := &http.Client{
 		Transport: &transport.APIKey{Key: developerKey},
 	}
 
 	service, err := youtube.New(client)
 	if err != nil {
-		log.Fatalf("Error creating new YouTube client: %v", err)
+		logger.Fatalf("Error creating new YouTube client: %v", err)
 	}
 
 	call := service.Search.List("id,snippet").
