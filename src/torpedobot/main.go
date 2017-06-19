@@ -105,7 +105,7 @@ func main() {
 
 	bot := multibot.New()
 	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION)
-	//
+	// bot cfg
 	bot.ConfigureSlackBot()
 	bot.ConfigureTelegramBot()
 	bot.ConfigureJabberBot()
@@ -113,6 +113,7 @@ func main() {
 	bot.ConfigureKikBot()
 	bot.ConfigureFacebookBot()
 	bot.ConfigureLineBot()
+	bot.ConfigureMatrixBot()
 	// bot plugins
 	bot.ConfigureLastFmPlugin()
 	bot.ConfigureGooglePlugin()
@@ -122,22 +123,33 @@ func main() {
 	// make this one last
 	flag.Parse()
 
+	// bot cfg
+	bot.ParseFacebookBot()
+	bot.ParseJabberBot()
+	bot.ParseKikBot()
+	bot.ParseLineBot()
+	bot.ParseMatrixBot()
+	bot.ParseSkypeBot()
+	bot.ParseSlackBot()
+	bot.ParseTelegramBot()
+
 	// bot plugins
-	bot.RunLastFmPlugin()
-	bot.RunGooglePlugin()
-	bot.RunPinterestPlugin()
-	bot.RunSoundCloudPlugin()
-	bot.RunMongoDBPlugin()
+	bot.ParseLastFmPlugin()
+	bot.ParseGooglePlugin()
+	bot.ParsePinterestPlugin()
+	bot.ParseSoundCloudPlugin()
+	bot.ParseMongoDBPlugin()
 	//
 	bot.RegisterHandlers(handlers)
 	bot.RegisterHelp(help)
-	bot.RunBotsCSV(bot.RunSlackBot, bot.Config.SlackAPIKey, "!")
-	bot.RunBotsCSV(bot.RunTelegramBot, bot.Config.TelegramAPIKey, "/")
-	bot.RunBotsCSV(bot.RunJabberBot, bot.Config.JabberAPIKey, "!")
-	bot.RunBotsCSV(bot.RunSkypeBot, bot.Config.SkypeAPIKey, "!")
-	bot.RunBotsCSV(bot.RunFacebookBot, bot.Config.FacebookAPIKey, "!")
-	bot.RunBotsCSV(bot.RunKikBot, bot.Config.KikAPIKey, "!")
-	bot.RunBotsCSV(bot.RunLineBot, bot.Config.LineAPIKey, "!")
-	bot.RunBotsCSV(bot.RunMatrixBot, bot.Config.MatrixAPIKey, "!")
+
+	bot.RunBotsCSV(bot.RunSlackBot, *bot.Config.SlackAPIKey, "!")
+	bot.RunBotsCSV(bot.RunTelegramBot, *bot.Config.TelegramAPIKey, "/")
+	bot.RunBotsCSV(bot.RunJabberBot, *bot.Config.JabberAPIKey, "!")
+	bot.RunBotsCSV(bot.RunSkypeBot, *bot.Config.SkypeAPIKey, "!")
+	bot.RunBotsCSV(bot.RunFacebookBot, *bot.Config.FacebookAPIKey, "!")
+	bot.RunBotsCSV(bot.RunKikBot, *bot.Config.KikAPIKey, "!")
+	bot.RunBotsCSV(bot.RunLineBot, *bot.Config.LineAPIKey, "!")
+	bot.RunBotsCSV(bot.RunMatrixBot, *bot.Config.MatrixAPIKey, "!")
 	bot.RunLoop()
 }

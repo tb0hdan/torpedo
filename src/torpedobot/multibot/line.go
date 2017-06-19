@@ -27,19 +27,21 @@ func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, 
 }
 
 func (tb *TorpedoBot) ConfigureLineBot() {
-	tb.Config.LineAPIKey = *flag.String("line", "", "Line.Me credentials client_secret:client_token,")
-	tb.Config.LineIncomingAddr = *flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
+	tb.Config.LineAPIKey = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
+	tb.Config.LineIncomingAddr = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 
+}
+
+func (tb *TorpedoBot) ParseLineBot() {
+	if *tb.Config.LineAPIKey == "" {
+		*tb.Config.LineAPIKey = common.GetStripEnv("LINE")
+	}
 }
 
 func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
-
-	if tb.Config.LineAPIKey == "" {
-		tb.Config.LineAPIKey = common.GetStripEnv("LINE")
-	}
 
 	logger := cu.NewLog("line-bot")
 
@@ -88,9 +90,9 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 		}
 	})
 
-	tb.logger.Printf("Serving Line bot on %s\n", tb.Config.LineIncomingAddr)
+	tb.logger.Printf("Serving Line bot on %s\n", *tb.Config.LineIncomingAddr)
 
-	if err := http.ListenAndServe(tb.Config.LineIncomingAddr, nil); err != nil {
+	if err := http.ListenAndServe(*tb.Config.LineIncomingAddr, nil); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

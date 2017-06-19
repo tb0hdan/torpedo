@@ -39,17 +39,20 @@ func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotA
 }
 
 func (tb *TorpedoBot) ConfigureTelegramBot() {
-	tb.Config.TelegramAPIKey = *flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+	tb.Config.TelegramAPIKey = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
 }
+
+func (tb *TorpedoBot) ParseTelegramBot() {
+	if *tb.Config.TelegramAPIKey == "" {
+		*tb.Config.TelegramAPIKey = common.GetStripEnv("TELEGRAM")
+	}
+}
+
 
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
-
-	if tb.Config.TelegramAPIKey == "" {
-		tb.Config.TelegramAPIKey = common.GetStripEnv("TELEGRAM")
-	}
 
 	logger := cu.NewLog("telegram-bot")
 

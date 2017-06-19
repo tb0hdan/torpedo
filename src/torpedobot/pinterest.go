@@ -21,7 +21,7 @@ func PinterestProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, i
 	case "board":
 		board := strings.TrimSpace(strings.TrimPrefix(incoming_message, fmt.Sprintf("%s %s", requestedFeature, command)))
 		if board != "" {
-			api := pinterest.New(api.Bot.Config.PinterestToken)
+			api := pinterest.New(*api.Bot.Config.PinterestToken)
 			images, err := api.GetImagesForBoard(board)
 			if err != nil {
 				return

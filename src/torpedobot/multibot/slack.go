@@ -41,8 +41,14 @@ func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 }
 
 func (tb *TorpedoBot) ConfigureSlackBot() {
-	tb.Config.SlackAPIKey = *flag.String("slack", "", "Comma separated list of Slack legacy tokens")
+	tb.Config.SlackAPIKey = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
 
+}
+
+func (tb *TorpedoBot) ParseSlackBot() {
+	if *tb.Config.SlackAPIKey == "" {
+		*tb.Config.SlackAPIKey = common.GetStripEnv("SLACK")
+	}
 }
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
@@ -50,10 +56,6 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 	api := slack.New(apiKey)
 	cu := &common.Utils{}
-
-	if tb.Config.SlackAPIKey == "" {
-		tb.Config.SlackAPIKey = common.GetStripEnv("SLACK")
-	}
 
 	logger := cu.NewLog("slack-bot")
 	slack.SetLogger(logger)

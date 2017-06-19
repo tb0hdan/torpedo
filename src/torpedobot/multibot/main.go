@@ -31,26 +31,26 @@ type TorpedoBot struct {
 	help            map[string]string
 	Database        *database.MongoDB
 	Config          struct {
-		FacebookAPIKey       string
-		FacebookIncomingAddr string
-		GoogleWebAppKey      string
-		KikIncomingAddr      string
-		KikWebHook           string
-		LastFmKey            string
-		LastFmSecret         string
-		LineAPIKey           string
-		LineIncomingAddr     string
-		SkypeIncomingAddr    string
-		PinterestToken       string
+		FacebookAPIKey       *string
+		FacebookIncomingAddr *string
+		GoogleWebAppKey      *string
+		KikIncomingAddr      *string
+		KikWebHook           *string
+		LastFmKey            *string
+		LastFmSecret         *string
+		LineAPIKey           *string
+		LineIncomingAddr     *string
+		SkypeIncomingAddr    *string
+		PinterestToken       *string
 		RavenEnabled         bool
-		SoundCloudClientID   string
-		SlackAPIKey          string
-		TelegramAPIKey       string
-		JabberAPIKey         string
-		SkypeAPIKey          string
-		KikAPIKey            string
-		MatrixAPIKey         string
-		MongoDBConnection    string
+		SoundCloudClientID   *string
+		SlackAPIKey          *string
+		TelegramAPIKey       *string
+		JabberAPIKey         *string
+		SkypeAPIKey          *string
+		KikAPIKey            *string
+		MatrixAPIKey         *string
+		MongoDBConnection    *string
 	}
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType

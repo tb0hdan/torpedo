@@ -77,7 +77,7 @@ func SoundCloudProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, 
 	_, command, _ := common.GetRequestedFeature(incoming_message)
 	result := make([]SoundCloudSearchResponse, 0)
 	query := url.Values{}
-	query.Add("client_id", api.Bot.Config.SoundCloudClientID)
+	query.Add("client_id", *api.Bot.Config.SoundCloudClientID)
 	query.Add("q", url.QueryEscape(command))
 	url := "https://api.soundcloud.com/tracks/?" + query.Encode()
 	err := cu.GetURLUnmarshal(url, &result)

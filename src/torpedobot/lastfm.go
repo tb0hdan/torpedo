@@ -98,7 +98,7 @@ func (lfw *LastFmWrapper) LastfmUser(user string) (result string) {
 func LastFmProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
 	var message string
 	var richmsg multibot.RichMessage
-	lfm := &LastFmWrapper{LastFmKey:api.Bot.Config.LastFmKey, LastFmSecret:api.Bot.Config.LastFmSecret}
+	lfm := &LastFmWrapper{LastFmKey:*api.Bot.Config.LastFmKey, LastFmSecret:*api.Bot.Config.LastFmSecret}
 	help := fmt.Sprintf("Usage: %slastfm command\nAvailable commands: artist, tag, user", api.CommandPrefix)
 	command := strings.Split(strings.TrimSpace(strings.TrimLeft(incoming_message, fmt.Sprintf("%slastfm", api.CommandPrefix))), " ")[0]
 

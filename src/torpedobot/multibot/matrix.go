@@ -25,17 +25,19 @@ func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI
 }
 
 func (tb *TorpedoBot) ConfigureMatrixBot() {
-	tb.Config.MatrixAPIKey = *flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
+	tb.Config.MatrixAPIKey = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
+}
+
+func (tb *TorpedoBot) ParseMatrixBot() {
+	if *tb.Config.MatrixAPIKey == "" {
+		*tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
+	}
 }
 
 func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
-
-	if tb.Config.MatrixAPIKey == "" {
-		tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
-	}
 
 	logger := cu.NewLog("matrix-bot")
 

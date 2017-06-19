@@ -21,7 +21,7 @@ func DistanceProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, in
 		separator = "-&gt;"
 	}
 	if command != "" && len(strings.Split(command, separator)) == 2 {
-		c, err := maps.NewClient(maps.WithAPIKey(api.Bot.Config.GoogleWebAppKey))
+		c, err := maps.NewClient(maps.WithAPIKey(*api.Bot.Config.GoogleWebAppKey))
 		if err != nil {
 			// Okay, fatal here...
 			logger.Fatalf("fatal error: %+v\n", err)

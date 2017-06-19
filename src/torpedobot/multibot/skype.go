@@ -151,20 +151,22 @@ func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 }
 
 func (tb *TorpedoBot) ConfigureSkypeBot() {
-	tb.Config.SkypeIncomingAddr = *flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
-	tb.Config.SkypeAPIKey = *flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
-
+	tb.Config.SkypeIncomingAddr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
+	tb.Config.SkypeAPIKey = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
 }
+
+func (tb *TorpedoBot) ParseSkypeBot() {
+	if *tb.Config.MatrixAPIKey == "" {
+		*tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
+	}
+}
+
 
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	skype_api := &SkypeAPI{}
 	cu := &common.Utils{}
-
-	if tb.Config.SkypeAPIKey == "" {
-		tb.Config.SkypeAPIKey = common.GetStripEnv("SKYPE")
-	}
 
 	logger := cu.NewLog("skype-bot")
 	skype_api.logger = logger
@@ -215,8 +217,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
-	logger.Printf("Starting Skype API listener on %s\n", tb.Config.SkypeIncomingAddr)
-	if err := http.ListenAndServe(tb.Config.SkypeIncomingAddr, nil); err != nil {
+	logger.Printf("Starting Skype API listener on %s\n", *tb.Config.SkypeIncomingAddr)
+	if err := http.ListenAndServe(*tb.Config.SkypeIncomingAddr, nil); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

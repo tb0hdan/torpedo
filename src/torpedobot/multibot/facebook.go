@@ -42,18 +42,21 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 }
 
 func (tb *TorpedoBot) ConfigureFacebookBot() {
-	tb.Config.FacebookAPIKey = *flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+	tb.Config.FacebookAPIKey = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+	tb.Config.FacebookIncomingAddr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
+
+}
+
+func (tb *TorpedoBot) ParseFacebookBot() {
+	if *tb.Config.FacebookAPIKey == "" {
+		*tb.Config.FacebookAPIKey = common.GetStripEnv("FACEBOOK")
+	}
 }
 
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 	cu := &common.Utils{}
 	logger := cu.NewLog("facebook-bot")
-
-	tb.Config.FacebookIncomingAddr = *flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
-	if tb.Config.FacebookAPIKey == "" {
-		tb.Config.FacebookAPIKey = common.GetStripEnv("FACEBOOK")
-	}
 
 	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
 
@@ -84,9 +87,9 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		logger.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	logger.Printf("Serving messenger bot on %s\n", tb.Config.FacebookIncomingAddr)
+	logger.Printf("Serving messenger bot on %s\n", *tb.Config.FacebookIncomingAddr)
 
-	if err := http.ListenAndServe(tb.Config.FacebookIncomingAddr, client.Handler()); err != nil {
+	if err := http.ListenAndServe(*tb.Config.FacebookIncomingAddr, client.Handler()); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1
