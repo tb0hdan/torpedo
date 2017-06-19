@@ -156,8 +156,8 @@ func (tb *TorpedoBot) ConfigureSkypeBot() {
 }
 
 func (tb *TorpedoBot) ParseSkypeBot() {
-	if *tb.Config.MatrixAPIKey == "" {
-		*tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
+	if *tb.Config.SkypeAPIKey == "" {
+		*tb.Config.SkypeAPIKey = common.GetStripEnv("SKYPE")
 	}
 }
 
