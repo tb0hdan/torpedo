@@ -4,9 +4,11 @@ import (
 	"os"
 	"time"
 
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
-	"torpedobot/common"
+	"flag"
 	"regexp"
+	"torpedobot/common"
+
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable, fname string) {
@@ -36,10 +38,19 @@ func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotA
 	}
 }
 
+func (tb *TorpedoBot) ConfigureTelegramBot() {
+	tb.Config.TelegramAPIKey = *flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+}
+
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
+
+	if tb.Config.TelegramAPIKey == "" {
+		tb.Config.TelegramAPIKey = common.GetStripEnv("TELEGRAM")
+	}
+
 	logger := cu.NewLog("telegram-bot")
 
 	api, err := tgbotapi.NewBotAPI(apiKey)

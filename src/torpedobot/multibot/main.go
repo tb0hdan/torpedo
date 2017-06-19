@@ -7,11 +7,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"torpedobot/common"
 	"torpedobot/common/database"
 	"torpedobot/memcache"
 
 	"github.com/getsentry/raven-go"
-	"torpedobot/common"
 )
 
 var bot *TorpedoBot
@@ -31,17 +31,26 @@ type TorpedoBot struct {
 	help            map[string]string
 	Database        *database.MongoDB
 	Config          struct {
+		FacebookAPIKey       string
 		FacebookIncomingAddr string
 		GoogleWebAppKey      string
 		KikIncomingAddr      string
 		KikWebHook           string
 		LastFmKey            string
 		LastFmSecret         string
+		LineAPIKey           string
 		LineIncomingAddr     string
 		SkypeIncomingAddr    string
 		PinterestToken       string
 		RavenEnabled         bool
-		SoundCloudClientID	 string
+		SoundCloudClientID   string
+		SlackAPIKey          string
+		TelegramAPIKey       string
+		JabberAPIKey         string
+		SkypeAPIKey          string
+		KikAPIKey            string
+		MatrixAPIKey         string
+		MongoDBConnection    string
 	}
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
@@ -167,22 +176,12 @@ func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
 	return
 }
 
-func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_incoming_addr, kik_webhook_url, lastfm_key, lastfm_secret, line_incoming_addr, pinterest_token, mongo, soundcloud_client_id string) *TorpedoBot {
+func New() *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		cu := &common.Utils{}
 		bot.logger = cu.NewLog("torpedo-bot")
 		bot.caches = make(map[string]*memcache.MemCacheType)
-		bot.Config.SkypeIncomingAddr = skype_incoming_addr
-		bot.Config.FacebookIncomingAddr = facebook_incoming_addr
-		bot.Config.GoogleWebAppKey = google_webapp_key
-		bot.Config.KikIncomingAddr = kik_incoming_addr
-		bot.Config.KikWebHook = kik_webhook_url
-		bot.Config.LastFmKey = lastfm_key
-		bot.Config.LastFmSecret = lastfm_secret
-		bot.Config.LineIncomingAddr = line_incoming_addr
-		bot.Config.PinterestToken = pinterest_token
-		bot.Config.SoundCloudClientID = soundcloud_client_id
 		bot.throttle = memcache.New()
 		env_dsn := os.Getenv("SENTRY_DSN")
 		if env_dsn != "" {
@@ -193,7 +192,6 @@ func New(facebook_incoming_addr, google_webapp_key, skype_incoming_addr, kik_inc
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage))
 		bot.Stats = &BotStats{}
 		bot.Stats.StartTimestamp = int64(time.Now().Unix())
-		bot.Database = database.New(mongo, "")
 
 	})
 	return bot

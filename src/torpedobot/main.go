@@ -2,18 +2,9 @@ package main
 
 import (
 	"flag"
-	"os"
-	"strings"
 
 	"torpedobot/multibot"
 )
-
-func GetStripEnv(envvar string) (result string) {
-	result = os.Getenv(envvar)
-	result = strings.TrimLeft(result, "'")
-	result = strings.TrimRight(result, "'")
-	return
-}
 
 // Global vars for versioning
 var (
@@ -23,30 +14,11 @@ var (
 )
 
 func main() {
+
 	var (
-		slack                  = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
-		telegram               = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
-		jabber                 = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
-		skype                  = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
-		kik                    = flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
-		skype_incoming_addr    = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
-		facebook               = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
-		google_webapp_key      = flag.String("google_webapp_key", "", "Google Data API Web Application Key")
-		facebook_incoming_addr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
-		kik_incoming_addr      = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
-		kik_webhook_url        = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
-		handlers               = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
-		help                   = make(map[string]string)
-		lastfm_key             = flag.String("lastfm_key", "", "Last.FM API Key")
-		lastfm_secret          = flag.String("lastfm_secret", "", "Last.FM API Secret")
-		line_creds             = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
-		line_incoming_addr     = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
-		pinterest_token        = flag.String("pinterest_token", "", "Pinterest Client Token")
-		matrix                 = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
-		mongo                  = flag.String("mongo", "", "MongoDB server hostname")
-		soundcloud_client_id   = flag.String("soundcloud_id", "", "SoundCloud client ID")
+		handlers = make(map[string]func(*multibot.TorpedoBotAPI, interface{}, string))
+		help     = make(map[string]string)
 	)
-	flag.Parse()
 	handlers["bashim"] = BashProcessMessage
 	help["bashim"] = "Get random quote from Bash.im"
 	handlers["bashorg"] = BashOrgProcessMessage
@@ -131,73 +103,41 @@ func main() {
 	handlers["xkcd"] = XKCDProcessMessage
 	help["xkcd"] = "Get XKCD random strip. Provide integer ID to get specific one."
 
-	if *slack == "" {
-		*slack = GetStripEnv("SLACK")
-	}
-	if *telegram == "" {
-		*telegram = GetStripEnv("TELEGRAM")
-	}
-	if *jabber == "" {
-		*jabber = GetStripEnv("JABBER")
-	}
-	if *skype == "" {
-		*skype = GetStripEnv("SKYPE")
-	}
-	if *facebook == "" {
-		*facebook = GetStripEnv("FACEBOOK")
-	}
-	if *kik == "" {
-		*kik = GetStripEnv("KIK")
-	}
-	if *kik_webhook_url == "" {
-		*kik_webhook_url = GetStripEnv("KIK_WEBHOOK_URL")
-	}
-	if *lastfm_key == "" {
-		*lastfm_key = GetStripEnv("LASTFM_KEY")
-	}
-	if *lastfm_secret == "" {
-		*lastfm_secret = GetStripEnv("LASTFM_SECRET")
-	}
-	if *line_creds == "" {
-		*line_creds = GetStripEnv("LINE")
-	}
-	if *pinterest_token == "" {
-		*pinterest_token = GetStripEnv("PINTEREST")
-	}
-	if *google_webapp_key == "" {
-		*google_webapp_key = GetStripEnv("GOOGLE_WEBAPP_KEY")
-	}
-	if *matrix == "" {
-		*matrix = GetStripEnv("MATRIX")
-	}
-	if *mongo == "" {
-		// try supplied one first
-		*mongo = GetStripEnv("MONGO")
-		// docker...
-		if *mongo == "" {
-			*mongo = GetStripEnv("MONGO_PORT_27017_TCP_ADDR")
-		}
-
-	}
-	if *soundcloud_client_id == "" {
-		*soundcloud_client_id = GetStripEnv("SOUNDCLOUD_ID")
-	}
-
-	bot := multibot.New(*facebook_incoming_addr, *google_webapp_key,
-		*skype_incoming_addr, *kik_incoming_addr,
-		*kik_webhook_url,
-		*lastfm_key, *lastfm_secret, *line_incoming_addr, *pinterest_token,
-		*mongo, *soundcloud_client_id)
+	bot := multibot.New()
 	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION)
+	//
+	bot.ConfigureSlackBot()
+	bot.ConfigureTelegramBot()
+	bot.ConfigureJabberBot()
+	bot.ConfigureSkypeBot()
+	bot.ConfigureKikBot()
+	bot.ConfigureFacebookBot()
+	bot.ConfigureLineBot()
+	// bot plugins
+	bot.ConfigureLastFmPlugin()
+	bot.ConfigureGooglePlugin()
+	bot.ConfigurePinterestPlugin()
+	bot.ConfigureSoundCloudPlugin()
+	bot.ConfigureMongoDBPlugin()
+	// make this one last
+	flag.Parse()
+
+	// bot plugins
+	bot.RunLastFmPlugin()
+	bot.RunGooglePlugin()
+	bot.RunPinterestPlugin()
+	bot.RunSoundCloudPlugin()
+	bot.RunMongoDBPlugin()
+	//
 	bot.RegisterHandlers(handlers)
 	bot.RegisterHelp(help)
-	bot.RunBotsCSV(bot.RunSlackBot, *slack, "!")
-	bot.RunBotsCSV(bot.RunTelegramBot, *telegram, "/")
-	bot.RunBotsCSV(bot.RunJabberBot, *jabber, "!")
-	bot.RunBotsCSV(bot.RunSkypeBot, *skype, "!")
-	bot.RunBotsCSV(bot.RunFacebookBot, *facebook, "!")
-	bot.RunBotsCSV(bot.RunKikBot, *kik, "!")
-	bot.RunBotsCSV(bot.RunLineBot, *line_creds, "!")
-	bot.RunBotsCSV(bot.RunMatrixBot, *matrix, "!")
+	bot.RunBotsCSV(bot.RunSlackBot, bot.Config.SlackAPIKey, "!")
+	bot.RunBotsCSV(bot.RunTelegramBot, bot.Config.TelegramAPIKey, "/")
+	bot.RunBotsCSV(bot.RunJabberBot, bot.Config.JabberAPIKey, "!")
+	bot.RunBotsCSV(bot.RunSkypeBot, bot.Config.SkypeAPIKey, "!")
+	bot.RunBotsCSV(bot.RunFacebookBot, bot.Config.FacebookAPIKey, "!")
+	bot.RunBotsCSV(bot.RunKikBot, bot.Config.KikAPIKey, "!")
+	bot.RunBotsCSV(bot.RunLineBot, bot.Config.LineAPIKey, "!")
+	bot.RunBotsCSV(bot.RunMatrixBot, bot.Config.MatrixAPIKey, "!")
 	bot.RunLoop()
 }

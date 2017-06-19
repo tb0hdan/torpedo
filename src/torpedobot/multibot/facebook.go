@@ -5,8 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/paked/messenger"
+	"flag"
 	"torpedobot/common"
+
+	"github.com/paked/messenger"
 )
 
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
@@ -39,10 +41,19 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 	}
 }
 
+func (tb *TorpedoBot) ConfigureFacebookBot() {
+	tb.Config.FacebookAPIKey = *flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+}
+
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 	cu := &common.Utils{}
 	logger := cu.NewLog("facebook-bot")
+
+	tb.Config.FacebookIncomingAddr = *flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
+	if tb.Config.FacebookAPIKey == "" {
+		tb.Config.FacebookAPIKey = common.GetStripEnv("FACEBOOK")
+	}
 
 	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
 

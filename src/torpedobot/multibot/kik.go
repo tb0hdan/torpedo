@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -146,10 +147,28 @@ func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, r
 	}
 }
 
+func (tb *TorpedoBot) ConfigureKikBot() {
+	tb.Config.KikIncomingAddr = *flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
+
+	tb.Config.KikWebHook = *flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
+
+	tb.Config.KikAPIKey = *flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
+
+}
+
 func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
+
+	if tb.Config.KikWebHook == "" {
+		tb.Config.KikWebHook = common.GetStripEnv("KIK_WEBHOOK_URL")
+	}
+
+	if tb.Config.KikAPIKey == "" {
+		tb.Config.KikAPIKey = common.GetStripEnv("KIK")
+	}
+
 	logger := cu.NewLog("kik-bot")
 	api := &KikAPI{}
 	api.logger = logger

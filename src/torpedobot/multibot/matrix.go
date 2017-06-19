@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/matrix-org/gomatrix"
+	"flag"
 	"torpedobot/common"
+
+	"github.com/matrix-org/gomatrix"
 )
 
 func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
@@ -22,10 +24,19 @@ func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI
 	}
 }
 
+func (tb *TorpedoBot) ConfigureMatrixBot() {
+	tb.Config.MatrixAPIKey = *flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
+}
+
 func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
+
+	if tb.Config.MatrixAPIKey == "" {
+		tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
+	}
+
 	logger := cu.NewLog("matrix-bot")
 
 	clientID := fmt.Sprintf("@%s:matrix.org", strings.Split(apiKey, ":")[0])

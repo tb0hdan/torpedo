@@ -5,13 +5,15 @@ import (
 	"strings"
 	"time"
 
+	"flag"
+	"torpedobot/common"
+
 	"github.com/mattn/go-xmpp"
 	"gopkg.in/mgo.v2/bson"
-	"torpedobot/common"
 )
 
 type JabberChatroom struct {
-	MyJID string
+	MyJID    string
 	Chatroom string
 }
 
@@ -65,12 +67,20 @@ func GetStrippedJID(cli *xmpp.Client) (jid string) {
 	return
 }
 
+func (tb *TorpedoBot) ConfigureJabberBot() {
+	tb.Config.JabberAPIKey = *flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
+}
 
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	var talk *xmpp.Client
 	var err error
 	tb.Stats.ConnectedAccounts += 1
 	cu := &common.Utils{}
+
+	if tb.Config.JabberAPIKey == "" {
+		tb.Config.JabberAPIKey = common.GetStripEnv("JABBER")
+	}
+
 	logger := cu.NewLog("jabber-bot")
 	str_jid := strings.Split(apiKey, ":")[0]
 	password := strings.Split(apiKey, ":")[1]

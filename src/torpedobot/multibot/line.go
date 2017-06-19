@@ -1,11 +1,13 @@
 package multibot
 
 import (
+	"flag"
 	"net/http"
 	"strings"
 
-	"github.com/line/line-bot-sdk-go/linebot"
 	"torpedobot/common"
+
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
@@ -24,10 +26,21 @@ func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, 
 	}
 }
 
+func (tb *TorpedoBot) ConfigureLineBot() {
+	tb.Config.LineAPIKey = *flag.String("line", "", "Line.Me credentials client_secret:client_token,")
+	tb.Config.LineIncomingAddr = *flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
+
+}
+
 func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
+
+	if tb.Config.LineAPIKey == "" {
+		tb.Config.LineAPIKey = common.GetStripEnv("LINE")
+	}
+
 	logger := cu.NewLog("line-bot")
 
 	bot, err := linebot.New(strings.Split(apiKey, ":")[0],

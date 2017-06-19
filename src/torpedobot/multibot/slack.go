@@ -6,6 +6,8 @@ import (
 
 	"torpedobot/common"
 
+	"flag"
+
 	"github.com/nlopes/slack"
 )
 
@@ -38,11 +40,21 @@ func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 	}
 }
 
+func (tb *TorpedoBot) ConfigureSlackBot() {
+	tb.Config.SlackAPIKey = *flag.String("slack", "", "Comma separated list of Slack legacy tokens")
+
+}
+
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	api := slack.New(apiKey)
 	cu := &common.Utils{}
+
+	if tb.Config.SlackAPIKey == "" {
+		tb.Config.SlackAPIKey = common.GetStripEnv("SLACK")
+	}
+
 	logger := cu.NewLog("slack-bot")
 	slack.SetLogger(logger)
 	api.SetDebug(true)

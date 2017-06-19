@@ -15,9 +15,10 @@ import (
 	"crypto/sha512"
 	"io"
 
+	"encoding/json"
+
 	"github.com/nlopes/slack"
 	"gopkg.in/h2non/filetype.v1"
-	"encoding/json"
 )
 
 const User_Agent = "Mozilla/5.0 (https://github.com/tb0hdan/torpedo; tb0hdan@gmail.com) Go-http-client/1.1"
@@ -26,13 +27,13 @@ type Utils struct {
 	logger *log.Logger
 }
 
-func (cu *Utils) SetLoggerPrefix(prefix string) (logger *log.Logger){
+func (cu *Utils) SetLoggerPrefix(prefix string) (logger *log.Logger) {
 	logger = cu.NewLog(prefix)
 	cu.SetLogger(logger)
 	return
 }
 
-func (cu *Utils) NewLog(prefix string) (logger *log.Logger){
+func (cu *Utils) NewLog(prefix string) (logger *log.Logger) {
 	logger = log.New(os.Stdout, fmt.Sprintf("%s: ", prefix), log.Lshortfile|log.LstdFlags)
 	return
 }
@@ -73,8 +74,6 @@ func (cu *Utils) GetURLUnmarshal(url string, result interface{}) (err error) {
 	err = json.Unmarshal(data, result)
 	return
 }
-
-
 
 func (cu *Utils) GetMIMEType(fname string) (mimetype, extension string, is_image bool, err error) {
 	// Read a file
@@ -183,5 +182,12 @@ func SHA512Hash(message string) (result string) {
 	my_hash := sha512.New()
 	io.WriteString(my_hash, message)
 	result = fmt.Sprintf("%x", my_hash.Sum(nil))
+	return
+}
+
+func GetStripEnv(envvar string) (result string) {
+	result = os.Getenv(envvar)
+	result = strings.TrimLeft(result, "'")
+	result = strings.TrimRight(result, "'")
 	return
 }
