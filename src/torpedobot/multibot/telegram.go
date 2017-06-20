@@ -6,7 +6,7 @@ import (
 
 	"flag"
 	"regexp"
-	"torpedobot/common"
+	common "github.com/tb0hdan/torpedo_common"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

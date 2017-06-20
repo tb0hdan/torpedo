@@ -1,8 +1,8 @@
 package multibot
 
 import (
-	"torpedobot/common"
-	"torpedobot/memcache"
+	common "github.com/tb0hdan/torpedo_common"
+	memcache "github.com/tb0hdan/torpedo_common/memcache"
 )
 
 func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {

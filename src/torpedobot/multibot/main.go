@@ -7,9 +7,10 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"torpedobot/common"
-	"torpedobot/common/database"
-	"torpedobot/memcache"
+	common "github.com/tb0hdan/torpedo_common"
+	database "github.com/tb0hdan/torpedo_common/database"
+	memcache "github.com/tb0hdan/torpedo_common/memcache"
+	"github.com/tb0hdan/torpedo_registry"
 
 	"github.com/getsentry/raven-go"
 )
@@ -27,7 +28,7 @@ type BotStats struct {
 
 type TorpedoBot struct {
 	caches          map[string]*memcache.MemCacheType
-	commandHandlers map[string]func(*TorpedoBotAPI, interface{}, string)
+	commandHandlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)
 	help            map[string]string
 	Database        *database.MongoDB
 	Config          struct {
@@ -57,19 +58,42 @@ type TorpedoBot struct {
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage)
 	Stats               *BotStats
 	Build               struct {
-		Build    string
-		BuldDate string
-		Version  string
+		Build     string
+		BuildDate string
+		Version   string
 	}
 }
 
-func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *TorpedoBotAPI, richmsgs ...RichMessage) {
-	if len(richmsgs) > 0 {
-		api.PostMessage(channel, message, richmsgs[0])
-	} else {
-		api.PostMessage(channel, message)
-	}
+type TorpedoBotAPI struct {
+	API           interface{}
+	CommandPrefix string
+	Bot           *TorpedoBot
+	From          string
+	Type          string
+}
 
+func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {
+	ran := 0
+	for proto := range tba.Bot.RegisteredProtocols {
+		if proto == fmt.Sprintf("%T", tba.API) {
+			ran += 1
+			tba.Bot.RegisteredProtocols[proto](channel, message, tba, richmsgs)
+			break
+		}
+	}
+	if ran == 0 {
+		tba.Bot.logger.Printf("Unsupported bot API: %T\n", tba.API)
+
+	}
+}
+
+func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *torpedo_registry.BotAPI, richmsgs ...interface{}) {
+	mapi := api.API.(*TorpedoBotAPI)
+	if len(richmsgs) > 0 {
+		mapi.PostMessage(channel, message, richmsgs[0].(RichMessage))
+	} else {
+		mapi.PostMessage(channel, message)
+	}
 }
 
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
@@ -80,16 +104,24 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		tb.Stats.ProcessedMessagesTotal = tb.Database.GetUpdateTotalMessages(1)
 		//
 		command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
+		botapi := &torpedo_registry.BotAPI{}
+		botapi.API = api
+		botapi.CommandPrefix = api.CommandPrefix
+		botapi.Bot.GetCachedItem = api.Bot.GetCachedItem
+		botapi.Bot.SetCachedItems = api.Bot.SetCachedItems
+		botapi.Bot.GetCommandHandlers = api.Bot.GetCommandHandlers
+		botapi.Bot.GetHelp = api.Bot.GetHelp
+		botapi.Bot.PostMessage = api.Bot.PostMessage
 		found := 0
 		for handler := range tb.commandHandlers {
 			if strings.ToLower(strings.Split(command, " ")[0]) == handler {
 				found += 1
 				if tb.Config.RavenEnabled {
 					raven.CapturePanicAndWait(func() {
-						tb.commandHandlers[handler](api, channel, incoming_message)
+						tb.commandHandlers[handler](botapi, channel, incoming_message)
 					}, nil)
 				} else {
-					tb.commandHandlers[handler](api, channel, incoming_message)
+					tb.commandHandlers[handler](botapi, channel, incoming_message)
 				}
 				break
 			}
@@ -128,12 +160,12 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 	}
 }
 
-func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
+func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)) {
 	tb.commandHandlers = handlers
 	return
 }
 
-func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*TorpedoBotAPI, interface{}, string)) {
+func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)) {
 	return tb.commandHandlers
 }
 
@@ -146,34 +178,25 @@ func (tb *TorpedoBot) GetHelp() (help map[string]string) {
 	return tb.help
 }
 
-type TorpedoBotAPI struct {
-	API           interface{}
-	CommandPrefix string
-	Bot           *TorpedoBot
-	From          string
-	Type          string
-}
-
-func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {
-	ran := 0
-	for proto := range tba.Bot.RegisteredProtocols {
-		if proto == fmt.Sprintf("%T", tba.API) {
-			ran += 1
-			tba.Bot.RegisteredProtocols[proto](channel, message, tba, richmsgs)
-			break
-		}
-	}
-	if ran == 0 {
-		tba.Bot.logger.Printf("Unsupported bot API: %T\n", tba.API)
-
-	}
-}
-
 func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
 	tb.Build.Build = build
-	tb.Build.BuldDate = buildDate
+	tb.Build.BuildDate = buildDate
 	tb.Build.Version = version
 	return
+}
+
+func (tb *TorpedoBot) RunPreParsers(preparsers map[string]func()) {
+	for name := range preparsers {
+		tb.logger.Printf("Running argument preparser: %s\n", name)
+		preparsers[name]()
+	}
+}
+
+func (tb *TorpedoBot) RunPostParsers(postparsers map[string]func()) {
+	for name := range postparsers {
+		tb.logger.Printf("Running argument postparser: %s\n", name)
+		postparsers[name]()
+	}
 }
 
 func New() *TorpedoBot {

@@ -1,1 +1,0 @@
-package bashim_test

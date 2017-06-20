@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"torpedobot/common"
+	common "github.com/tb0hdan/torpedo_common"
 
 	"flag"
 

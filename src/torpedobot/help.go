@@ -1,16 +1,14 @@
 package main
 
-
 import (
 	"fmt"
 
-	"torpedobot/multibot"
-	"torpedobot/common"
 	"strings"
+	"github.com/tb0hdan/torpedo_registry"
+	common "github.com/tb0hdan/torpedo_common"
 )
 
-
-func HelpProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incoming_message string) {
 	var message string
 	_, command, _ := common.GetRequestedFeature(incoming_message)
 	if command == "" {

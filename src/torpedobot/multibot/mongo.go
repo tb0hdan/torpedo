@@ -2,8 +2,8 @@ package multibot
 
 import (
 	"flag"
-	"torpedobot/common"
-	"torpedobot/common/database"
+	common "github.com/tb0hdan/torpedo_common"
+	database "github.com/tb0hdan/torpedo_common/database"
 )
 
 func (tb *TorpedoBot) ConfigureMongoDBPlugin() {

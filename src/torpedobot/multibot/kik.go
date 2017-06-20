@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"torpedobot/common"
+	common "github.com/tb0hdan/torpedo_common"
 )
 
 type KikAttachment struct {

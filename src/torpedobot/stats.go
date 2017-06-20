@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"time"
-	"torpedobot/multibot"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 func FormatTDiff(ts int64) (int64, int64, int64, int64) {
@@ -47,11 +47,13 @@ func GetMemStats() (result string) {
 	return
 }
 
-func StatsProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incoming_message string) {
+func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incoming_message string) {
+	//api = &Dummy{}
+
 	ts := int64(time.Now().Unix()) - api.Bot.Stats.StartTimestamp
 	d, h, m, s := FormatTDiff(ts)
 	message := fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
-	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuldDate)
+	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuildDate)
 	message += fmt.Sprintf("Build version: %s\n", api.Bot.Build.Version)
 	message += fmt.Sprintf("Uptime: %v day(s) %v hour(s) %v minute(s) %v second(s)\n", d, h, m, s)
 	message += fmt.Sprintf("Processed messages (session): %v\n", api.Bot.Stats.ProcessedMessages)
@@ -60,4 +62,5 @@ func StatsProcessMessage(api *multibot.TorpedoBotAPI, channel interface{}, incom
 	message += fmt.Sprintf("Accounts connected/total: %v/%v\n", api.Bot.Stats.ConnectedAccounts, api.Bot.Stats.TotalAccounts)
 	message += fmt.Sprintf("Memory info:%s\n", GetMemStats())
 	api.Bot.PostMessage(channel, message, api)
+
 }

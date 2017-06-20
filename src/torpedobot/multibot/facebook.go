@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"flag"
-	"torpedobot/common"
+	common "github.com/tb0hdan/torpedo_common"
 
 	"github.com/paked/messenger"
 )
