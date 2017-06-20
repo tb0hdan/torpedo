@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/tb0hdan/torpedo_bashim_plugin"
 	_ "github.com/tb0hdan/torpedo_bashorg_plugin"
+	_ "github.com/tb0hdan/torpedo_fun_plugin"
 
 	"github.com/tb0hdan/torpedo_registry"
 	"torpedobot/multibot"
