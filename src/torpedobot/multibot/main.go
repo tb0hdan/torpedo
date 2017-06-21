@@ -55,7 +55,7 @@ type TorpedoBot struct {
 	}
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
-	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage)
+	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage)
 	Stats               *BotStats
 	Build               struct {
 		Build     string
@@ -72,7 +72,7 @@ type TorpedoBotAPI struct {
 	Type          string
 }
 
-func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...RichMessage) {
+func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...torpedo_registry.RichMessage) {
 	ran := 0
 	for proto := range tba.Bot.RegisteredProtocols {
 		if proto == fmt.Sprintf("%T", tba.API) {
@@ -90,7 +90,7 @@ func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richm
 func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *torpedo_registry.BotAPI, richmsgs ...interface{}) {
 	mapi := api.API.(*TorpedoBotAPI)
 	if len(richmsgs) > 0 {
-		mapi.PostMessage(channel, message, richmsgs[0].(RichMessage))
+		mapi.PostMessage(channel, message, richmsgs[0].(torpedo_registry.RichMessage))
 	} else {
 		mapi.PostMessage(channel, message)
 	}
@@ -212,7 +212,7 @@ func New() *TorpedoBot {
 			raven.SetDSN(env_dsn)
 			bot.Config.RavenEnabled = true
 		}
-		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []RichMessage))
+		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage))
 		bot.Stats = &BotStats{}
 		bot.Stats.StartTimestamp = int64(time.Now().Unix())
 

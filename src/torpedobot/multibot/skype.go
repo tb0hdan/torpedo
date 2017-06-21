@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 	common "github.com/tb0hdan/torpedo_common"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 type SkypeIncomingMessage struct {
@@ -124,7 +125,7 @@ func (sapi *SkypeAPI) GetToken(app_id, app_password string) (token_response *Sky
 	return
 }
 
-func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
+func ToSkypeAttachment(rm torpedo_registry.RichMessage) (attachment *SkypeAttachment) {
 	cu := &common.Utils{}
 	fname, mimetype, is_image, err := cu.DownloadToTmp(rm.ImageURL)
 	if is_image && err == nil {
@@ -138,11 +139,11 @@ func (rm *RichMessage) ToSkypeAttachment() (attachment *SkypeAttachment) {
 	return
 }
 
-func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *SkypeAPI:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			api.Send(channel.(string), richmsgs[0].Text, richmsgs[0].ToSkypeAttachment())
+			api.Send(channel.(string), richmsgs[0].Text, ToSkypeAttachment(richmsgs[0]))
 		} else {
 			api.Send(channel.(string), message)
 		}

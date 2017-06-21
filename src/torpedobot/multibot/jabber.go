@@ -10,6 +10,7 @@ import (
 
 	"github.com/mattn/go-xmpp"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 type JabberChatroom struct {
@@ -48,7 +49,7 @@ func (tb *TorpedoBot) JabberPinger(jid, server string, client *xmpp.Client) {
 	}
 }
 
-func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleJabberMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *xmpp.Client:
 		msg := xmpp.Chat{}

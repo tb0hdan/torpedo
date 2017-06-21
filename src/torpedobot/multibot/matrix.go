@@ -10,9 +10,10 @@ import (
 	common "github.com/tb0hdan/torpedo_common"
 
 	"github.com/matrix-org/gomatrix"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
-func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *gomatrix.Client:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {

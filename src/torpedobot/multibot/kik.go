@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 	common "github.com/tb0hdan/torpedo_common"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 type KikAttachment struct {
@@ -134,7 +135,7 @@ func (ka *KikAPI) Image(channel, to, url string) {
 	ka.SendMessages(messages)
 }
 
-func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *KikAPI:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {

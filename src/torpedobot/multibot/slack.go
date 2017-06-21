@@ -9,9 +9,10 @@ import (
 	"flag"
 
 	"github.com/nlopes/slack"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
-func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) {
+func ToSlackAttachment(rm torpedo_registry.RichMessage) (params slack.PostMessageParameters) {
 	attachment := slack.Attachment{
 		Color:     rm.BarColor,
 		Text:      rm.Text,
@@ -23,10 +24,10 @@ func (rm *RichMessage) ToSlackAttachment() (params slack.PostMessageParameters) 
 	return
 }
 
-func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	var params slack.PostMessageParameters
 	if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-		params = richmsgs[0].ToSlackAttachment()
+		params = ToSlackAttachment(richmsgs[0])
 	}
 
 	switch api := tba.API.(type) {

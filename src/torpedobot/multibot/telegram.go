@@ -9,9 +9,10 @@ import (
 	common "github.com/tb0hdan/torpedo_common"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
-func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattable, fname string) {
+func ToTelegramAttachment(rm torpedo_registry.RichMessage, channel int64) (msg tgbotapi.Chattable, fname string) {
 	cu := &common.Utils{}
 	fname, _, is_image, err := cu.DownloadToTmp(rm.ImageURL)
 	if is_image && err == nil {
@@ -20,13 +21,13 @@ func (rm *RichMessage) ToTelegramAttachment(channel int64) (msg tgbotapi.Chattab
 	return
 }
 
-func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *tgbotapi.BotAPI:
 		var msg tgbotapi.Chattable
 		var tmp string
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			msg, tmp = richmsgs[0].ToTelegramAttachment(channel.(int64))
+			msg, tmp = ToTelegramAttachment(richmsgs[0], channel.(int64))
 			api.Send(tgbotapi.NewMessage(channel.(int64), richmsgs[0].Text))
 		} else {
 			msg = tgbotapi.NewMessage(channel.(int64), message)

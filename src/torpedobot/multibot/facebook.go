@@ -7,6 +7,7 @@ import (
 
 	"flag"
 	common "github.com/tb0hdan/torpedo_common"
+	"github.com/tb0hdan/torpedo_registry"
 
 	"github.com/paked/messenger"
 )
@@ -14,7 +15,7 @@ import (
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const FACEBOOK_TEXT_MAX = 640
 
-func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []RichMessage) {
+func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *messenger.Response:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
