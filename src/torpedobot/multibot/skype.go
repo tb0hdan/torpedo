@@ -17,6 +17,11 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var (
+	SkypeIncomingAddr *string
+	SkypeAPIKey *string
+)
+
 type SkypeIncomingMessage struct {
 	Text           string `json:"text"`
 	Type           string `json:"type"`
@@ -151,14 +156,16 @@ func HandleSkypeMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 	}
 }
 
-func (tb *TorpedoBot) ConfigureSkypeBot() {
-	tb.Config.SkypeIncomingAddr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
-	tb.Config.SkypeAPIKey = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
+func (tb *TorpedoBot) ConfigureSkypeBot(cfg *torpedo_registry.ConfigStruct) {
+	SkypeIncomingAddr = flag.String("skype_incoming_addr", "0.0.0.0:3978", "Listen on this address for incoming Skype messages")
+	SkypeAPIKey = flag.String("skype", "", "Comma separated list of dev.botframework.com creds, app_id:app_password,")
 }
 
-func (tb *TorpedoBot) ParseSkypeBot() {
-	if *tb.Config.SkypeAPIKey == "" {
-		*tb.Config.SkypeAPIKey = common.GetStripEnv("SKYPE")
+func (tb *TorpedoBot) ParseSkypeBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("skypeincomingaddr", *SkypeIncomingAddr)
+	cfg.SetConfig("skypeapikey", *SkypeAPIKey)
+	if cfg.GetConfig()["skypeapikey"] == "" {
+		cfg.SetConfig("skypeapikey", common.GetStripEnv("SKYPE"))
 	}
 }
 
@@ -218,8 +225,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
 	})
-	logger.Printf("Starting Skype API listener on %s\n", *tb.Config.SkypeIncomingAddr)
-	if err := http.ListenAndServe(*tb.Config.SkypeIncomingAddr, nil); err != nil {
+	logger.Printf("Starting Skype API listener on %s\n", torpedo_registry.Config.GetConfig()["skypeincomingaddr"])
+	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["skypeincomingaddr"], nil); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

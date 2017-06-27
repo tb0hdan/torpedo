@@ -11,6 +11,11 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var (
+	LineAPIKey *string
+	LineIncomingAddr *string
+)
+
 func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *linebot.Client:
@@ -27,15 +32,17 @@ func HandleLineMessage(channel interface{}, message string, tba *TorpedoBotAPI, 
 	}
 }
 
-func (tb *TorpedoBot) ConfigureLineBot() {
-	tb.Config.LineAPIKey = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
-	tb.Config.LineIncomingAddr = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
+func (tb *TorpedoBot) ConfigureLineBot(cfg *torpedo_registry.ConfigStruct) {
+	LineAPIKey = flag.String("line", "", "Line.Me credentials client_secret:client_token,")
+	LineIncomingAddr = flag.String("line_incoming_addr", "0.0.0.0:3981", "Listen on this address for incoming Line.Me messages")
 
 }
 
-func (tb *TorpedoBot) ParseLineBot() {
-	if *tb.Config.LineAPIKey == "" {
-		*tb.Config.LineAPIKey = common.GetStripEnv("LINE")
+func (tb *TorpedoBot) ParseLineBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("lineapikey", *LineAPIKey)
+	cfg.SetConfig("lineincomingaddr", *LineIncomingAddr)
+	if cfg.GetConfig()["lineapikey"] == "" {
+		cfg.SetConfig("lineapikey", common.GetStripEnv("LINE"))
 	}
 }
 
@@ -91,9 +98,9 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 		}
 	})
 
-	tb.logger.Printf("Serving Line bot on %s\n", *tb.Config.LineIncomingAddr)
+	tb.logger.Printf("Serving Line bot on %s\n", torpedo_registry.Config.GetConfig()["lineincomingaddr"])
 
-	if err := http.ListenAndServe(*tb.Config.LineIncomingAddr, nil); err != nil {
+	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["lineincomingaddr"], nil); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

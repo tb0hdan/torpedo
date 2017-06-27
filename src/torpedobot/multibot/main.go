@@ -31,28 +31,6 @@ type TorpedoBot struct {
 	commandHandlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)
 	help            map[string]string
 	Database        *database.MongoDB
-	Config          struct {
-		FacebookAPIKey       *string
-		FacebookIncomingAddr *string
-		GoogleWebAppKey      *string
-		KikIncomingAddr      *string
-		KikWebHook           *string
-		LastFmKey            *string
-		LastFmSecret         *string
-		LineAPIKey           *string
-		LineIncomingAddr     *string
-		SkypeIncomingAddr    *string
-		PinterestToken       *string
-		RavenEnabled         bool
-		SoundCloudClientID   *string
-		SlackAPIKey          *string
-		TelegramAPIKey       *string
-		JabberAPIKey         *string
-		SkypeAPIKey          *string
-		KikAPIKey            *string
-		MatrixAPIKey         *string
-		MongoDBConnection    *string
-	}
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage)
@@ -116,7 +94,7 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		for handler := range tb.commandHandlers {
 			if strings.ToLower(strings.Split(command, " ")[0]) == handler {
 				found += 1
-				if tb.Config.RavenEnabled {
+				if torpedo_registry.Config.GetConfig()["raven"] == "yes" {
 					raven.CapturePanicAndWait(func() {
 						tb.commandHandlers[handler](botapi, channel, incoming_message)
 					}, nil)
@@ -141,7 +119,7 @@ func (tb *TorpedoBot) RunLoop() {
 
 func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cmd_prefix string) {
 	wrapped := func(a, b string) {}
-	if tb.Config.RavenEnabled {
+	if torpedo_registry.Config.GetConfig()["raven"] == "yes" {
 		wrapped = func(apiKey, cmd_prefix string) {
 			// this should (!) capture bot protocol panic
 			raven.CapturePanicAndWait(func() {
@@ -185,18 +163,20 @@ func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
 	return
 }
 
-func (tb *TorpedoBot) RunPreParsers(preparsers map[string]func()) {
-	for name := range preparsers {
-		tb.logger.Printf("Running argument preparser: %s\n", name)
-		preparsers[name]()
+func (tb *TorpedoBot) RunPreParsers() {
+	for pname, pfunc := range torpedo_registry.Config.GetPreParsers() {
+		tb.logger.Printf("Running argument preparser %s\n", pname)
+		pfunc(torpedo_registry.Config)
 	}
+	return
 }
 
-func (tb *TorpedoBot) RunPostParsers(postparsers map[string]func()) {
-	for name := range postparsers {
-		tb.logger.Printf("Running argument postparser: %s\n", name)
-		postparsers[name]()
+func (tb *TorpedoBot) RunPostParsers() {
+	for pname, pfunc := range torpedo_registry.Config.GetPostParsers() {
+		tb.logger.Printf("Running argument postparser %s\n", pname)
+		pfunc(torpedo_registry.Config)
 	}
+	return
 }
 
 func New() *TorpedoBot {
@@ -210,7 +190,7 @@ func New() *TorpedoBot {
 		if env_dsn != "" {
 			bot.logger.Print("Using Sentry error reporting...\n")
 			raven.SetDSN(env_dsn)
-			bot.Config.RavenEnabled = true
+			torpedo_registry.Config.SetConfig("raven", "yes")
 		}
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage))
 		bot.Stats = &BotStats{}

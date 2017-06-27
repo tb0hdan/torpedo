@@ -14,6 +14,10 @@ import (
 
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const FACEBOOK_TEXT_MAX = 640
+var (
+	FacebookAPIKey *string
+	FacebookIncomingAddr *string
+)
 
 func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
@@ -42,15 +46,17 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 	}
 }
 
-func (tb *TorpedoBot) ConfigureFacebookBot() {
-	tb.Config.FacebookAPIKey = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
-	tb.Config.FacebookIncomingAddr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
+func (tb *TorpedoBot) ConfigureFacebookBot(cfg *torpedo_registry.ConfigStruct) {
+	FacebookAPIKey = flag.String("facebook", "", "Comma separated list of Facebook creds, page_token1:verify_token1,..")
+	FacebookIncomingAddr = flag.String("facebook_incoming_addr", "0.0.0.0:3979", "Listen on this address for incoming Facebook messages")
 
 }
 
-func (tb *TorpedoBot) ParseFacebookBot() {
-	if *tb.Config.FacebookAPIKey == "" {
-		*tb.Config.FacebookAPIKey = common.GetStripEnv("FACEBOOK")
+func (tb *TorpedoBot) ParseFacebookBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("facebookapikey", *FacebookAPIKey)
+	cfg.SetConfig("facebookincomingaddr", *FacebookIncomingAddr)
+	if cfg.GetConfig()["facebookapikey"] == "" {
+		cfg.SetConfig("facebookapikey", common.GetStripEnv("FACEBOOK"))
 	}
 }
 
@@ -88,9 +94,9 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		logger.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	logger.Printf("Serving messenger bot on %s\n", *tb.Config.FacebookIncomingAddr)
+	logger.Printf("Serving messenger bot on %s\n", torpedo_registry.Config.GetConfig()["facebookincomingaddr"])
 
-	if err := http.ListenAndServe(*tb.Config.FacebookIncomingAddr, client.Handler()); err != nil {
+	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["facebookincomingaddr"], client.Handler()); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

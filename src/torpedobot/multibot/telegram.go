@@ -12,6 +12,8 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var TelegramAPIKey *string
+
 func ToTelegramAttachment(rm torpedo_registry.RichMessage, channel int64) (msg tgbotapi.Chattable, fname string) {
 	cu := &common.Utils{}
 	fname, _, is_image, err := cu.DownloadToTmp(rm.ImageURL)
@@ -39,13 +41,14 @@ func HandleTelegramMessage(channel interface{}, message string, tba *TorpedoBotA
 	}
 }
 
-func (tb *TorpedoBot) ConfigureTelegramBot() {
-	tb.Config.TelegramAPIKey = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
+func (tb *TorpedoBot) ConfigureTelegramBot(cfg *torpedo_registry.ConfigStruct) {
+	TelegramAPIKey = flag.String("telegram", "", "Comma separated list of Telegram bot keys")
 }
 
-func (tb *TorpedoBot) ParseTelegramBot() {
-	if *tb.Config.TelegramAPIKey == "" {
-		*tb.Config.TelegramAPIKey = common.GetStripEnv("TELEGRAM")
+func (tb *TorpedoBot) ParseTelegramBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("telegramapikey", *TelegramAPIKey)
+	if cfg.GetConfig()["telegramapikey"] == "" {
+		cfg.SetConfig("telegramapikey", common.GetStripEnv("TELEGRAM"))
 	}
 }
 

@@ -14,6 +14,12 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var (
+	KikIncomingAddr *string
+	KikWebHook *string
+	KikAPIKey *string
+)
+
 type KikAttachment struct {
 }
 
@@ -148,22 +154,23 @@ func HandleKikMessage(channel interface{}, message string, tba *TorpedoBotAPI, r
 	}
 }
 
-func (tb *TorpedoBot) ConfigureKikBot() {
-	tb.Config.KikIncomingAddr = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
-
-	tb.Config.KikWebHook = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
-
-	tb.Config.KikAPIKey = flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
+func (tb *TorpedoBot) ConfigureKikBot(cfg *torpedo_registry.ConfigStruct) {
+	KikIncomingAddr = flag.String("kik_incoming_addr", "0.0.0.0:3980", "Listen on this address for incoming Kik messages")
+	KikWebHook = flag.String("kik_webhook_url", "", "Webhook URL (external) for incoming Kik messages")
+	KikAPIKey = flag.String("kik", "", "Comma separated list of Kik creds, username:api_key,")
 
 }
 
-func (tb *TorpedoBot) ParseKikBot() {
-	if *tb.Config.KikWebHook == "" {
-		*tb.Config.KikWebHook = common.GetStripEnv("KIK_WEBHOOK_URL")
+func (tb *TorpedoBot) ParseKikBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("kikincomingaddr", *KikIncomingAddr)
+	cfg.SetConfig("kikwebhook", *KikWebHook)
+	cfg.SetConfig("kikapikey", *KikAPIKey)
+	if cfg.GetConfig()["kikwebhook"] == "" {
+		cfg.SetConfig("kikwebhook", common.GetStripEnv("KIK_WEBHOOK_URL"))
 	}
 
-	if *tb.Config.KikAPIKey == "" {
-		*tb.Config.KikAPIKey = common.GetStripEnv("KIK")
+	if cfg.GetConfig()["kikapikey"] == "" {
+		cfg.SetConfig("kikapikey", common.GetStripEnv("KIK"))
 	}
 }
 
@@ -175,7 +182,7 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	logger := cu.NewLog("kik-bot")
 	api := &KikAPI{}
 	api.logger = logger
-	api.WebHook = *tb.Config.KikWebHook
+	api.WebHook = torpedo_registry.Config.GetConfig()["kikwebhook"]
 	api.GetToken(strings.Split(apiKey, ":")[0], strings.Split(apiKey, ":")[1])
 	api.Configure()
 
@@ -206,8 +213,8 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 			go tb.processChannelEvent(botApi, message.ChatID, message.Body)
 		}
 	})
-	logger.Printf("Starting Kik API listener on %s\n", *tb.Config.KikIncomingAddr)
-	if err := http.ListenAndServe(*tb.Config.KikIncomingAddr, nil); err != nil {
+	logger.Printf("Starting Kik API listener on %s\n", torpedo_registry.Config.GetConfig()["kikincomingaddr"])
+	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["kikincomingaddr"], nil); err != nil {
 		logger.Fatal(err)
 	}
 	tb.Stats.ConnectedAccounts -= 1

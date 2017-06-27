@@ -12,6 +12,8 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var SlackAPIKey *string
+
 func ToSlackAttachment(rm torpedo_registry.RichMessage) (params slack.PostMessageParameters) {
 	attachment := slack.Attachment{
 		Color:     rm.BarColor,
@@ -41,14 +43,15 @@ func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 	}
 }
 
-func (tb *TorpedoBot) ConfigureSlackBot() {
-	tb.Config.SlackAPIKey = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
+func (tb *TorpedoBot) ConfigureSlackBot(cfg *torpedo_registry.ConfigStruct) {
+	SlackAPIKey = flag.String("slack", "", "Comma separated list of Slack legacy tokens")
 
 }
 
-func (tb *TorpedoBot) ParseSlackBot() {
-	if *tb.Config.SlackAPIKey == "" {
-		*tb.Config.SlackAPIKey = common.GetStripEnv("SLACK")
+func (tb *TorpedoBot) ParseSlackBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("slackapikey", *SlackAPIKey)
+	if cfg.GetConfig()["slackapikey"] == "" {
+		cfg.SetConfig("slackapikey", common.GetStripEnv("SLACK"))
 	}
 }
 

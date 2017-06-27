@@ -13,6 +13,8 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var JabberAPIKey *string
+
 type JabberChatroom struct {
 	MyJID    string
 	Chatroom string
@@ -68,13 +70,14 @@ func GetStrippedJID(cli *xmpp.Client) (jid string) {
 	return
 }
 
-func (tb *TorpedoBot) ConfigureJabberBot() {
-	tb.Config.JabberAPIKey = flag.String("jabber", "", "Comma separated list of jabber creds, user@host.com:password,")
+func (tb *TorpedoBot) ConfigureJabberBot(cfg *torpedo_registry.ConfigStruct) {
+	JabberAPIKey = flag.String("jabberapikey", "", "Comma separated list of jabber creds, user@host.com:password,")
 }
 
-func (tb *TorpedoBot) ParseJabberBot() {
-	if *tb.Config.JabberAPIKey == "" {
-		*tb.Config.JabberAPIKey = common.GetStripEnv("JABBER")
+func (tb *TorpedoBot) ParseJabberBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("jabberapikey", *JabberAPIKey)
+	if cfg.GetConfig()["jabberapikey"] == "" {
+		cfg.SetConfig("jabberapikey", common.GetStripEnv("JABBER"))
 	}
 }
 

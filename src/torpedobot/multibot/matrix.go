@@ -13,6 +13,8 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+var MatrixAPIKey *string
+
 func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *gomatrix.Client:
@@ -25,13 +27,14 @@ func HandleMatrixMessage(channel interface{}, message string, tba *TorpedoBotAPI
 	}
 }
 
-func (tb *TorpedoBot) ConfigureMatrixBot() {
-	tb.Config.MatrixAPIKey = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
+func (tb *TorpedoBot) ConfigureMatrixBot(cfg *torpedo_registry.ConfigStruct) {
+	MatrixAPIKey = flag.String("matrix", "", "Matrix.org creds: ID:AccessToken,")
 }
 
-func (tb *TorpedoBot) ParseMatrixBot() {
-	if *tb.Config.MatrixAPIKey == "" {
-		*tb.Config.MatrixAPIKey = common.GetStripEnv("MATRIX")
+func (tb *TorpedoBot) ParseMatrixBot(cfg *torpedo_registry.ConfigStruct) {
+	cfg.SetConfig("matrixapikey", *MatrixAPIKey)
+	if cfg.GetConfig()["matrixapikey"] == "" {
+		cfg.SetConfig("matrixapikey", common.GetStripEnv("MATRIX"))
 	}
 }
 
