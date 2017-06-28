@@ -10,7 +10,6 @@ go:
   - 1.8.3
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
   - sudo cp -r /etc/ssl ./
   - sudo chown -R travis:users ./ssl
 install: make build
