@@ -69,7 +69,9 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 
 	pageToken := strings.Split(apiKey, ":")[0]
 	verifyToken := strings.Split(apiKey, ":")[1]
+	appSecret := strings.Split(apiKey, ":")[2]
 	client := messenger.New(messenger.Options{
+		AppSecret:   appSecret,
 		Verify:      true,
 		VerifyToken: verifyToken,
 		Token:       pageToken,
