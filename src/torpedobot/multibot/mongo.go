@@ -22,6 +22,10 @@ func (tb *TorpedoBot) ParseMongoDBPlugin(cfg *torpedo_registry.ConfigStruct) {
 		if cfg.GetConfig()["mongo"] == "" {
 			cfg.SetConfig("mongo", common.GetStripEnv("MONGO_PORT_27017_TCP_ADDR"))
 		}
+		// fallback to localhost
+		if cfg.GetConfig()["mongo"] == "" {
+			cfg.SetConfig("mongo", "localhost")
+		}
 
 	}
 	tb.Database = database.New(cfg.GetConfig()["mongo"], "")

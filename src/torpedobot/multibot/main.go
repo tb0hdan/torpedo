@@ -34,7 +34,7 @@ type TorpedoBot struct {
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage)
-	Stats               *BotStats
+	Stats               BotStats
 	Build               struct {
 		Build     string
 		BuildDate string
@@ -90,6 +90,8 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		botapi.Bot.GetCommandHandlers = api.Bot.GetCommandHandlers
 		botapi.Bot.GetHelp = api.Bot.GetHelp
 		botapi.Bot.PostMessage = api.Bot.PostMessage
+		botapi.Bot.Stats = api.Bot.Stats
+		botapi.Bot.Build = api.Bot.Build
 		found := 0
 		for handler := range tb.commandHandlers {
 			if strings.ToLower(strings.Split(command, " ")[0]) == handler {
@@ -193,7 +195,7 @@ func New() *TorpedoBot {
 			torpedo_registry.Config.SetConfig("raven", "yes")
 		}
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage))
-		bot.Stats = &BotStats{}
+		bot.Stats = BotStats{}
 		bot.Stats.StartTimestamp = int64(time.Now().Unix())
 
 	})
