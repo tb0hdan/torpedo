@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_bashim_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_bashorg_plugin"
+	_ "github.com/tb0hdan/torpedo_plugins/torpedo_catapi_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_file_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_fun_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_giphy_plugin"
