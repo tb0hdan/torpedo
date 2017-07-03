@@ -85,5 +85,7 @@ func main() {
 	bot.RunBotsCSV(bot.RunMatrixBot, torpedo_registry.Config.GetConfig()["matrixapikey"], "!")
 	bot.RunBotsCSV(bot.RunFacebookBot, torpedo_registry.Config.GetConfig()["facebookapikey"], "!")
 
+	// start plugin coroutines (if any) after connecting to accounts
+	bot.RunCoroutines()
 	bot.RunLoop()
 }

@@ -181,6 +181,14 @@ func (tb *TorpedoBot) RunPostParsers() {
 	return
 }
 
+func (tb *TorpedoBot) RunCoroutines() {
+	for cname, cfunc := range torpedo_registry.Config.GetCoroutines() {
+		tb.logger.Printf("Running coroutine: %s\n", cname)
+		go cfunc(torpedo_registry.Config)
+	}
+}
+
+
 func New() *TorpedoBot {
 	once.Do(func() {
 		bot = &TorpedoBot{}
