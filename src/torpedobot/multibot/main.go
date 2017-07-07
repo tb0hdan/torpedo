@@ -39,6 +39,7 @@ type TorpedoBot struct {
 		Build     string
 		BuildDate string
 		Version   string
+		ProjectURL string
 	}
 }
 
@@ -158,10 +159,11 @@ func (tb *TorpedoBot) GetHelp() (help map[string]string) {
 	return tb.help
 }
 
-func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version string) {
+func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version, projecturl string) {
 	tb.Build.Build = build
 	tb.Build.BuildDate = buildDate
 	tb.Build.Version = version
+	tb.Build.ProjectURL = projecturl
 	return
 }
 

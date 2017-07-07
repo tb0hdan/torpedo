@@ -52,7 +52,8 @@ func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, inco
 
 	ts := int64(time.Now().Unix()) - api.Bot.Stats.StartTimestamp
 	d, h, m, s := FormatTDiff(ts)
-	message := fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
+	message := fmt.Sprintf("Project URL: %s\n", api.Bot.Build.ProjectURL)
+	message += fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
 	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuildDate)
 	message += fmt.Sprintf("Build version: %s\n", api.Bot.Build.Version)
 	message += fmt.Sprintf("Uptime: %v day(s) %v hour(s) %v minute(s) %v second(s)\n", d, h, m, s)

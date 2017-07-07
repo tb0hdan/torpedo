@@ -23,6 +23,8 @@ import (
 	"torpedobot/multibot"
 )
 
+const ProjectURL = "https://github.com/tb0hdan/torpedo"
+
 // Global vars for versioning
 var (
 	BUILD      = "Not available"
@@ -43,7 +45,7 @@ func main() {
 	torpedo_registry.Config.RegisterHelp("stats", "Just system stats, nothing interesting")
 
 	bot := multibot.New()
-	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION)
+	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION, ProjectURL)
 	// bot cfg
 	torpedo_registry.Config.RegisterPreParser("slack", bot.ConfigureSlackBot)
 	torpedo_registry.Config.RegisterPreParser("telegram", bot.ConfigureTelegramBot)
