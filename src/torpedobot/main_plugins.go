@@ -4,6 +4,7 @@ import (
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_bashim_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_bashorg_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_catapi_plugin"
+	_ "github.com/tb0hdan/torpedo_plugins/torpedo_cleverbot_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_coub_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_file_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_fun_plugin"

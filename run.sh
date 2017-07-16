@@ -18,6 +18,6 @@ while :; do
 	echo 'Build failed, exiting...'
 	break
     fi
-    bin/torpedobot -slack ${SLACK} -telegram ${TELEGRAM} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST} -jabberapikey ${JABBER} -skype ${SKYPE} -facebook ${FACEBOOK} -kik ${KIK} -kik_webhook_url ${KIK_WEBHOOK_URL} -line ${LINE} -matrix ${MATRIX} -soundcloud_id ${SOUNDCLOUD_ID} -catapikey ${CATAPIKEY}
+    bin/torpedobot -slack ${SLACK} -telegram ${TELEGRAM} -lastfm_key ${LASTFM_KEY} -lastfm_secret ${LASTFM_SECRET} -google_webapp_key ${GOOGLE_WEBAPP_KEY} -pinterest_token ${PINTEREST} -jabberapikey ${JABBER} -skype ${SKYPE} -facebook ${FACEBOOK} -kik ${KIK} -kik_webhook_url ${KIK_WEBHOOK_URL} -line ${LINE} -matrix ${MATRIX} -soundcloud_id ${SOUNDCLOUD_ID} -catapikey ${CATAPIKEY} -cleverbot ${CLEVERBOT_API_KEY}
     sleep 3
 done
