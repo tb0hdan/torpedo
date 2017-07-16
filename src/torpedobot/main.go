@@ -4,8 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/tb0hdan/torpedo_registry"
 	"torpedobot/multibot"
+
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 const ProjectURL = "https://github.com/tb0hdan/torpedo"
@@ -20,42 +21,26 @@ var (
 func main() {
 	// Help handlers
 	help_msg := "Get help using this command"
-	torpedo_registry.Config.RegisterHandler("?", HelpProcessMessage)
-	torpedo_registry.Config.RegisterHelp("?", help_msg)
-	torpedo_registry.Config.RegisterHandler("h", HelpProcessMessage)
-	torpedo_registry.Config.RegisterHelp("h", help_msg)
-	torpedo_registry.Config.RegisterHandler("help", HelpProcessMessage)
-	torpedo_registry.Config.RegisterHelp("help", help_msg)
-	torpedo_registry.Config.RegisterHandler("stats", StatsProcessMessage)
-	torpedo_registry.Config.RegisterHelp("stats", "Just system stats, nothing interesting")
+	torpedo_registry.Config.RegisterHelpAndHandler("?", help_msg, HelpProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("h", help_msg, HelpProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("help", help_msg, HelpProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("stats", "Just system stats, nothing interesting", StatsProcessMessage)
 
 	bot := multibot.New()
 	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION, ProjectURL)
 	// bot cfg
-	torpedo_registry.Config.RegisterPreParser("slack", bot.ConfigureSlackBot)
-	torpedo_registry.Config.RegisterPreParser("telegram", bot.ConfigureTelegramBot)
-	torpedo_registry.Config.RegisterPreParser("jabber", bot.ConfigureJabberBot)
-	torpedo_registry.Config.RegisterPreParser("skype", bot.ConfigureSkypeBot)
-	torpedo_registry.Config.RegisterPreParser("kik", bot.ConfigureKikBot)
-	torpedo_registry.Config.RegisterPreParser("line", bot.ConfigureLineBot)
-	torpedo_registry.Config.RegisterPreParser("matrix", bot.ConfigureMatrixBot)
-	torpedo_registry.Config.RegisterPreParser("facebook", bot.ConfigureFacebookBot)
-	torpedo_registry.Config.RegisterPreParser("mongodb", bot.ConfigureMongoDBPlugin)
+	torpedo_registry.Config.RegisterParser("slack", bot.ConfigureSlackBot, bot.ParseSlackBot)
+	torpedo_registry.Config.RegisterParser("telegram", bot.ConfigureTelegramBot, bot.ParseTelegramBot)
+	torpedo_registry.Config.RegisterParser("jabber", bot.ConfigureJabberBot, bot.ParseJabberBot)
+	torpedo_registry.Config.RegisterParser("skype", bot.ConfigureSkypeBot, bot.ParseSkypeBot)
+	torpedo_registry.Config.RegisterParser("kik", bot.ConfigureKikBot, bot.ParseKikBot)
+	torpedo_registry.Config.RegisterParser("line", bot.ConfigureLineBot, bot.ParseLineBot)
+	torpedo_registry.Config.RegisterParser("matrix", bot.ConfigureMatrixBot, bot.ParseMatrixBot)
+	torpedo_registry.Config.RegisterParser("facebook", bot.ConfigureFacebookBot, bot.ParseFacebookBot)
+	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
 
 	bot.RunPreParsers()
-
 	flag.Parse()
-
-	torpedo_registry.Config.RegisterPostParser("facebook", bot.ParseFacebookBot)
-	torpedo_registry.Config.RegisterPostParser("jabber", bot.ParseJabberBot)
-	torpedo_registry.Config.RegisterPostParser("kik", bot.ParseKikBot)
-	torpedo_registry.Config.RegisterPostParser("line", bot.ParseLineBot)
-	torpedo_registry.Config.RegisterPostParser("matrix", bot.ParseMatrixBot)
-	torpedo_registry.Config.RegisterPostParser("skype", bot.ParseSkypeBot)
-	torpedo_registry.Config.RegisterPostParser("slack", bot.ParseSlackBot)
-	torpedo_registry.Config.RegisterPostParser("telegram", bot.ParseTelegramBot)
-	torpedo_registry.Config.RegisterPostParser("mongodb", bot.ParseMongoDBPlugin)
-
 	bot.RunPostParsers()
 
 	// Command handlers and help
