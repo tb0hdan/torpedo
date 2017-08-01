@@ -38,6 +38,7 @@ func main() {
 	torpedo_registry.Config.RegisterParser("matrix", bot.ConfigureMatrixBot, bot.ParseMatrixBot)
 	torpedo_registry.Config.RegisterParser("facebook", bot.ConfigureFacebookBot, bot.ParseFacebookBot)
 	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
+	torpedo_registry.Config.RegisterParser("trpe", bot.ConfigureTRPE, bot.ParseTRPE)
 
 	bot.RunPreParsers()
 	flag.Parse()
