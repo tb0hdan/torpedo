@@ -38,6 +38,7 @@ func main() {
 	torpedo_registry.Config.RegisterParser("matrix", bot.ConfigureMatrixBot, bot.ParseMatrixBot)
 	torpedo_registry.Config.RegisterParser("facebook", bot.ConfigureFacebookBot, bot.ParseFacebookBot)
 	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
+	torpedo_registry.Config.RegisterParser("irc", bot.ConfigureIRCBot, bot.ParseIRCBot)
 
 	bot.RunPreParsers()
 	flag.Parse()
@@ -56,6 +57,7 @@ func main() {
 	bot.RunBotsCSV(bot.RunLineBot, torpedo_registry.Config.GetConfig()["lineapikey"], "!")
 	bot.RunBotsCSV(bot.RunMatrixBot, torpedo_registry.Config.GetConfig()["matrixapikey"], "!")
 	bot.RunBotsCSV(bot.RunFacebookBot, torpedo_registry.Config.GetConfig()["facebookapikey"], "!")
+	bot.RunBotsCSV(bot.RunIRCBot, torpedo_registry.Config.GetConfig()["ircapikey"], "!")
 
 	// start plugin coroutines (if any) after connecting to accounts
 	bot.RunCoroutines()
