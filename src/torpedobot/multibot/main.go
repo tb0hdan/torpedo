@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	common "github.com/tb0hdan/torpedo_common"
 	database "github.com/tb0hdan/torpedo_common/database"
 	memcache "github.com/tb0hdan/torpedo_common/memcache"
@@ -27,18 +28,18 @@ type BotStats struct {
 }
 
 type TorpedoBot struct {
-	caches          map[string]*memcache.MemCacheType
-	commandHandlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)
-	help            map[string]string
-	Database        *database.MongoDB
+	caches              map[string]*memcache.MemCacheType
+	commandHandlers     map[string]func(*torpedo_registry.BotAPI, interface{}, string)
+	help                map[string]string
+	Database            *database.MongoDB
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage)
 	Stats               BotStats
 	Build               struct {
-		Build     string
-		BuildDate string
-		Version   string
+		Build      string
+		BuildDate  string
+		Version    string
 		ProjectURL string
 	}
 }
@@ -76,6 +77,7 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *torp
 }
 
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
+	var chat_message string
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) && tb.NoSpam(channel, incoming_message) {
 		tb.Stats.ProcessedMessages += 1
 		// is it good idea to store it here?
@@ -94,6 +96,7 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		botapi.Bot.Stats = api.Bot.Stats
 		botapi.Bot.Build = api.Bot.Build
 		found := 0
+		tb.logger.Printf("PROCESS! -> `%s`", command)
 		for handler := range tb.commandHandlers {
 			if strings.ToLower(strings.Split(command, " ")[0]) == handler {
 				found += 1
@@ -107,9 +110,21 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 				break
 			}
 		}
-		tb.logger.Printf("PROCESS! -> `%s`", command)
 		if found == 0 {
-			api.PostMessage(channel, fmt.Sprintf("Could not process your message: %s%s. Command unknown. Send `%shelp` for list of valid commands and `%shelp command` for details.", api.CommandPrefix, command, api.CommandPrefix, api.CommandPrefix))
+			if torpedo_registry.Config.GetConfig()["trpe_host"] != "" {
+				tb.logger.Printf("Using TRPE! -> `%s`", command)
+				err, result := tb.processViaTRPE(channel, incoming_message, api.CommandPrefix, torpedo_registry.Config.GetConfig()["trpe_host"])
+				if err == nil {
+					chat_message = result
+				} else {
+					chat_message = fmt.Sprintf("Could not forward message to TRPE host: %+v\n", err)
+				}
+			} else {
+				chat_message = "Could not process your message: %s%s. Command unknown. "
+				chat_message += "Send `%shelp` for list of valid commands and `%shelp command` for details."
+				chat_message = fmt.Sprintf(chat_message, api.CommandPrefix, command, api.CommandPrefix, api.CommandPrefix)
+			}
+			api.PostMessage(channel, chat_message)
 		}
 	}
 }
@@ -189,7 +204,6 @@ func (tb *TorpedoBot) RunCoroutines() {
 		go cfunc(torpedo_registry.Config)
 	}
 }
-
 
 func New() *TorpedoBot {
 	once.Do(func() {
