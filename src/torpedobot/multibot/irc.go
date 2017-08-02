@@ -7,6 +7,8 @@ import (
 
 	"crypto/tls"
 
+	"fmt"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 	"gopkg.in/mgo.v2/bson"
@@ -41,6 +43,9 @@ func (ircapi *IRCAPI) Send(channel, message string, attachments ...*SkypeAttachm
 	if strings.HasPrefix(channel, "#") {
 		// public msg
 		for _, line := range strings.Split(message, "\n") {
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
 			ircapi.Connection.Privmsg(channel, line)
 		}
 	} else {
@@ -52,11 +57,12 @@ func (ircapi *IRCAPI) Send(channel, message string, attachments ...*SkypeAttachm
 func HandleIRCMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
 	switch api := tba.API.(type) {
 	case *IRCAPI:
-		/*if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
-			api.Send(channel.(string), richmsgs[0].Text, ToIRCAttachment(richmsgs[0]))
-		} else { */
-		api.Send(channel.(string), message)
-		//}
+		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
+			msg, url := richmsgs[0].ToGenericAttachment()
+			api.Send(channel.(string), fmt.Sprintf("%s\n%s", msg, url))
+		} else {
+			api.Send(channel.(string), message)
+		}
 
 	}
 }
