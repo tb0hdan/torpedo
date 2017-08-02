@@ -38,3 +38,4 @@ src/gopkg.in/*
 ssl/*
 token.sh
 token.sh.*
+env.list
