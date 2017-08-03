@@ -119,3 +119,14 @@ Phelp
 
 
 e.g. for Slack it's `!help`
+
+
+
+# TorpedoBot Remote Plugin Execution (TRPE)
+
+TRPE allows writing plugins in any language as long as content is returned via HTTP API.
+Sample application is available at `tools/trpe_server.py`
+
+Architecture is as follows:
+
+![TRPE](https://raw.githubusercontent.com/tb0hdan/torpedo/master/doc/TRPE.png)
