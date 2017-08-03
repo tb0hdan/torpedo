@@ -5,6 +5,8 @@ import (
 
 	"flag"
 
+	"fmt"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 )
@@ -12,6 +14,8 @@ import (
 var TRPEURL *string
 
 type TRPEResponse struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
 }
 
 func (tb *TorpedoBot) ConfigureTRPE(cfg *torpedo_registry.ConfigStruct) {
@@ -29,6 +33,16 @@ func (tb *TorpedoBot) ParseTRPE(cfg *torpedo_registry.ConfigStruct) {
 func (tb *TorpedoBot) processViaTRPE(channel interface{}, incoming_message, command_prefix, host string) (err error, result string) {
 	cu := common.Utils{}
 	response := &TRPEResponse{}
-	err = cu.PostURLFormUnmarshal(host, url.Values{"key": {"Value"}, "id": {"123"}}, response)
+	err = cu.PostURLFormUnmarshal(host, url.Values{"channel": {fmt.Sprintf("%+v", channel)},
+		"incoming_message": {incoming_message},
+		"command_prefix":   {command_prefix},
+	},
+		response)
+	if err != nil {
+		return
+	}
+	if response.Status == "ok" && response.Message != "" {
+		result = response.Message
+	}
 	return
 }
