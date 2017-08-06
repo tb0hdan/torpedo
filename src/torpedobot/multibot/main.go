@@ -12,7 +12,6 @@ import (
 	database "github.com/tb0hdan/torpedo_common/database"
 	memcache "github.com/tb0hdan/torpedo_common/memcache"
 	"github.com/tb0hdan/torpedo_registry"
-
 	"github.com/getsentry/raven-go"
 )
 
@@ -152,6 +151,8 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 			continue
 		}
 		tb.Stats.TotalAccounts += 1
+		// slow down logins
+		time.Sleep(3 * time.Second)
 		go wrapped(key, cmd_prefix)
 	}
 }
