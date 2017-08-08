@@ -29,6 +29,8 @@ all: build
 deps:
 	@mkdir -p bin/ build/ pkg/
 	@go get -v -d $(PKGNAME)
+
+report_deps:
 	@go get -u -v github.com/wgliang/goreporter
 
 build:  deps build_only
@@ -49,7 +51,7 @@ coverage_html:	deps
 	@sleep 3; open http://localhost:8000/coverage.html
 	@go run tools/fileserver.go -listen localhost:8000 -directory ./build
 
-report:	clean deps
+report:	clean deps report_deps
 	@bin/goreporter -p ./src/torpedobot -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
 
 dockerimage:
