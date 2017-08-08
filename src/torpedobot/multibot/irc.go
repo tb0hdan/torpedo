@@ -9,10 +9,12 @@ import (
 
 	"fmt"
 
+	"log"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
+	irc "github.com/thoj/go-ircevent"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/thoj/go-ircevent"
 )
 
 var IRCAPIKey *string
@@ -67,24 +69,51 @@ func HandleIRCMessage(channel interface{}, message string, tba *TorpedoBotAPI, r
 	}
 }
 
+// set custom logger + version
+func (tb *TorpedoBot) myIRC(nick, user string, log *log.Logger) *irc.Connection {
+	connection := irc.IRC(nick, user)
+	connection.Log = log
+	connection.Version = fmt.Sprintf("%s v%s (%s)", tb.Build.ProjectURL, tb.Build.Version, tb.Build.Build)
+	return connection
+}
+
 func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
+	var (
+		nick, server string
+	)
 	tb.Stats.ConnectedAccounts += 1
 	cu := &common.Utils{}
 	logger := cu.NewLog("irc-bot")
-	server := strings.Split(apiKey, ":")[0]
+	tb.RegisteredProtocols["*multibot.IRCAPI"] = HandleIRCMessage
+
+	user_server := strings.Split(apiKey, ":")[0]
+	if len(strings.Split(user_server, "@")) == 2 {
+		nick = strings.Split(user_server, "@")[0]
+		server = strings.Split(user_server, "@")[1]
+	} else {
+		nick = "torpedobot"
+		server = user_server
+	}
 	port := strings.Split(apiKey, ":")[1]
 	usessl := strings.Split(apiKey, ":")[2]
 
-	tb.RegisteredProtocols["*multibot.IRCAPI"] = HandleIRCMessage
-
-	irccon := irc.IRC("torpedobot", "torpedo bot")
+	irccon := tb.myIRC(nick, fmt.Sprintf("%s bot", nick), logger)
+	// TODO: Add -v switch to enable these
 	irccon.VerboseCallbackHandler = true
 	irccon.Debug = true
+
+	// TLS Config
 	irccon.UseTLS = usessl == "1"
 	if irccon.UseTLS {
 		irccon.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
-	// welcome
+
+	// Password config
+	if len(strings.Split(apiKey, ":")) > 3 {
+		irccon.Password = strings.Split(apiKey, ":")[3]
+	}
+
+	//welcome
 	session, collection, err := tb.Database.GetCollection("ircChatrooms")
 	if err != nil {
 		logger.Fatal("Could not connect to database: %+v\n", err)
