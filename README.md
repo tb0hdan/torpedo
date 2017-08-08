@@ -13,7 +13,7 @@ Torpedo uses multiple accounts (at least one is required). Supported transports:
 - Skype
 - Slack
 - Telegram
-
+- IRC
 
 # See it in action
 
@@ -30,6 +30,9 @@ Line:
 ![Trpdbt](https://raw.githubusercontent.com/tb0hdan/torpedo/master/doc/UDvNqA-29o.png)
 
 Matrix: @TorpedoBot:matrix.org
+
+IRC: #torpedobot on FreeNode
+
 
 
 # Using Docker image
@@ -79,6 +82,19 @@ PINTEREST="ddd"
 # Requirements
 
 An accessible MongoDB instance (defaults to localhost)
+
+Unauthenticated access (default):
+
+
+`torpedobot -mongo host` or `torpedobot -mongo host:port`
+
+
+Authenticated access:
+
+
+`torpedobot -mongo mongodb://user:pass@host:port`
+
+
 
 # Running
 
