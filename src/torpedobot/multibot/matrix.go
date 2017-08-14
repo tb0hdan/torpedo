@@ -67,6 +67,7 @@ func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 			botApi.API = cli
 			botApi.Bot = tb
 			botApi.CommandPrefix = cmd_prefix
+			botApi.UserProfile = &torpedo_registry.UserProfile{}
 
 			msg, _ := ev.Body()
 			go tb.processChannelEvent(botApi, ev.RoomID, msg)

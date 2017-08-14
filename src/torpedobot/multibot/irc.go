@@ -156,6 +156,8 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 			botApi.API = api
 			botApi.Bot = tb
 			botApi.CommandPrefix = cmd_prefix
+			botApi.UserProfile = &torpedo_registry.UserProfile{}
+
 			tb.processChannelEvent(botApi, event.Arguments[0], event.Message())
 		}(event)
 	})

@@ -113,6 +113,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	botApi.API = talk
 	botApi.Bot = tb
 	botApi.CommandPrefix = cmd_prefix
+	botApi.UserProfile = &torpedo_registry.UserProfile{}
 
 	startup_ts := time.Now().Unix()
 	go tb.WaitAndSendJabberDisco(str_jid, server, talk)

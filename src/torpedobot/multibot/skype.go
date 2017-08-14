@@ -220,6 +220,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		botApi.API = skype_api
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
+		botApi.UserProfile = &torpedo_registry.UserProfile{}
+
 		re := regexp.MustCompile(`^(@[^\s]+\s)?`)
 		msg := re.ReplaceAllString(message.Text, "")
 		logger.Printf("Message: `%s`\n", msg)

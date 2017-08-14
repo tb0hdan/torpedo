@@ -49,6 +49,7 @@ type TorpedoBotAPI struct {
 	Bot           *TorpedoBot
 	From          string
 	Type          string
+	UserProfile *torpedo_registry.UserProfile
 }
 
 func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...torpedo_registry.RichMessage) {
@@ -94,6 +95,7 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 		botapi.Bot.PostMessage = api.Bot.PostMessage
 		botapi.Bot.Stats = api.Bot.Stats
 		botapi.Bot.Build = api.Bot.Build
+		botapi.UserProfile = api.UserProfile
 		found := 0
 		tb.logger.Printf("PROCESS! -> `%s`", command)
 		for handler := range tb.commandHandlers {

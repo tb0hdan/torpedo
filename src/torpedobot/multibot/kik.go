@@ -208,6 +208,8 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 			botApi.API = api
 			botApi.Bot = tb
 			botApi.CommandPrefix = cmd_prefix
+			botApi.UserProfile = &torpedo_registry.UserProfile{}
+
 			botApi.From = message.From
 			logger.Printf("Message: `%s`\n", message.Body)
 			go tb.processChannelEvent(botApi, message.ChatID, message.Body)

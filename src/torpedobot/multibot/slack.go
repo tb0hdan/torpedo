@@ -72,6 +72,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	botApi.API = api
 	botApi.Bot = tb
 	botApi.CommandPrefix = cmd_prefix
+	botApi.UserProfile = &torpedo_registry.UserProfile{}
 
 	tb.RegisteredProtocols["*slack.Client"] = HandleSlackMessage
 
@@ -89,6 +90,19 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 		case *slack.MessageEvent:
 			logger.Printf("Message: %v\n", ev)
+			if ev.Type == "message" {
+				user, err := api.GetUserInfo(ev.User)
+				if err == nil {
+					botApi.UserProfile = &torpedo_registry.UserProfile{Nick: user.Name,
+						RealName: user.RealName,
+						Timezone: user.TZ,
+						Phone: user.Profile.Phone,
+						Email: user.Profile.Email,
+						IsBot: user.IsBot}
+				} else {
+					logger.Printf("Error getting user info for %s\n", ev.User)
+				}
+			}
 			channel := ev.Channel
 			incoming_message := ev.Text
 			messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)

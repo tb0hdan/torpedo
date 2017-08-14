@@ -83,6 +83,7 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		botApi.API = r
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
+		botApi.UserProfile = &torpedo_registry.UserProfile{}
 
 		go tb.processChannelEvent(botApi, m.Sender.ID, m.Text)
 	})
