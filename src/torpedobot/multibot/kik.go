@@ -10,14 +10,15 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 )
 
 var (
 	KikIncomingAddr *string
-	KikWebHook *string
-	KikAPIKey *string
+	KikWebHook      *string
+	KikAPIKey       *string
 )
 
 type KikAttachment struct {
@@ -208,7 +209,9 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 			botApi.API = api
 			botApi.Bot = tb
 			botApi.CommandPrefix = cmd_prefix
-			botApi.UserProfile = &torpedo_registry.UserProfile{}
+			botApi.UserProfile = &torpedo_registry.UserProfile{ID: message.From}
+			// FIXME: Remove hardcode
+			botApi.Me = "torpedobot"
 
 			botApi.From = message.From
 			logger.Printf("Message: `%s`\n", message.Body)

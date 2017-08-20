@@ -6,10 +6,13 @@ import (
 
 	"flag"
 	"regexp"
+
 	common "github.com/tb0hdan/torpedo_common"
 
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"fmt"
+
 	"github.com/tb0hdan/torpedo_registry"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 var TelegramAPIKey *string
@@ -52,7 +55,6 @@ func (tb *TorpedoBot) ParseTelegramBot(cfg *torpedo_registry.ConfigStruct) {
 	}
 }
 
-
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
@@ -74,13 +76,6 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 
 	updates, err := api.GetUpdatesChan(u)
 
-	botApi := &TorpedoBotAPI{}
-	botApi.API = api
-	botApi.Bot = tb
-	botApi.CommandPrefix = cmd_prefix
-	botApi.UserProfile = &torpedo_registry.UserProfile{}
-
-
 	tb.RegisteredProtocols["*tgbotapi.BotAPI"] = HandleTelegramMessage
 
 	for update := range updates {
@@ -99,6 +94,13 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 		message := r.ReplaceAllString(update.Message.Text, "")
 
 		logger.Printf("[%s] %s\n", update.Message.From.UserName, message)
+
+		botApi := &TorpedoBotAPI{}
+		botApi.API = api
+		botApi.Bot = tb
+		botApi.CommandPrefix = cmd_prefix
+		botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%v", update.Message.From.ID), Nick: update.Message.From.UserName}
+		botApi.Me = "torpedobot"
 
 		go tb.processChannelEvent(botApi, update.Message.Chat.ID, message)
 

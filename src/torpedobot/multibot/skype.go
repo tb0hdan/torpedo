@@ -13,13 +13,14 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 )
 
 var (
 	SkypeIncomingAddr *string
-	SkypeAPIKey *string
+	SkypeAPIKey       *string
 )
 
 type SkypeIncomingMessage struct {
@@ -169,7 +170,6 @@ func (tb *TorpedoBot) ParseSkypeBot(cfg *torpedo_registry.ConfigStruct) {
 	}
 }
 
-
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
@@ -220,7 +220,9 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		botApi.API = skype_api
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
-		botApi.UserProfile = &torpedo_registry.UserProfile{}
+		botApi.UserProfile = &torpedo_registry.UserProfile{ID: message.From.ID, Nick: message.From.Name}
+		// FIXME: Remove hardcode
+		botApi.Me = "torpedobot"
 
 		re := regexp.MustCompile(`^(@[^\s]+\s)?`)
 		msg := re.ReplaceAllString(message.Text, "")

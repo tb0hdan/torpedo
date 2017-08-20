@@ -85,6 +85,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 		case *slack.ConnectedEvent:
 			logger.Println("Infos:", ev.Info)
 			logger.Println("Connection counter:", ev.ConnectionCount)
+			botApi.Me = ev.Info.User.ID
 			// Replace #general with your Channel ID
 			// rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", "#general"))
 
@@ -96,9 +97,11 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 					botApi.UserProfile = &torpedo_registry.UserProfile{Nick: user.Name,
 						RealName: user.RealName,
 						Timezone: user.TZ,
-						Phone: user.Profile.Phone,
-						Email: user.Profile.Email,
-						IsBot: user.IsBot}
+						Phone:    user.Profile.Phone,
+						Email:    user.Profile.Email,
+						IsBot:    user.IsBot,
+						ID:       user.ID,
+					}
 				} else {
 					logger.Printf("Error getting user info for %s\n", ev.User)
 				}

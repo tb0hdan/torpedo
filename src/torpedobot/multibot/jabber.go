@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"flag"
+
 	common "github.com/tb0hdan/torpedo_common"
 
-	"github.com/mattn/go-xmpp"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/tb0hdan/torpedo_registry"
+	"gopkg.in/mgo.v2/bson"
+	"github.com/mattn/go-xmpp"
 )
 
 var JabberAPIKey *string
@@ -109,12 +110,6 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 		logger.Fatal(err)
 	}
 
-	botApi := &TorpedoBotAPI{}
-	botApi.API = talk
-	botApi.Bot = tb
-	botApi.CommandPrefix = cmd_prefix
-	botApi.UserProfile = &torpedo_registry.UserProfile{}
-
 	startup_ts := time.Now().Unix()
 	go tb.WaitAndSendJabberDisco(str_jid, server, talk)
 	// join rooms
@@ -166,6 +161,12 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 			}
 			// Since v.Stamp returns default value, use some time to catch up on messages
 			if passed > 30 {
+				botApi := &TorpedoBotAPI{}
+				botApi.API = talk
+				botApi.Bot = tb
+				botApi.CommandPrefix = cmd_prefix
+				botApi.UserProfile = &torpedo_registry.UserProfile{ID: v.Remote}
+				botApi.Me = GetStrippedJID(talk)
 				botApi.Type = v.Type
 				go tb.processChannelEvent(botApi, v.Remote, v.Text)
 			}

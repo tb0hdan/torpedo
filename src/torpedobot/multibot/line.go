@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	LineAPIKey *string
+	LineAPIKey       *string
 	LineIncomingAddr *string
 )
 
@@ -87,7 +87,8 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 					botApi.API = bot
 					botApi.Bot = tb
 					botApi.CommandPrefix = cmd_prefix
-					botApi.UserProfile = &torpedo_registry.UserProfile{}
+					botApi.UserProfile = &torpedo_registry.UserProfile{ID: channel}
+					botApi.Me = "torpedobot"
 
 					go tb.processChannelEvent(botApi, channel, message.Text)
 				default:

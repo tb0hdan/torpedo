@@ -6,16 +6,20 @@ import (
 	"time"
 
 	"flag"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
+
+	"fmt"
 
 	"github.com/paked/messenger"
 )
 
 // https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const FACEBOOK_TEXT_MAX = 640
+
 var (
-	FacebookAPIKey *string
+	FacebookAPIKey       *string
 	FacebookIncomingAddr *string
 )
 
@@ -83,7 +87,9 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 		botApi.API = r
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
-		botApi.UserProfile = &torpedo_registry.UserProfile{}
+		botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%v", m.Sender.ID)}
+		// FIXME: Get ID and remove hardcode
+		botApi.Me = "torpedobot"
 
 		go tb.processChannelEvent(botApi, m.Sender.ID, m.Text)
 	})
