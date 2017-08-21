@@ -11,6 +11,7 @@ import (
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_fun_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_giphy_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_google_plugin"
+	_ "github.com/tb0hdan/torpedo_plugins/torpedo_history_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_lastfm_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_pinterest_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_shorteners_plugin"

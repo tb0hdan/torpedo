@@ -156,7 +156,7 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 			botApi.API = api
 			botApi.Bot = tb
 			botApi.CommandPrefix = cmd_prefix
-			botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%s@%s", event.User, server), Nick: event.Nick}
+			botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%s@%s", event.User, server), Nick: event.Nick, Server: server}
 			botApi.Me = irccon.GetNick()
 
 			tb.processChannelEvent(botApi, event.Arguments[0], event.Message())
