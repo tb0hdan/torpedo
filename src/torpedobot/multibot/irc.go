@@ -116,16 +116,16 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 	//welcome
 	session, collection, err := tb.Database.GetCollection("ircChatrooms")
 	if err != nil {
-		logger.Fatal("Could not connect to database: %+v\n", err)
+		tb.logger.Fatal("Could not connect to database: %+v\n", err)
 	}
 	results := make([]*IRCChatroom, 0)
 	err = collection.Find(bson.M{"myserver": server}).All(&results)
 	if err != nil {
-		logger.Printf("No rooms available to join: %+v\n", err)
+		tb.logger.Printf("No rooms available to join: %+v\n", err)
 	}
 	session.Close()
 	for _, room := range results {
-		logger.Printf("Joining IRC chatroom: %s\n", room.Channel)
+		tb.logger.Printf("Joining IRC chatroom: %s\n", room.Channel)
 		irccon.AddCallback("001", func(e *irc.Event) { irccon.Join(room.Channel) })
 	}
 	// end of names
@@ -133,16 +133,16 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 	irccon.AddCallback("INVITE", func(e *irc.Event) {
 		session, collection, err := tb.Database.GetCollection("ircChatrooms")
 		if err != nil {
-			logger.Fatal("Could not connect to database: %+v\n", err)
+			tb.logger.Fatal("Could not connect to database: %+v\n", err)
 		}
 		result := IRCChatroom{}
 		err = collection.Find(bson.M{"myserver": server, "channel": e.Arguments[1]}).One(&result)
 		if err != nil {
-			logger.Println(err)
+			tb.logger.Println(err)
 			// no record, insert new one
 			err = collection.Insert(&IRCChatroom{MyServer: server, Channel: e.Arguments[1]})
 			if err != nil {
-				logger.Fatal(err)
+				tb.logger.Fatal(err)
 			}
 			// join new room
 			irccon.Join(e.Arguments[1])
@@ -165,7 +165,7 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 	//
 	err = irccon.Connect(server + ":" + port)
 	if err != nil {
-		logger.Printf("Err %s", err)
+		tb.logger.Printf("Err %s", err)
 		return
 	}
 	// blocking run here

@@ -83,7 +83,7 @@ func (tb *TorpedoBot) PostMessage(channel interface{}, message string, api *torp
 
 func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
 	// ignore spam messages
-	if !tb.NoSpam(channel, incoming_message) {
+	if !tb.NoSpam(api, channel, incoming_message) {
 		return
 	}
 	// handle commands
