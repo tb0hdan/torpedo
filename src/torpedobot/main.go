@@ -29,6 +29,7 @@ func main() {
 	bot := multibot.New()
 	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION, ProjectURL)
 	// bot cfg
+	// plugins/protocols
 	torpedo_registry.Config.RegisterParser("slack", bot.ConfigureSlackBot, bot.ParseSlackBot)
 	torpedo_registry.Config.RegisterParser("telegram", bot.ConfigureTelegramBot, bot.ParseTelegramBot)
 	torpedo_registry.Config.RegisterParser("jabber", bot.ConfigureJabberBot, bot.ParseJabberBot)
@@ -37,8 +38,11 @@ func main() {
 	torpedo_registry.Config.RegisterParser("line", bot.ConfigureLineBot, bot.ParseLineBot)
 	torpedo_registry.Config.RegisterParser("matrix", bot.ConfigureMatrixBot, bot.ParseMatrixBot)
 	torpedo_registry.Config.RegisterParser("facebook", bot.ConfigureFacebookBot, bot.ParseFacebookBot)
-	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
 	torpedo_registry.Config.RegisterParser("irc", bot.ConfigureIRCBot, bot.ParseIRCBot)
+
+	// internals
+	torpedo_registry.Config.RegisterParser("apiaddr", bot.ConfigureHTTPAPI, bot.ParseHTTPAPI)
+	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
 	torpedo_registry.Config.RegisterParser("trpe", bot.ConfigureTRPE, bot.ParseTRPE)
 
 	bot.RunPreParsers()
@@ -62,5 +66,8 @@ func main() {
 
 	// start plugin coroutines (if any) after connecting to accounts
 	bot.RunCoroutines()
+	// start HTTP API Server
+	bot.RunHTTPAPI()
+	// start eternal loop
 	bot.RunLoop()
 }
