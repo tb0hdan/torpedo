@@ -11,11 +11,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/getsentry/raven-go"
 	common "github.com/tb0hdan/torpedo_common"
 	database "github.com/tb0hdan/torpedo_common/database"
 	memcache "github.com/tb0hdan/torpedo_common/memcache"
 	"github.com/tb0hdan/torpedo_registry"
-	"github.com/getsentry/raven-go"
 )
 
 var bot *TorpedoBot
@@ -31,8 +31,6 @@ type BotStats struct {
 
 type TorpedoBot struct {
 	caches              map[string]*memcache.MemCacheType
-	commandHandlers     map[string]func(*torpedo_registry.BotAPI, interface{}, string)
-	help                map[string]string
 	Database            *database.MongoDB
 	logger              *log.Logger
 	throttle            *memcache.MemCacheType
@@ -55,6 +53,19 @@ type TorpedoBotAPI struct {
 	Type        string
 	UserProfile *torpedo_registry.UserProfile
 	Me          string
+}
+
+func (tb *TorpedoBot) GetBotAPI(api *TorpedoBotAPI, channel interface{}, incoming_message string) (botapi *torpedo_registry.BotAPI) {
+	botapi = &torpedo_registry.BotAPI{}
+	botapi.API = api
+	botapi.CommandPrefix = api.CommandPrefix
+	botapi.Bot.GetCachedItem = api.Bot.GetCachedItem
+	botapi.Bot.SetCachedItems = api.Bot.SetCachedItems
+	botapi.Bot.PostMessage = api.Bot.PostMessage
+	botapi.Bot.Stats = api.Bot.Stats
+	botapi.Bot.Build = api.Bot.Build
+	botapi.UserProfile = api.UserProfile
+	return
 }
 
 func (tba *TorpedoBotAPI) PostMessage(channel interface{}, message string, richmsgs ...torpedo_registry.RichMessage) {
@@ -90,6 +101,9 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) {
 		tb.ProcessCommandMessage(api, channel, incoming_message)
 	} else {
+		// handle text messages in separate goroutine
+		go tb.processTextMessage(api, channel, incoming_message)
+
 		// ignore bot messages
 		if api.UserProfile.ID != "" && api.Me != "" && api.UserProfile.ID == api.Me {
 			tb.logger.Println("Ignoring my own messages...")
@@ -100,6 +114,16 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 			tb.StoreMessageHistory(api, channel, incoming_message)
 		}
 	}
+}
+
+func (tb *TorpedoBot) processTextMessage(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
+	botapi := tb.GetBotAPI(api, channel, incoming_message)
+	// run message handlers here
+	for idx, handler := range torpedo_registry.Config.GetTextMessageHandlers() {
+		tb.logger.Printf("Running text handler #%s: %+v\n", idx, handler)
+		handler(botapi, channel, incoming_message)
+	}
+	return
 }
 
 func (tb *TorpedoBot) Cleanup() {
@@ -128,24 +152,6 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 		time.Sleep(3 * time.Second)
 		go wrapped(key, cmd_prefix)
 	}
-}
-
-func (tb *TorpedoBot) RegisterHandlers(handlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)) {
-	tb.commandHandlers = handlers
-	return
-}
-
-func (tb *TorpedoBot) GetCommandHandlers() (handlers map[string]func(*torpedo_registry.BotAPI, interface{}, string)) {
-	return tb.commandHandlers
-}
-
-func (tb *TorpedoBot) RegisterHelp(help map[string]string) {
-	tb.help = help
-	return
-}
-
-func (tb *TorpedoBot) GetHelp() (help map[string]string) {
-	return tb.help
 }
 
 func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version, projecturl string) {
@@ -219,7 +225,9 @@ func New() *TorpedoBot {
 }
 
 func (tb *TorpedoBot) RunLoop() {
-	for {
-		time.Sleep(time.Second)
+	if tb.Stats.TotalAccounts > 0 {
+		for {
+			time.Sleep(time.Second)
+		}
 	}
 }

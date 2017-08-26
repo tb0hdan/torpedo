@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tb0hdan/torpedo_registry"
 	"github.com/getsentry/raven-go"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 func (tb *TorpedoBot) ProcessCommandMessage(api *TorpedoBotAPI, channel interface{}, incoming_message string) {
@@ -16,28 +16,19 @@ func (tb *TorpedoBot) ProcessCommandMessage(api *TorpedoBotAPI, channel interfac
 	tb.Stats.ProcessedMessagesTotal = tb.Database.GetUpdateTotalMessages(1)
 	//
 	command := strings.TrimPrefix(incoming_message, api.CommandPrefix)
-	botapi := &torpedo_registry.BotAPI{}
-	botapi.API = api
-	botapi.CommandPrefix = api.CommandPrefix
-	botapi.Bot.GetCachedItem = api.Bot.GetCachedItem
-	botapi.Bot.SetCachedItems = api.Bot.SetCachedItems
-	botapi.Bot.GetCommandHandlers = api.Bot.GetCommandHandlers
-	botapi.Bot.GetHelp = api.Bot.GetHelp
-	botapi.Bot.PostMessage = api.Bot.PostMessage
-	botapi.Bot.Stats = api.Bot.Stats
-	botapi.Bot.Build = api.Bot.Build
-	botapi.UserProfile = api.UserProfile
+	botapi := tb.GetBotAPI(api, channel, incoming_message)
 	found := 0
 	tb.logger.Printf("PROCESS! -> `%s`", command)
-	for handler := range tb.commandHandlers {
+	handlers := torpedo_registry.Config.GetHandlers()
+	for handler := range handlers {
 		if strings.ToLower(strings.Split(command, " ")[0]) == handler {
 			found += 1
 			if torpedo_registry.Config.GetConfig()["raven"] == "yes" {
 				raven.CapturePanicAndWait(func() {
-					tb.commandHandlers[handler](botapi, channel, incoming_message)
+					handlers[handler](botapi, channel, incoming_message)
 				}, nil)
 			} else {
-				tb.commandHandlers[handler](botapi, channel, incoming_message)
+				handlers[handler](botapi, channel, incoming_message)
 			}
 			break
 		}

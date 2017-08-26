@@ -14,7 +14,7 @@ import (
 var APIADDR *string
 
 func (tb *TorpedoBot) ConfigureHTTPAPI(cfg *torpedo_registry.ConfigStruct) {
-	APIADDR = flag.String("apiaddr", "", "Listen on this address for incoming HTTP API Server connections")
+	APIADDR = flag.String("apiaddr", "", "Listen on this address for incoming HTTP API Server connections. Example: :8080")
 }
 
 func (tb *TorpedoBot) ParseHTTPAPI(cfg *torpedo_registry.ConfigStruct) {
@@ -22,12 +22,6 @@ func (tb *TorpedoBot) ParseHTTPAPI(cfg *torpedo_registry.ConfigStruct) {
 	if cfg.GetConfig()["apiaddr"] == "" {
 		// try supplied one first
 		cfg.SetConfig("apiaddr", common.GetStripEnv("APIADDR"))
-
-		// fallback to default
-		if cfg.GetConfig()["apiaddr"] == "" {
-			cfg.SetConfig("apiaddr", ":8080")
-		}
-
 	}
 }
 
@@ -40,5 +34,7 @@ func (tb *TorpedoBot) RunHTTPAPI() {
 
 	apiaddr := torpedo_registry.Config.GetConfig()["apiaddr"]
 
-	log.Fatal(http.ListenAndServe(apiaddr, api.MakeHandler()))
+	if apiaddr != "" {
+		log.Fatal(http.ListenAndServe(apiaddr, api.MakeHandler()))
+	}
 }

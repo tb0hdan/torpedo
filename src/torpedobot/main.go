@@ -49,10 +49,6 @@ func main() {
 	flag.Parse()
 	bot.RunPostParsers()
 
-	// Command handlers and help
-	bot.RegisterHandlers(torpedo_registry.Config.GetHandlers())
-	bot.RegisterHelp(torpedo_registry.Config.GetHelp())
-
 	fmt.Println(torpedo_registry.Config.GetConfig())
 	bot.RunBotsCSV(bot.RunSlackBot, torpedo_registry.Config.GetConfig()["slackapikey"], "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, torpedo_registry.Config.GetConfig()["telegramapikey"], "/")

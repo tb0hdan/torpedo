@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"strings"
-	"github.com/tb0hdan/torpedo_registry"
+
 	common "github.com/tb0hdan/torpedo_common"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incoming_message string) {
@@ -14,7 +15,7 @@ func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incom
 	if command == "" {
 		idx := 0
 		message = "Available commands: "
-		for command := range api.Bot.GetCommandHandlers() {
+		for command := range torpedo_registry.Config.GetHandlers() {
 			if idx == 0 {
 				message += fmt.Sprintf("`%s%s`", api.CommandPrefix, command)
 			} else {
@@ -24,7 +25,7 @@ func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incom
 		}
 	} else {
 		message = "No help available yet"
-		for help := range api.Bot.GetHelp() {
+		for help := range torpedo_registry.Config.GetHelp() {
 			if strings.TrimLeft(command, api.CommandPrefix) == help {
 				message = api.Bot.GetHelp()[help]
 				break
