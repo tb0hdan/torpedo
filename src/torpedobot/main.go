@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-
+	"os"
+	
 	"torpedobot/multibot"
 
+	"github.com/erikdubbelboer/gspt"
 	"github.com/tb0hdan/torpedo_registry"
 )
 
@@ -19,6 +21,9 @@ var (
 )
 
 func main() {
+	// Set process name - https://github.com/tb0hdan/torpedo/issues/30
+	gspt.SetProcTitle(os.Args[0])
+
 	// Help handlers
 	help_msg := "Get help using this command"
 	torpedo_registry.Config.RegisterHelpAndHandler("?", help_msg, HelpProcessMessage)
