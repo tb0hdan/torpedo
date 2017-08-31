@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	
+
 	"torpedobot/multibot"
 
 	"github.com/erikdubbelboer/gspt"

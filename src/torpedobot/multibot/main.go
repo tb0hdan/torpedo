@@ -58,6 +58,7 @@ type TorpedoBotAPI struct {
 func (tb *TorpedoBot) GetBotAPI(api *TorpedoBotAPI, channel interface{}, incoming_message string) (botapi *torpedo_registry.BotAPI) {
 	botapi = &torpedo_registry.BotAPI{}
 	botapi.API = api
+	botapi.ProtocolAPI = api.API
 	botapi.CommandPrefix = api.CommandPrefix
 	botapi.Bot.GetCachedItem = api.Bot.GetCachedItem
 	botapi.Bot.SetCachedItems = api.Bot.SetCachedItems
