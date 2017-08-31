@@ -10,6 +10,7 @@ ADD ./src/torpedobot /src/torpedobot
 RUN apk update
 RUN apk add git
 RUN apk add make
+RUN apk add gcc
 RUN make deps
 RUN make build_only
 
