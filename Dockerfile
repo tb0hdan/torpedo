@@ -11,6 +11,7 @@ RUN apk update
 RUN apk add git
 RUN apk add make
 RUN apk add gcc
+RUN apk add libc-dev
 RUN make deps
 RUN make build_only
 
