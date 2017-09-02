@@ -49,6 +49,7 @@ func main() {
 	torpedo_registry.Config.RegisterParser("apiaddr", bot.ConfigureHTTPAPI, bot.ParseHTTPAPI)
 	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
 	torpedo_registry.Config.RegisterParser("trpe", bot.ConfigureTRPE, bot.ParseTRPE)
+	torpedo_registry.Config.RegisterParser("list_handlers", bot.ConfigureListPlugins, bot.ParseListPlugins)
 
 	bot.RunPreParsers()
 	flag.Parse()

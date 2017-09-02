@@ -55,6 +55,8 @@ type TorpedoBotAPI struct {
 	Me          string
 }
 
+// This is required for plugins to have loose coupling with bot itself
+// they use torpedo_registry.BotAPI instead
 func (tb *TorpedoBot) GetBotAPI(api *TorpedoBotAPI, channel interface{}, incoming_message string) (botapi *torpedo_registry.BotAPI) {
 	botapi = &torpedo_registry.BotAPI{}
 	botapi.API = api
@@ -230,5 +232,7 @@ func (tb *TorpedoBot) RunLoop() {
 		for {
 			time.Sleep(time.Second)
 		}
+	} else {
+		tb.logger.Fatal("No accounts configured, exiting...\n")
 	}
 }
