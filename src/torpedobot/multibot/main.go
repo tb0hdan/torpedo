@@ -104,14 +104,15 @@ func (tb *TorpedoBot) processChannelEvent(api *TorpedoBotAPI, channel interface{
 	if strings.HasPrefix(incoming_message, api.CommandPrefix) {
 		tb.ProcessCommandMessage(api, channel, incoming_message)
 	} else {
-		// handle text messages in separate goroutine
-		go tb.processTextMessage(api, channel, incoming_message)
-
 		// ignore bot messages
 		if api.UserProfile.ID != "" && api.Me != "" && api.UserProfile.ID == api.Me {
 			tb.logger.Println("Ignoring my own messages...")
 			return
 		}
+
+		// handle text messages in separate goroutine
+		go tb.processTextMessage(api, channel, incoming_message)
+
 		// handle history (skip if sender ID is not set)
 		if api.UserProfile.ID != "" && api.Me != "" {
 			tb.StoreMessageHistory(api, channel, incoming_message)

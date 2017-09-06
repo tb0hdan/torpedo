@@ -91,7 +91,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 		case *slack.MessageEvent:
 			logger.Printf("Message: %v\n", ev)
-			if ev.Type == "message" {
+			if ev.Type == "message" && ev.User != "" {
 				user, err := api.GetUserInfo(ev.User)
 				if err == nil {
 					botApi.UserProfile = &torpedo_registry.UserProfile{Nick: user.Name,
@@ -105,13 +105,14 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 				} else {
 					logger.Printf("Error getting user info for %s\n", ev.User)
 				}
-			}
-			channel := ev.Channel
-			incoming_message := ev.Text
-			messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)
-			jitter := int64(time.Now().Unix()) - int64(messageTS)
-			if jitter < 10 {
-				go tb.processChannelEvent(botApi, channel, incoming_message)
+
+				channel := ev.Channel
+				incoming_message := ev.Text
+				messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)
+				jitter := int64(time.Now().Unix()) - int64(messageTS)
+				if jitter < 10 {
+					go tb.processChannelEvent(botApi, channel, incoming_message)
+				}
 			}
 
 		case *slack.PresenceChangeEvent:
