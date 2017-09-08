@@ -98,9 +98,10 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 	usessl := strings.Split(apiKey, ":")[2]
 
 	irccon := tb.myIRC(nick, fmt.Sprintf("%s bot", nick), logger)
-	// TODO: Add -v switch to enable these
-	irccon.VerboseCallbackHandler = true
-	irccon.Debug = true
+	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+		irccon.VerboseCallbackHandler = true
+		irccon.Debug = true
+	}
 
 	// TLS Config
 	irccon.UseTLS = usessl == "1"

@@ -31,6 +31,8 @@ func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI,
 	if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
 		params = ToSlackAttachment(richmsgs[0])
 	}
+	params.UnfurlLinks = true
+	params.UnfurlMedia = true
 
 	switch api := tba.API.(type) {
 	case *slack.Client:
@@ -63,7 +65,11 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 
 	logger := cu.NewLog("slack-bot")
 	slack.SetLogger(logger)
-	api.SetDebug(true)
+
+	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+		api.SetDebug(true)
+
+	}
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
@@ -77,14 +83,20 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	tb.RegisteredProtocols["*slack.Client"] = HandleSlackMessage
 
 	for msg := range rtm.IncomingEvents {
-		logger.Print("Event Received: ")
+		// TODO: Use proper logger instead
+		if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+			logger.Print("Event Received: ")
+		}
 		switch ev := msg.Data.(type) {
 		case *slack.HelloEvent:
 			// Ignore hello
 
 		case *slack.ConnectedEvent:
-			logger.Println("Infos:", ev.Info)
-			logger.Println("Connection counter:", ev.ConnectionCount)
+			// TODO: Use proper logger instead
+			if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+				logger.Println("Infos:", ev.Info)
+				logger.Println("Connection counter:", ev.ConnectionCount)
+			}
 			botApi.Me = ev.Info.User.ID
 			// Replace #general with your Channel ID
 			// rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", "#general"))

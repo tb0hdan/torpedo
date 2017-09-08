@@ -67,7 +67,10 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 		logger.Panic(err)
 	}
 
-	api.Debug = true
+	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+
+		api.Debug = true
+	}
 
 	logger.Printf("Authorized on account %s", api.Self.UserName)
 

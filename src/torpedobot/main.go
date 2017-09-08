@@ -46,6 +46,7 @@ func main() {
 	torpedo_registry.Config.RegisterParser("irc", bot.ConfigureIRCBot, bot.ParseIRCBot)
 
 	// internals
+	torpedo_registry.Config.RegisterParser("debug", bot.ConfigureDebug, bot.ParseDebug)
 	torpedo_registry.Config.RegisterParser("apiaddr", bot.ConfigureHTTPAPI, bot.ParseHTTPAPI)
 	torpedo_registry.Config.RegisterParser("mongodb", bot.ConfigureMongoDBPlugin, bot.ParseMongoDBPlugin)
 	torpedo_registry.Config.RegisterParser("trpe", bot.ConfigureTRPE, bot.ParseTRPE)
@@ -55,7 +56,10 @@ func main() {
 	flag.Parse()
 	bot.RunPostParsers()
 
-	fmt.Println(torpedo_registry.Config.GetConfig())
+	// TODO: Use proper logger instead
+	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+		fmt.Println(torpedo_registry.Config.GetConfig())
+	}
 	bot.RunBotsCSV(bot.RunSlackBot, torpedo_registry.Config.GetConfig()["slackapikey"], "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, torpedo_registry.Config.GetConfig()["telegramapikey"], "/")
 	bot.RunBotsCSV(bot.RunJabberBot, torpedo_registry.Config.GetConfig()["jabberapikey"], "!")

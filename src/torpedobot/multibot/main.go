@@ -168,7 +168,10 @@ func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version, projecturl string)
 
 func (tb *TorpedoBot) RunPreParsers() {
 	for pname, pfunc := range torpedo_registry.Config.GetPreParsers() {
-		tb.logger.Printf("Running argument preparser %s\n", pname)
+		// TODO: Use proper logger instead
+		if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+			tb.logger.Printf("Running argument preparser %s\n", pname)
+		}
 		pfunc(torpedo_registry.Config)
 	}
 	return
@@ -176,7 +179,10 @@ func (tb *TorpedoBot) RunPreParsers() {
 
 func (tb *TorpedoBot) RunPostParsers() {
 	for pname, pfunc := range torpedo_registry.Config.GetPostParsers() {
-		tb.logger.Printf("Running argument postparser %s\n", pname)
+		// TODO: Use proper logger instead
+		if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+			tb.logger.Printf("Running argument postparser %s\n", pname)
+		}
 		pfunc(torpedo_registry.Config)
 	}
 	return
@@ -184,7 +190,10 @@ func (tb *TorpedoBot) RunPostParsers() {
 
 func (tb *TorpedoBot) RunCoroutines() {
 	for cname, cfunc := range torpedo_registry.Config.GetCoroutines() {
-		tb.logger.Printf("Running coroutine: %s\n", cname)
+		// TODO: Use proper logger instead
+		if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
+			tb.logger.Printf("Running coroutine: %s\n", cname)
+		}
 		go cfunc(torpedo_registry.Config)
 	}
 }
