@@ -26,11 +26,13 @@ _testmain.go
 
 # Local
 *.bkp
+*.db
 .DS_*
 .idea/*
 bin/*
 build/*
 src/github.com/*
+src/go4.org/*
 src/golang.org/*
 src/googlemaps.github.io/*
 src/google.golang.org/*
