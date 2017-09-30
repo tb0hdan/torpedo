@@ -39,3 +39,7 @@ ssl/*
 token.sh
 token.sh.*
 env.list
+
+
+# development only
+src/torpedobot/main_plugins_dev.go
