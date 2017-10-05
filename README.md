@@ -1,5 +1,5 @@
 # torpedo
-A multi-network asynchronous chat bot written in Go
+Pluggable, multi-network asynchronous chat bot written in Go
 
 
 # Intro
