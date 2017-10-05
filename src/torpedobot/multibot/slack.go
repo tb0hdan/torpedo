@@ -122,7 +122,8 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 				incoming_message := ev.Text
 				messageTS, _ := strconv.ParseFloat(ev.Timestamp, 64)
 				jitter := int64(time.Now().Unix()) - int64(messageTS)
-				if jitter < 10 {
+				// System notifications, like "you've been invited / kicked" come from USLACKBOT, ignore them...
+				if jitter < 10 && botApi.UserProfile.ID != "USLACKBOT" {
 					go tb.processChannelEvent(botApi, channel, incoming_message)
 				}
 			}
