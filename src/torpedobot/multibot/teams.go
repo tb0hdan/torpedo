@@ -1,59 +1,45 @@
 package multibot
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
-
-	common "github.com/tb0hdan/torpedo_common"
-	"github.com/tb0hdan/torpedo_registry"
 	"regexp"
-	"io/ioutil"
+	"time"
+
+	"github.com/google/uuid"
+	common "github.com/tb0hdan/torpedo_common"
+	memcache "github.com/tb0hdan/torpedo_common/memcache"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 var (
 	TeamsIncomingAddr *string
-	TeamsAPIKey        *string
+	TeamsAPIKey       *string
+	TeamsMessageQueue = memcache.New()
 )
 
 type TeamsAPI struct {
-	ServiceURL string
-	logger     *log.Logger
+	GUID   string
+	logger *log.Logger
 }
 
 func (sapi *TeamsAPI) Send(channel, message string, attachments ...*SkypeAttachment) {
-	client := &http.Client{}
 	outgoing_message := &SkypeOutgoingMessage{Text: message,
-		Type:        "message",
+		Type: "message",
 		TextFormat:  "plain",
 		Attachments: attachments}
-	parsed, _ := url.Parse(sapi.ServiceURL)
-	host := parsed.Host
-	body, _ := json.Marshal(outgoing_message)
-
-	req, err := http.NewRequest("POST",
-		fmt.Sprintf("https://%s/v3/conversations/%s/activities", host, channel),
-		bytes.NewReader(body))
-	//sapi.logger.Printf(sapi.AccessToken)
-	req.Header.Add("Content-Type", "application/json")
-	//req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sapi.AccessToken))
-	req.Header.Set("User-Agent", common.User_Agent)
-	resp, err := client.Do(req)
-	if err != nil {
-		sapi.logger.Printf("%+v\n", err)
-		return
+	// Append message to TeamsMessageQueue
+	if _, ok := TeamsMessageQueue.Get(sapi.GUID); !ok {
+		body, _ := json.Marshal(outgoing_message)
+		TeamsMessageQueue.Set(sapi.GUID, []string{string(body)})
 	}
-	defer resp.Body.Close()
-	sapi.logger.Println(resp)
 	return
 }
 
 func HandleTeamsMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
-	fmt.Println("HandleTeamsMessage called...")
 	switch api := tba.API.(type) {
 	case *TeamsAPI:
 		if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
@@ -80,12 +66,13 @@ func (tb *TorpedoBot) ParseTeamsBot(cfg *torpedo_registry.ConfigStruct) {
 
 func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
-	tb.RegisteredProtocols["*multibot.TeamsAPI"] = HandleTeamsMessage
 	cu := &common.Utils{}
 	logger := cu.NewLog("teams-bot")
 
 	teams_api := &TeamsAPI{}
 	teams_api.logger = logger
+
+	tb.RegisteredProtocols["*multibot.TeamsAPI"] = HandleTeamsMessage
 
 	http.HandleFunc("/api/teams-messages", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
@@ -106,7 +93,7 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 		}
 
 		botApi := &TorpedoBotAPI{}
-		teams_api.ServiceURL = message.ServiceURL
+		teams_api.GUID = uuid.New().String()
 		botApi.API = teams_api
 		botApi.Bot = tb
 		botApi.CommandPrefix = cmd_prefix
@@ -114,10 +101,35 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 		// FIXME: Remove hardcode
 		botApi.Me = "torpedobot"
 
-		re := regexp.MustCompile(`^(@[^\s]+\s)?`)
+		re := regexp.MustCompile(`^(<at>.+</at>(\s|&nbsp;))?`)
 		msg := re.ReplaceAllString(message.Text, "")
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
+		// Custom Bot is expected to reply within 5 seconds
+		// https://msdn.microsoft.com/en-us/microsoft-teams/custombot#sending-a-reply
+		stopFlag := false
+		ticker := time.NewTicker(time.Millisecond * 100)
+		go func() {
+			for range ticker.C {
+				body, ok := TeamsMessageQueue.Get(teams_api.GUID)
+				if ok {
+					w.Write([]byte(body[0]))
+					TeamsMessageQueue.Delete(teams_api.GUID)
+					stopFlag = true
+					break
+				}
+			}
+		}()
+		for {
+			if stopFlag {
+				break
+			} else {
+				time.Sleep(time.Microsecond * 100)
+			}
+		}
+		ticker.Stop()
+		logger.Println("Ticker stopped, deleting message")
+		TeamsMessageQueue.Delete(teams_api.GUID)
 	})
 	logger.Printf("Starting Teams API listener on %s\n", torpedo_registry.Config.GetConfig()["teamsincomingaddr"])
 	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["teamsincomingaddr"], nil); err != nil {

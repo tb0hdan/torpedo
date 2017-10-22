@@ -65,7 +65,7 @@ type SkypeAttachment struct {
 type SkypeOutgoingMessage struct {
 	Text        string             `json:"text"`
 	Type        string             `json:"type"`
-	TextFormat  string             `json:"textFormat"`
+	TextFormat  string             `json:"textFormat,omitempty"`
 	Attachments []*SkypeAttachment `json:"attachments,omitempty"`
 }
 

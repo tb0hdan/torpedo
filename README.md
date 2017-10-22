@@ -11,7 +11,8 @@ Torpedo uses multiple accounts (at least one is required). Supported transports:
 - Kik
 - Line
 - Matrix (matrix.org only atm)
-- Skype
+- Skype (via BotFramework)
+- Microsoft Teams (via BotFramework and CustomBots webhook)
 - Slack
 - Telegram
 - IRC
