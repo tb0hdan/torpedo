@@ -15,6 +15,10 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
+// Custom Bot is expected to reply within 5 seconds
+// https://msdn.microsoft.com/en-us/microsoft-teams/custombot#sending-a-reply
+const sleepMax = 5
+
 var (
 	TeamsIncomingAddr *string
 	TeamsAPIKey       *string
@@ -105,8 +109,7 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 		msg := re.ReplaceAllString(message.Text, "")
 		logger.Printf("Message: `%s`\n", msg)
 		go tb.processChannelEvent(botApi, message.Conversation.ID, msg)
-		// Custom Bot is expected to reply within 5 seconds
-		// https://msdn.microsoft.com/en-us/microsoft-teams/custombot#sending-a-reply
+
 		stopFlag := false
 		ticker := time.NewTicker(time.Millisecond * 100)
 		go func() {
@@ -120,11 +123,11 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 				}
 			}
 		}()
-		for {
+		for i := 0; i <= sleepMax * 10; i++ {
 			if stopFlag {
 				break
 			} else {
-				time.Sleep(time.Microsecond * 100)
+				time.Sleep(time.Millisecond * 100)
 			}
 		}
 		ticker.Stop()
