@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"torpedobot/multibot"
 
 	"github.com/erikdubbelboer/gspt"
 	"github.com/tb0hdan/torpedo_registry"
+	common "github.com/tb0hdan/torpedo_common"
 )
 
 const ProjectURL = "https://github.com/tb0hdan/torpedo"
@@ -57,9 +57,10 @@ func main() {
 	flag.Parse()
 	bot.RunPostParsers()
 
-	// TODO: Use proper logger instead
 	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
-		fmt.Println(torpedo_registry.Config.GetConfig())
+		cu := &common.Utils{}
+		logger := cu.NewLog("torpedo-bot")
+		logger.Println(torpedo_registry.Config.GetConfig())
 	}
 	bot.RunBotsCSV(bot.RunSlackBot, torpedo_registry.Config.GetConfig()["slackapikey"], "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, torpedo_registry.Config.GetConfig()["telegramapikey"], "/")
