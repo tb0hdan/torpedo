@@ -2,7 +2,7 @@ package multibot
 
 import (
 	"flag"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"

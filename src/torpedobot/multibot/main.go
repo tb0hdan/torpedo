@@ -2,7 +2,7 @@ package multibot
 
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
 	"sync"

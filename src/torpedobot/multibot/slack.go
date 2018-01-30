@@ -1,12 +1,13 @@
 package multibot
 
 import (
+	"flag"
+        "log"
+        "os"
 	"strconv"
 	"time"
 
 	common "github.com/tb0hdan/torpedo_common"
-
-	"flag"
 
 	"github.com/nlopes/slack"
 	"github.com/tb0hdan/torpedo_registry"
@@ -61,9 +62,9 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	tb.Stats.ConnectedAccounts += 1
 
 	api := slack.New(apiKey)
-	cu := &common.Utils{}
+	//cu := &common.Utils{}
 
-	logger := cu.NewLog("slack-bot")
+	logger := log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("slack-bot")
 	slack.SetLogger(logger)
 
 	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {

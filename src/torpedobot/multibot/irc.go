@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"log"
-
+        "os"
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 	irc "github.com/thoj/go-ircevent"
@@ -82,8 +82,8 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 		nick, server string
 	)
 	tb.Stats.ConnectedAccounts += 1
-	cu := &common.Utils{}
-	logger := cu.NewLog("irc-bot")
+	//cu := &common.Utils{}
+	logger := log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("irc-bot")
 	tb.RegisteredProtocols["*multibot.IRCAPI"] = HandleIRCMessage
 
 	user_server := strings.Split(apiKey, ":")[0]
