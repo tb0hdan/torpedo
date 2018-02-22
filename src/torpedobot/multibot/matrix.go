@@ -40,14 +40,24 @@ func (tb *TorpedoBot) ParseMatrixBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunMatrixBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunMatrixBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 
 	cu := &common.Utils{}
 
 	logger := cu.NewLog("matrix-bot")
 
-	clientID := fmt.Sprintf("@%s:matrix.org", strings.Split(apiKey, ":")[0])
-	cli, _ := gomatrix.NewClient("https://matrix.org", clientID, strings.Split(apiKey, ":")[1])
+	clientID := fmt.Sprintf("@%s:matrix.org", strings.Split(account.APIKey, ":")[0])
+	cli, _ := gomatrix.NewClient("https://matrix.org", clientID, strings.Split(account.APIKey, ":")[1])
 	// anything which implements the Storer interface
 	customStore := gomatrix.NewInMemoryStore()
 	cli.Store = customStore
@@ -59,6 +69,7 @@ func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 	// any http.Client
 	cli.Client = http.DefaultClient
 
+	account.API = cli
 	syncer := cli.Syncer.(*gomatrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *gomatrix.Event) {
 		logger.Printf("Message: %+v\n", ev)
@@ -67,7 +78,7 @@ func (tb *TorpedoBot) RunMatrixBot(apiKey, cmd_prefix string) {
 			botApi := &TorpedoBotAPI{}
 			botApi.API = cli
 			botApi.Bot = tb
-			botApi.CommandPrefix = cmd_prefix
+			botApi.CommandPrefix = account.CommandPrefix
 			botApi.UserProfile = &torpedo_registry.UserProfile{ID: ev.Sender}
 			botApi.Me = clientID
 

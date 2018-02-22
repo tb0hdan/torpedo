@@ -10,7 +10,8 @@ import (
 	"fmt"
 
 	"log"
-        "os"
+	"os"
+
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
 	irc "github.com/thoj/go-ircevent"
@@ -78,15 +79,24 @@ func (tb *TorpedoBot) myIRC(nick, user string, log *log.Logger) *irc.Connection 
 }
 
 func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunIRCBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunIRCBotAccount(account *torpedo_registry.Account) {
 	var (
 		nick, server string
 	)
 	tb.Stats.ConnectedAccounts += 1
 	//cu := &common.Utils{}
-	logger := log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("irc-bot")
+	logger := log.New(os.Stdout, "irc-bot: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("irc-bot")
 	tb.RegisteredProtocols["*multibot.IRCAPI"] = HandleIRCMessage
 
-	user_server := strings.Split(apiKey, ":")[0]
+	user_server := strings.Split(account.APIKey, ":")[0]
 	if len(strings.Split(user_server, "@")) == 2 {
 		nick = strings.Split(user_server, "@")[0]
 		server = strings.Split(user_server, "@")[1]
@@ -94,8 +104,8 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 		nick = "torpedobot"
 		server = user_server
 	}
-	port := strings.Split(apiKey, ":")[1]
-	usessl := strings.Split(apiKey, ":")[2]
+	port := strings.Split(account.APIKey, ":")[1]
+	usessl := strings.Split(account.APIKey, ":")[2]
 
 	irccon := tb.myIRC(nick, fmt.Sprintf("%s bot", nick), logger)
 	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
@@ -110,8 +120,8 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 	}
 
 	// Password config
-	if len(strings.Split(apiKey, ":")) > 3 {
-		irccon.Password = strings.Split(apiKey, ":")[3]
+	if len(strings.Split(account.APIKey, ":")) > 3 {
+		irccon.Password = strings.Split(account.APIKey, ":")[3]
 	}
 
 	//welcome
@@ -156,7 +166,7 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 			api := &IRCAPI{Connection: irccon, Event: event}
 			botApi.API = api
 			botApi.Bot = tb
-			botApi.CommandPrefix = cmd_prefix
+			botApi.CommandPrefix = account.CommandPrefix
 			botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%s@%s", event.User, server), Nick: event.Nick, Server: server}
 			botApi.Me = irccon.GetNick()
 
@@ -169,6 +179,7 @@ func (tb *TorpedoBot) RunIRCBot(apiKey, cmd_prefix string) {
 		tb.logger.Printf("Err %s", err)
 		return
 	}
+	account.Connection.ReconnectCount += 1
 	// blocking run here
 	irccon.Loop()
 

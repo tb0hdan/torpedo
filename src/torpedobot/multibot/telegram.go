@@ -56,13 +56,22 @@ func (tb *TorpedoBot) ParseTelegramBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunTelegramBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunTelegramBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
 
 	cu := &common.Utils{}
 
 	logger := cu.NewLog("telegram-bot")
 
-	api, err := tgbotapi.NewBotAPI(apiKey)
+	api, err := tgbotapi.NewBotAPI(account.APIKey)
 	if err != nil {
 		logger.Panic(err)
 	}
@@ -73,6 +82,8 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 	}
 
 	logger.Printf("Authorized on account %s", api.Self.UserName)
+	account.Connection.ReconnectCount += 1
+	account.API = api
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -101,7 +112,7 @@ func (tb *TorpedoBot) RunTelegramBot(apiKey, cmd_prefix string) {
 		botApi := &TorpedoBotAPI{}
 		botApi.API = api
 		botApi.Bot = tb
-		botApi.CommandPrefix = cmd_prefix
+		botApi.CommandPrefix = account.CommandPrefix
 		botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%v", update.Message.From.ID), Nick: update.Message.From.UserName}
 		botApi.Me = "torpedobot"
 

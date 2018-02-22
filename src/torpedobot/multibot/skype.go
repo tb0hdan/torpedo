@@ -6,13 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
@@ -171,15 +172,25 @@ func (tb *TorpedoBot) ParseSkypeBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunSkypeBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunSkypeBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 
 	skype_api := &SkypeAPI{}
 	cu := &common.Utils{}
 
 	logger := cu.NewLog("skype-bot")
 	skype_api.logger = logger
-	app_id := strings.Split(apiKey, ":")[0]
-	app_password := strings.Split(apiKey, ":")[1]
+	app_id := strings.Split(account.APIKey, ":")[0]
+	app_password := strings.Split(account.APIKey, ":")[1]
 	logger.Printf("Waiting for Skype token...\n")
 	token_response := skype_api.GetToken(app_id, app_password)
 	logger.Printf("Got Token: %s\n", token_response.AccessToken)
@@ -187,6 +198,8 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 	skype_api.ExpiresIn = int64(time.Now().Unix()) + int64(token_response.ExpiresIn)
 
 	tb.RegisteredProtocols["*multibot.SkypeAPI"] = HandleSkypeMessage
+
+	account.API = skype_api
 
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
@@ -219,7 +232,7 @@ func (tb *TorpedoBot) RunSkypeBot(apiKey, cmd_prefix string) {
 		skype_api.ServiceURL = message.ServiceURL
 		botApi.API = skype_api
 		botApi.Bot = tb
-		botApi.CommandPrefix = cmd_prefix
+		botApi.CommandPrefix = account.CommandPrefix
 		botApi.UserProfile = &torpedo_registry.UserProfile{ID: message.From.ID, Nick: message.From.Name}
 		// FIXME: Remove hardcode
 		botApi.Me = "torpedobot"

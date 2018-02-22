@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"regexp"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 	common "github.com/tb0hdan/torpedo_common"
@@ -32,7 +33,7 @@ type TeamsAPI struct {
 
 func (sapi *TeamsAPI) Send(channel, message string, attachments ...*SkypeAttachment) {
 	outgoing_message := &SkypeOutgoingMessage{Text: message,
-		Type: "message",
+		Type:        "message",
 		TextFormat:  "plain",
 		Attachments: attachments}
 	// Append message to TeamsMessageQueue
@@ -69,13 +70,24 @@ func (tb *TorpedoBot) ParseTeamsBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunTeamsBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunTeamsBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 	cu := &common.Utils{}
 	logger := cu.NewLog("teams-bot")
 
 	teams_api := &TeamsAPI{}
 	teams_api.logger = logger
 
+	account.API = teams_api
 	tb.RegisteredProtocols["*multibot.TeamsAPI"] = HandleTeamsMessage
 
 	http.HandleFunc("/api/teams-messages", func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +112,7 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 		teams_api.GUID = uuid.New().String()
 		botApi.API = teams_api
 		botApi.Bot = tb
-		botApi.CommandPrefix = cmd_prefix
+		botApi.CommandPrefix = account.CommandPrefix
 		botApi.UserProfile = &torpedo_registry.UserProfile{ID: message.From.ID, Nick: message.From.Name}
 		// FIXME: Remove hardcode
 		botApi.Me = "torpedobot"
@@ -123,7 +135,7 @@ func (tb *TorpedoBot) RunTeamsBot(apiKey, cmd_prefix string) {
 				}
 			}
 		}()
-		for i := 0; i <= sleepMax * 10; i++ {
+		for i := 0; i <= sleepMax*10; i++ {
 			if stopFlag {
 				break
 			} else {

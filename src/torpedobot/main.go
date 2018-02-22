@@ -7,8 +7,8 @@ import (
 	"torpedobot/multibot"
 
 	"github.com/erikdubbelboer/gspt"
-	"github.com/tb0hdan/torpedo_registry"
 	common "github.com/tb0hdan/torpedo_common"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 const ProjectURL = "https://github.com/tb0hdan/torpedo"
@@ -17,6 +17,7 @@ const ProjectURL = "https://github.com/tb0hdan/torpedo"
 var (
 	BUILD      = "Not available"
 	BUILD_DATE = "Not available"
+	GO_VERSION = "Not available"
 	VERSION    = "Not available"
 )
 
@@ -30,9 +31,10 @@ func main() {
 	torpedo_registry.Config.RegisterHelpAndHandler("h", help_msg, HelpProcessMessage)
 	torpedo_registry.Config.RegisterHelpAndHandler("help", help_msg, HelpProcessMessage)
 	torpedo_registry.Config.RegisterHelpAndHandler("stats", "Just system stats, nothing interesting", StatsProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("chatinfo", "Chat/DM information", ChatInfoProcessMessage)
 
 	bot := multibot.New()
-	bot.SetBuildInfo(BUILD, BUILD_DATE, VERSION, ProjectURL)
+	bot.SetBuildInfo(BUILD, BUILD_DATE, GO_VERSION, VERSION, ProjectURL)
 	// bot cfg
 	// plugins/protocols
 	torpedo_registry.Config.RegisterParser("slack", bot.ConfigureSlackBot, bot.ParseSlackBot)

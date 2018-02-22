@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"time"
 	"strconv"
-	"github.com/tb0hdan/torpedo_registry"
+	"time"
+
 	humanize "github.com/dustin/go-humanize"
+	"github.com/tb0hdan/torpedo_registry"
 )
 
 func GetMemStats() (result string) {
@@ -25,6 +26,7 @@ func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, inco
 	message += fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
 	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuildDate)
 	message += fmt.Sprintf("Build version: %s\n", api.Bot.Build.Version)
+	message += fmt.Sprintf("Golang version: %s\n", api.Bot.Build.GoVersion)
 	message += fmt.Sprintf("Bot started: %s\n", humanize.Time(time.Unix(i, 0)))
 	message += fmt.Sprintf("Processed messages (session): %s\n", humanize.Comma(api.Bot.Stats.ProcessedMessages))
 	message += fmt.Sprintf("Processed messages (total): %s\n", humanize.Comma(api.Bot.Stats.ProcessedMessagesTotal))

@@ -9,6 +9,7 @@ PKGNAME = "torpedobot"
 DEST = $(PKGNAME)
 BUILD = $(shell git rev-parse HEAD)
 BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
+GO_VERSION = $(shell go version|awk '{print $$3}')
 VERSION = $(shell cat ./VERSION)
 BUILD_CMD = go build
 
@@ -36,7 +37,7 @@ report_deps:
 build:  deps build_only
 
 build_only:
-	@$(BUILD_CMD) -v -x -ldflags "-X main.BUILD=$(BUILD) -X main.BUILD_DATE=$(BDATE) -X main.VERSION=$(VERSION)" -o bin/$(DEST) $(PKGNAME)
+	@$(BUILD_CMD) -v -x -ldflags "-X main.BUILD=$(BUILD) -X main.BUILD_DATE=$(BDATE) -X main.GO_VERSION=$(GO_VERSION) -X main.VERSION=$(VERSION)" -o bin/$(DEST) $(PKGNAME)
 
 
 clean:

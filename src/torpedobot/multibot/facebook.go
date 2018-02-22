@@ -65,28 +65,40 @@ func (tb *TorpedoBot) ParseFacebookBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunFacebookBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunFacebookBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
 	cu := &common.Utils{}
 	logger := cu.NewLog("facebook-bot")
 
 	tb.RegisteredProtocols["*messenger.Response"] = HandleFacebookMessage
 
-	pageToken := strings.Split(apiKey, ":")[0]
-	verifyToken := strings.Split(apiKey, ":")[1]
-	appSecret := strings.Split(apiKey, ":")[2]
+	pageToken := strings.Split(account.APIKey, ":")[0]
+	verifyToken := strings.Split(account.APIKey, ":")[1]
+	appSecret := strings.Split(account.APIKey, ":")[2]
 	client := messenger.New(messenger.Options{
 		AppSecret:   appSecret,
 		Verify:      true,
 		VerifyToken: verifyToken,
 		Token:       pageToken,
 	})
+
+	account.API = client
+
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		logger.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
 		botApi := &TorpedoBotAPI{}
 		botApi.API = r
 		botApi.Bot = tb
-		botApi.CommandPrefix = cmd_prefix
+		botApi.CommandPrefix = account.CommandPrefix
 		botApi.UserProfile = &torpedo_registry.UserProfile{ID: fmt.Sprintf("%v", m.Sender.ID)}
 		// FIXME: Get ID and remove hardcode
 		botApi.Me = "torpedobot"
@@ -105,6 +117,7 @@ func (tb *TorpedoBot) RunFacebookBot(apiKey, cmd_prefix string) {
 
 	logger.Printf("Serving messenger bot on %s\n", torpedo_registry.Config.GetConfig()["facebookincomingaddr"])
 
+	account.Connection.ReconnectCount += 1
 	if err := http.ListenAndServe(torpedo_registry.Config.GetConfig()["facebookincomingaddr"], client.Handler()); err != nil {
 		logger.Fatal(err)
 	}

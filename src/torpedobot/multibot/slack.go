@@ -2,8 +2,8 @@ package multibot
 
 import (
 	"flag"
-        "log"
-        "os"
+	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -59,12 +59,22 @@ func (tb *TorpedoBot) ParseSlackBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunSlackBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunSlackBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
 
-	api := slack.New(apiKey)
+	api := slack.New(account.APIKey)
+	account.API = api
 	//cu := &common.Utils{}
 
-	logger := log.New(os.Stdout, "file-plugin: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("slack-bot")
+	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("slack-bot")
 	slack.SetLogger(logger)
 
 	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
@@ -78,7 +88,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 	botApi := &TorpedoBotAPI{}
 	botApi.API = api
 	botApi.Bot = tb
-	botApi.CommandPrefix = cmd_prefix
+	botApi.CommandPrefix = account.CommandPrefix
 	botApi.UserProfile = &torpedo_registry.UserProfile{}
 
 	tb.RegisteredProtocols["*slack.Client"] = HandleSlackMessage
@@ -93,6 +103,8 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 			// Ignore hello
 
 		case *slack.ConnectedEvent:
+			account.Connection.Connected = true
+			account.Connection.ReconnectCount += 1
 			// TODO: Use proper logger instead
 			if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
 				logger.Println("Infos:", ev.Info)
@@ -139,6 +151,7 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 			logger.Printf("Error: %s\n", ev.Error())
 
 		case *slack.InvalidAuthEvent:
+			account.Connection.Connected = false
 			logger.Printf("Invalid credentials")
 			break
 

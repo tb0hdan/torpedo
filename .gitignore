@@ -32,6 +32,7 @@ _testmain.go
 bin/*
 build/*
 src/github.com/*
+src/go4.org
 src/go4.org/*
 src/golang.org/*
 src/googlemaps.github.io/*

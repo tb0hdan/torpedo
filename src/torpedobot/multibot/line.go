@@ -47,18 +47,29 @@ func (tb *TorpedoBot) ParseLineBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunLineBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunLineBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 
 	cu := &common.Utils{}
 
 	logger := cu.NewLog("line-bot")
 
-	bot, err := linebot.New(strings.Split(apiKey, ":")[0],
-		strings.Split(apiKey, ":")[1])
+	bot, err := linebot.New(strings.Split(account.APIKey, ":")[0],
+		strings.Split(account.APIKey, ":")[1])
 	if err != nil {
 		logger.Fatal(err)
 	}
 
+	account.API = bot
 	tb.RegisteredProtocols["*linebot.Client"] = HandleLineMessage
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, req *http.Request) {
@@ -86,7 +97,7 @@ func (tb *TorpedoBot) RunLineBot(apiKey, cmd_prefix string) {
 					botApi := &TorpedoBotAPI{}
 					botApi.API = bot
 					botApi.Bot = tb
-					botApi.CommandPrefix = cmd_prefix
+					botApi.CommandPrefix = account.CommandPrefix
 					botApi.UserProfile = &torpedo_registry.UserProfile{ID: channel}
 					botApi.Me = "torpedobot"
 

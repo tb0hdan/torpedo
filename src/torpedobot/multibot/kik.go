@@ -7,9 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	common "github.com/tb0hdan/torpedo_common"
 	"github.com/tb0hdan/torpedo_registry"
@@ -176,7 +177,17 @@ func (tb *TorpedoBot) ParseKikBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunKikBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunKikBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 
 	cu := &common.Utils{}
 
@@ -184,8 +195,10 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 	api := &KikAPI{}
 	api.logger = logger
 	api.WebHook = torpedo_registry.Config.GetConfig()["kikwebhook"]
-	api.GetToken(strings.Split(apiKey, ":")[0], strings.Split(apiKey, ":")[1])
+	api.GetToken(strings.Split(account.APIKey, ":")[0], strings.Split(account.APIKey, ":")[1])
 	api.Configure()
+
+	account.API = api
 
 	tb.RegisteredProtocols["*multibot.KikAPI"] = HandleKikMessage
 
@@ -208,7 +221,7 @@ func (tb *TorpedoBot) RunKikBot(apiKey, cmd_prefix string) {
 			botApi := &TorpedoBotAPI{}
 			botApi.API = api
 			botApi.Bot = tb
-			botApi.CommandPrefix = cmd_prefix
+			botApi.CommandPrefix = account.CommandPrefix
 			botApi.UserProfile = &torpedo_registry.UserProfile{ID: message.From}
 			// FIXME: Remove hardcode
 			botApi.Me = "torpedobot"

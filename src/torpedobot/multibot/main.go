@@ -2,11 +2,12 @@ package multibot
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"os/signal"
 	"syscall"
@@ -39,6 +40,7 @@ type TorpedoBot struct {
 	Build               struct {
 		Build      string
 		BuildDate  string
+		GoVersion  string
 		Version    string
 		ProjectURL string
 	}
@@ -158,9 +160,10 @@ func (tb *TorpedoBot) RunBotsCSV(method func(apiKey, cmd_prefix string), CSV, cm
 	}
 }
 
-func (tb *TorpedoBot) SetBuildInfo(build, buildDate, version, projecturl string) {
+func (tb *TorpedoBot) SetBuildInfo(build, buildDate, goversion, version, projecturl string) {
 	tb.Build.Build = build
 	tb.Build.BuildDate = buildDate
+	tb.Build.GoVersion = goversion
 	tb.Build.Version = version
 	tb.Build.ProjectURL = projecturl
 	return

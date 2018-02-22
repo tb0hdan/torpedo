@@ -2,6 +2,7 @@ package multibot
 
 import (
 	"flag"
+
 	common "github.com/tb0hdan/torpedo_common"
 	database "github.com/tb0hdan/torpedo_common/database"
 	"github.com/tb0hdan/torpedo_registry"

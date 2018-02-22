@@ -9,9 +9,9 @@ import (
 
 	common "github.com/tb0hdan/torpedo_common"
 
+	"github.com/mattn/go-xmpp"
 	"github.com/tb0hdan/torpedo_registry"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/mattn/go-xmpp"
 )
 
 var JabberAPIKey *string
@@ -83,14 +83,24 @@ func (tb *TorpedoBot) ParseJabberBot(cfg *torpedo_registry.ConfigStruct) {
 }
 
 func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
+	account := &torpedo_registry.Account{
+		APIKey:        apiKey,
+		CommandPrefix: cmd_prefix,
+	}
+	torpedo_registry.Accounts.AppendAccounts(account)
+	tb.RunJabberBotAccount(account)
+}
+
+func (tb *TorpedoBot) RunJabberBotAccount(account *torpedo_registry.Account) {
 	var talk *xmpp.Client
 	var err error
 	tb.Stats.ConnectedAccounts += 1
+	account.Connection.ReconnectCount += 1
 	cu := &common.Utils{}
 
 	logger := cu.NewLog("jabber-bot")
-	str_jid := strings.Split(apiKey, ":")[0]
-	password := strings.Split(apiKey, ":")[1]
+	str_jid := strings.Split(account.APIKey, ":")[0]
+	password := strings.Split(account.APIKey, ":")[1]
 	server := strings.Split(str_jid, "@")[1]
 	options := xmpp.Options{Host: server,
 		User:          str_jid,
@@ -103,7 +113,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 	}
 
 	talk, err = options.NewClient()
-
+	account.API = talk
 	tb.RegisteredProtocols["*xmpp.Client"] = HandleJabberMessage
 
 	if err != nil {
@@ -164,7 +174,7 @@ func (tb *TorpedoBot) RunJabberBot(apiKey, cmd_prefix string) {
 				botApi := &TorpedoBotAPI{}
 				botApi.API = talk
 				botApi.Bot = tb
-				botApi.CommandPrefix = cmd_prefix
+				botApi.CommandPrefix = account.CommandPrefix
 				botApi.UserProfile = &torpedo_registry.UserProfile{ID: v.Remote}
 				botApi.Me = GetStrippedJID(talk)
 				botApi.Type = v.Type
