@@ -1,7 +1,7 @@
 version: '3'
 services:
   torpedo-mongo:
-    image: "mongo:latest"
+    image: "mongo:3.6"
     ports:
       - "27017:27017"
     restart: unless-stopped
@@ -10,7 +10,7 @@ services:
   torpedo:
     links:
       - torpedo-mongo
-    image: "tb0hdan/torpedo:latest"
+    image: "tb0hdan/torpedo:1.0.50"
     depends_on:
       - torpedo-mongo
     env_file: ./env.list
