@@ -1,0 +1,19 @@
+version: '3'
+services:
+  torpedo-mongo:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    volumes:
+      - ./datadir:/data/db
+  torpedo:
+    links:
+      - torpedo-mongo
+    image: "tb0hdan/torpedo:latest"
+    depends_on:
+      - torpedo-mongo
+    env_file: ./env.list
+    restart: unless-stopped
+    environment:
+      - MONGO=torpedo-mongo
