@@ -1,3 +1,5 @@
+# [Back to main doc](../README.md)
+
 # TorpedoBot Remote Plugin Execution (TRPE)
 
 TRPE allows writing plugins in any language as long as content is returned via HTTP API.

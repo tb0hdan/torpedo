@@ -1,3 +1,5 @@
+# [Back to main doc](../README.md)
+
 # Sender/Message blacklist
 
 ## Create collection

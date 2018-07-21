@@ -136,7 +136,8 @@ Phelp
 
 e.g. for Slack it's `!help`
 
+# Additional topics
 
-# [TRPE](doc/TRPE.md)
-# [Blacklist functionality](doc/BLACKLIST.md)
-# [Development](doc/Development.md)
+## [TRPE](doc/TRPE.md)
+## [Blacklist functionality](doc/BLACKLIST.md)
+## [Development](doc/Development.md)
