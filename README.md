@@ -3,6 +3,7 @@ torpedo - Pluggable, multi-network asynchronous chat bot written in Go
 
 [![Build Status](https://api.travis-ci.org/tb0hdan/torpedo.svg?branch=master)](https://travis-ci.org/tb0hdan/torpedo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tb0hdan/torpedo)](https://goreportcard.com/report/github.com/tb0hdan/torpedo)
+[![codecov](https://codecov.io/gh/tb0hdan/torpedo/branch/master/graph/badge.svg)](https://codecov.io/gh/tb0hdan/torpedo)
 
 
 # Intro
