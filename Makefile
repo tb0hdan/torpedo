@@ -45,7 +45,7 @@ clean:
 	@rm -rf bin/ build/ pkg/
 
 coverage:
-	@$(GO) test -bench=. -benchmem -race -cover torpedobot
+	@$(GO) test -bench=. -benchmem -race -cover $(PKGNAME)
  
 coverage_html:	deps
 	@$(GO) test -bench=. -benchmem -race -coverprofile=build/c.out $(PKGNAME)
@@ -54,7 +54,10 @@ coverage_html:	deps
 	@$(GO) run tools/fileserver.go -listen localhost:8000 -directory ./build
 
 report:	clean deps report_deps
-	@bin/goreporter -p ./src/torpedobot -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
+	@bin/goreporter -p ./src/$(PKGNAME) -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
+
+codecov:
+	@$(GO) test -race -coverprofile=coverage.txt -covermode=atomic $(PKGNAME)
 
 dockerimage:
 	@cp -r /usr/local/etc/openssl ./ssl
@@ -67,8 +70,8 @@ release_binaries: deps
 	@for platform in $(PLATFORMS); do for architecture in $(ARCHITECTURES); do echo "Building $(DEST)-$$platform-$$architecture"; make build_only PLATFORM=$$platform ARCHITECTURE=$$architecture; done; done
 
 race:
-	@$(GO) test -race torpedobot
+	@$(GO) test -race $(PKGNAME)
 
 trace:
-	@$(GO) test -bench=. -trace trace.out torpedobot
+	@$(GO) test -bench=. -trace trace.out $(PKGNAME)
 	@$(GO) tool trace trace.out

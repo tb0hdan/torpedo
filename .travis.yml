@@ -15,7 +15,9 @@ before_install:
   - sudo apt-get -y install docker-ce
   - sudo cp -r /etc/ssl ./
   - sudo chown -R travis:users ./ssl
-install: make build
+install:
+  - make build
+  - make codecov
 after_success:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
   - export REPO=tb0hdan/torpedo
@@ -26,3 +28,4 @@ after_success:
   - docker tag $REPO:$COMMIT $REPO:$TAG
   - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
+  - bash <(curl -s https://codecov.io/bash)
