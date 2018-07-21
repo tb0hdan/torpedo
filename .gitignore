@@ -41,6 +41,7 @@ src/gopkg.in/*
 ssl/*
 token.sh
 token.sh.*
+trace.out
 env.list
 
 

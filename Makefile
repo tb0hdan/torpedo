@@ -2,6 +2,7 @@
 
 ARCHITECTURE ?=
 PLATFORM ?=
+GO = "go"
 ARCHITECTURES = 386 amd64
 PLATFORMS = darwin linux windows
 GOPATH = $(shell pwd)
@@ -9,9 +10,9 @@ PKGNAME = "torpedobot"
 DEST = $(PKGNAME)
 BUILD = $(shell git rev-parse HEAD)
 BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
-GO_VERSION = $(shell go version|awk '{print $$3}')
+GO_VERSION = $(shell $(GO) version|awk '{print $$3}')
 VERSION = $(shell cat ./VERSION)
-BUILD_CMD = go build
+BUILD_CMD = $(GO) build
 
 ifneq ($(strip $(PLATFORM)),)
     BUILD_CMD := GOOS=$(PLATFORM) $(BUILD_CMD)
@@ -29,10 +30,10 @@ all: build
 
 deps:
 	@mkdir -p bin/ build/ pkg/
-	@go get -v -d $(PKGNAME)
+	@$(GO) get -v -d $(PKGNAME)
 
 report_deps:
-	@go get -u -v github.com/wgliang/goreporter
+	@$(GO) get -u -v github.com/wgliang/goreporter
 
 build:  deps build_only
 
@@ -44,13 +45,13 @@ clean:
 	@rm -rf bin/ build/ pkg/
 
 coverage:
-	@go test -bench=. -benchmem -race -cover torpedobot
+	@$(GO) test -bench=. -benchmem -race -cover torpedobot
  
 coverage_html:	deps
-	@go test -bench=. -benchmem -race -coverprofile=build/c.out $(PKGNAME)
-	@go tool cover -html=build/c.out -o build/coverage.html
+	@$(GO) test -bench=. -benchmem -race -coverprofile=build/c.out $(PKGNAME)
+	@$(GO) tool cover -html=build/c.out -o build/coverage.html
 	@sleep 3; open http://localhost:8000/coverage.html
-	@go run tools/fileserver.go -listen localhost:8000 -directory ./build
+	@$(GO) run tools/fileserver.go -listen localhost:8000 -directory ./build
 
 report:	clean deps report_deps
 	@bin/goreporter -p ./src/torpedobot -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
@@ -64,3 +65,10 @@ dockerrun:
 
 release_binaries: deps
 	@for platform in $(PLATFORMS); do for architecture in $(ARCHITECTURES); do echo "Building $(DEST)-$$platform-$$architecture"; make build_only PLATFORM=$$platform ARCHITECTURE=$$architecture; done; done
+
+race:
+	@$(GO) test -race torpedobot
+
+trace:
+	@$(GO) test -bench=. -trace trace.out torpedobot
+	@$(GO) tool trace trace.out
