@@ -1,5 +1,8 @@
-# torpedo
-Pluggable, multi-network asynchronous chat bot written in Go
+torpedo - Pluggable, multi-network asynchronous chat bot written in Go
+======
+
+[![Build Status](https://api.travis-ci.org/tb0hdan/torpedo.svg?branch=master)](https://travis-ci.org/tb0hdan/torpedo)
+
 
 
 # Intro
