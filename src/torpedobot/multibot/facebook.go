@@ -34,18 +34,18 @@ func HandleFacebookMessage(channel interface{}, message string, tba *TorpedoBotA
 					if len(new_str) < FACEBOOK_TEXT_MAX {
 						new_str += string(msg[i])
 					} else {
-						api.Text(new_str)
+						api.Text(new_str, messenger.ResponseType)
 						new_str = ""
 						new_str += string(msg[i])
 					}
 				}
-				api.Text(new_str)
+				api.Text(new_str, messenger.ResponseType)
 			} else {
-				api.Text(msg)
+				api.Text(msg, messenger.ResponseType)
 			}
-			api.Attachment(messenger.ImageAttachment, url)
+			api.Attachment(messenger.ImageAttachment, url, messenger.ResponseType)
 		} else {
-			api.Text(message)
+			api.Text(message, messenger.ResponseType)
 		}
 	}
 }
