@@ -75,3 +75,9 @@ race:
 trace:
 	@$(GO) test -bench=. -trace trace.out $(PKGNAME)
 	@$(GO) tool trace trace.out
+
+vet:
+	@$(GO) vet $(PKGNAME)
+
+lint:
+	@golint $(PKGNAME)
