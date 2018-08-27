@@ -202,9 +202,6 @@ func (tb *TorpedoBot) RunCoroutines() {
 }
 
 func New() *TorpedoBot {
-	cleanup_channel := make(chan os.Signal)
-	signal.Notify(cleanup_channel, os.Interrupt, os.Kill)
-
 	once.Do(func() {
 		bot = &TorpedoBot{}
 		cu := &common.Utils{}
@@ -220,31 +217,25 @@ func New() *TorpedoBot {
 		bot.RegisteredProtocols = make(map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage))
 		bot.Stats = BotStats{}
 		bot.Stats.StartTimestamp = int64(time.Now().Unix())
-
-		// Add signal listener
-		go func() {
-			for {
-				sig := <-cleanup_channel
-				bot.Cleanup()
-				bot.logger.Printf("\nGot %q signal. Exiting...\n", sig)
-
-				exitCode := 1
-				if sysSig, ok := sig.(syscall.Signal); ok {
-					exitCode = int(sysSig)
-				}
-				os.Exit(exitCode + 128)
-			}
-		}()
-
 	})
 	return bot
 }
 
 func (tb *TorpedoBot) RunLoop() {
+	sigch := make(chan os.Signal)
+	signal.Notify(sigch, os.Interrupt, os.Kill)
 	if tb.Stats.TotalAccounts > 0 {
+		exitCode := 0
 		for {
-			time.Sleep(time.Second)
+			sig := <-sigch
+			if sysSig, ok := sig.(syscall.Signal); ok {
+				exitCode = int(sysSig)
+			}
+			tb.Cleanup()
+			tb.logger.Printf("Breaking main loop because of signal: %q\n", exitCode)
+			break
 		}
+		os.Exit(exitCode)
 	} else {
 		tb.logger.Fatal("No accounts configured, exiting...\n")
 	}
