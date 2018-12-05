@@ -4,6 +4,7 @@ torpedo - Pluggable, multi-network asynchronous chat bot written in Go
 [![Build Status](https://api.travis-ci.org/tb0hdan/torpedo.svg?branch=master)](https://travis-ci.org/tb0hdan/torpedo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tb0hdan/torpedo)](https://goreportcard.com/report/github.com/tb0hdan/torpedo)
 [![codecov](https://codecov.io/gh/tb0hdan/torpedo/branch/master/graph/badge.svg)](https://codecov.io/gh/tb0hdan/torpedo)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ftb0hdan%2Ftorpedo.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Ftb0hdan%2Ftorpedo?ref=badge_shield)
 
 
 # Intro
@@ -145,3 +146,7 @@ e.g. for Slack it's `!help`
 ## [TRPE](doc/TRPE.md)
 ## [Blacklist functionality](doc/BLACKLIST.md)
 ## [Development](doc/Development.md)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ftb0hdan%2Ftorpedo.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Ftb0hdan%2Ftorpedo?ref=badge_large)
