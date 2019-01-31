@@ -9,9 +9,9 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
-func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incoming_message string) {
+func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incomingMessage string) {
 	var message string
-	_, command, _ := common.GetRequestedFeature(incoming_message)
+	_, command, _ := common.GetRequestedFeature(incomingMessage)
 	if command == "" {
 		idx := 0
 		message = "Available commands: "
@@ -21,7 +21,7 @@ func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incom
 			} else {
 				message += fmt.Sprintf(", `%s%s`", api.CommandPrefix, command)
 			}
-			idx += 1
+			idx++
 		}
 	} else {
 		message = "No help available yet"

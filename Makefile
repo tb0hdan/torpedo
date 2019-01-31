@@ -7,6 +7,7 @@ ARCHITECTURES = 386 amd64
 PLATFORMS = darwin linux windows
 GOPATH = $(shell pwd)
 PKGNAME = "torpedobot"
+PROJECT_URL = "https://github.com/tb0hdan/torpedo"
 DEST = $(PKGNAME)
 BUILD = $(shell git rev-parse HEAD)
 BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
@@ -38,7 +39,7 @@ report_deps:
 build:  deps build_only
 
 build_only:
-	@$(BUILD_CMD) -v -x -ldflags "-X main.BUILD=$(BUILD) -X main.BUILD_DATE=$(BDATE) -X main.GO_VERSION=$(GO_VERSION) -X main.VERSION=$(VERSION)" -o bin/$(DEST) $(PKGNAME)
+	@$(BUILD_CMD) -v -x -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o bin/$(DEST) $(PKGNAME)
 
 
 clean:

@@ -13,11 +13,12 @@ import (
 func GetMemStats() (result string) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	result = fmt.Sprintf("\n\tAlloc = %s\n\tSys = %s\n\tNumGC = %s\n\n", humanize.Bytes(m.Alloc), humanize.Bytes(m.Sys), humanize.Comma(int64(m.NumGC)))
+	result = fmt.Sprintf("\n\tAlloc = %s\n\tSys = %s\n\tNumGC = %s\n\n", humanize.Bytes(m.Alloc),
+		humanize.Bytes(m.Sys), humanize.Comma(int64(m.NumGC)))
 	return
 }
 
-func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incoming_message string) {
+func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, _ string) {
 	i, err := strconv.ParseInt(fmt.Sprintf("%v", api.Bot.Stats.StartTimestamp), 10, 64)
 	if err != nil {
 		panic(err)
@@ -30,8 +31,8 @@ func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, inco
 	message += fmt.Sprintf("Bot started: %s\n", humanize.Time(time.Unix(i, 0)))
 	message += fmt.Sprintf("Processed messages (session): %s\n", humanize.Comma(api.Bot.Stats.ProcessedMessages))
 	message += fmt.Sprintf("Processed messages (total): %s\n", humanize.Comma(api.Bot.Stats.ProcessedMessagesTotal))
-	//message += fmt.Sprintf("Message rate: %s\n", CalculateMessageRate(ts, api.Bot.Stats.ProcessedMessages))
-	message += fmt.Sprintf("Accounts connected/total: %v/%v\n", api.Bot.Stats.ConnectedAccounts, api.Bot.Stats.TotalAccounts)
+	message += fmt.Sprintf("Accounts connected/total: %v/%v\n", api.Bot.Stats.ConnectedAccounts,
+		api.Bot.Stats.TotalAccounts)
 	message += fmt.Sprintf("Memory info:%s\n", GetMemStats())
 	api.Bot.PostMessage(channel, message, api)
 }

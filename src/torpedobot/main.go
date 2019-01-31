@@ -11,14 +11,13 @@ import (
 	"github.com/tb0hdan/torpedo_registry"
 )
 
-const ProjectURL = "https://github.com/tb0hdan/torpedo"
-
 // Global vars for versioning
 var (
-	BUILD      = "Not available"
-	BUILD_DATE = "Not available"
-	GO_VERSION = "Not available"
-	VERSION    = "Not available"
+	Build      = "Not available"
+	BuildDate  = "Not available"
+	GoVersion  = "Not available"
+	Version    = "Not available"
+	ProjectURL = "Not available"
 )
 
 func main() {
@@ -26,15 +25,15 @@ func main() {
 	gspt.SetProcTitle(os.Args[0])
 
 	// Help handlers
-	help_msg := "Get help using this command"
-	torpedo_registry.Config.RegisterHelpAndHandler("?", help_msg, HelpProcessMessage)
-	torpedo_registry.Config.RegisterHelpAndHandler("h", help_msg, HelpProcessMessage)
-	torpedo_registry.Config.RegisterHelpAndHandler("help", help_msg, HelpProcessMessage)
+	helpMsg := "Get help using this command"
+	torpedo_registry.Config.RegisterHelpAndHandler("?", helpMsg, HelpProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("h", helpMsg, HelpProcessMessage)
+	torpedo_registry.Config.RegisterHelpAndHandler("help", helpMsg, HelpProcessMessage)
 	torpedo_registry.Config.RegisterHelpAndHandler("stats", "Just system stats, nothing interesting", StatsProcessMessage)
 	torpedo_registry.Config.RegisterHelpAndHandler("chatinfo", "Chat/DM information", ChatInfoProcessMessage)
 
 	bot := multibot.New()
-	bot.SetBuildInfo(BUILD, BUILD_DATE, GO_VERSION, VERSION, ProjectURL)
+	bot.SetBuildInfo(Build, BuildDate, GoVersion, Version, ProjectURL)
 	// bot cfg
 	// plugins/protocols
 	torpedo_registry.Config.RegisterParser("slack", bot.ConfigureSlackBot, bot.ParseSlackBot)
