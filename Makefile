@@ -76,8 +76,9 @@ trace:
 	@$(GO) test -bench=. -trace trace.out $(PKGNAME)
 	@$(GO) tool trace trace.out
 
-vet:
-	@$(GO) vet $(PKGNAME)
-
 lint:
-	@golint $(PKGNAME)
+	@golangci-lint run ./src/torpedobot
+
+tag:
+	@git tag -a v$(VERSION) -m v$(VERSION)
+	@git push --tags
