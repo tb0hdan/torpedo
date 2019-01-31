@@ -15,7 +15,8 @@ import (
 
 var SlackAPIKey *string
 
-func ToSlackAttachment(rm torpedo_registry.RichMessage) (params slack.PostMessageParameters) {
+func ToSlackAttachment(rm torpedo_registry.RichMessage) (msg slack.MsgOption) {
+
 	attachment := slack.Attachment{
 		Color:     rm.BarColor,
 		Text:      rm.Text,
@@ -23,21 +24,24 @@ func ToSlackAttachment(rm torpedo_registry.RichMessage) (params slack.PostMessag
 		TitleLink: rm.TitleLink,
 		ImageURL:  rm.ImageURL,
 	}
-	params.Attachments = []slack.Attachment{attachment}
+	msg = slack.MsgOptionAttachments(attachment)
 	return
 }
 
 func HandleSlackMessage(channel interface{}, message string, tba *TorpedoBotAPI, richmsgs []torpedo_registry.RichMessage) {
-	var params slack.PostMessageParameters
+	var params slack.MsgOption //slack.PostMessageParameters
 	if len(richmsgs) > 0 && !richmsgs[0].IsEmpty() {
 		params = ToSlackAttachment(richmsgs[0])
 	}
+	/*
 	params.UnfurlLinks = true
 	params.UnfurlMedia = true
+	*/
 
 	switch api := tba.API.(type) {
 	case *slack.Client:
-		channelID, timestamp, err := api.PostMessage(channel.(string), message, params)
+
+		channelID, timestamp, err := api.PostMessage(channel.(string), slack.MsgOptionText(message, false), params)
 		if err != nil {
 			tba.Bot.logger.Printf("%s\n", err)
 			return
@@ -70,17 +74,12 @@ func (tb *TorpedoBot) RunSlackBot(apiKey, cmd_prefix string) {
 func (tb *TorpedoBot) RunSlackBotAccount(account *torpedo_registry.Account) {
 	tb.Stats.ConnectedAccounts += 1
 
-	api := slack.New(account.APIKey)
+	slack_debug := torpedo_registry.Config.GetConfig()["debug"] == "yes"
+
+	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
+
+	api := slack.New(account.APIKey, slack.OptionDebug(slack_debug), slack.OptionLog(logger))
 	account.API = api
-	//cu := &common.Utils{}
-
-	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags) //cu.NewLog("slack-bot")
-	slack.SetLogger(logger)
-
-	if torpedo_registry.Config.GetConfig()["debug"] == "yes" {
-		api.SetDebug(true)
-
-	}
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
