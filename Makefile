@@ -5,7 +5,9 @@ PLATFORM ?=
 GO = "go"
 ARCHITECTURES = 386 amd64
 PLATFORMS = darwin linux windows
-#GOPATH = $(shell pwd)
+GO111MODULE = on
+# Preserved for historical purposes
+# GOPATH = $(shell pwd)
 PKGNAME = "torpedobot"
 PROJECT_URL = "https://github.com/tb0hdan/torpedo"
 DEST = $(PKGNAME)
@@ -83,3 +85,6 @@ lint:
 tag:
 	@git tag -a v$(VERSION) -m v$(VERSION)
 	@git push --tags
+
+env:
+	@env
