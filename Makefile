@@ -5,7 +5,7 @@ PLATFORM ?=
 GO = "go"
 ARCHITECTURES = 386 amd64
 PLATFORMS = darwin linux windows
-GOPATH = $(shell pwd)
+#GOPATH = $(shell pwd)
 PKGNAME = "torpedobot"
 PROJECT_URL = "https://github.com/tb0hdan/torpedo"
 DEST = $(PKGNAME)
@@ -30,27 +30,27 @@ endif
 all: build
 
 deps:
-	@mkdir -p bin/ build/ pkg/
-	@$(GO) get -v -d $(PKGNAME)
+	@mkdir -p bin/ build/
+	@cd src/$(PKGNAME); $(GO) mod verify
+	@cd src/$(PKGNAME); $(GO) mod download
 
 report_deps:
-	@$(GO) get -u -v github.com/wgliang/goreporter
+	@cd src/$(PKGNAME); $(GO) get -u -v github.com/wgliang/goreporter
 
-build:  deps build_only
+build:  deps lint build_only
 
 build_only:
-	@$(BUILD_CMD) -v -x -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o bin/$(DEST) $(PKGNAME)
-
+	@cd src/$(PKGNAME); $(BUILD_CMD) -v -x -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o ../../bin/$(DEST) $(PKGNAME)
 
 clean:
-	@rm -rf bin/ build/ pkg/
+	@rm -rf bin/ build/
 
 coverage:
-	@$(GO) test -bench=. -benchmem -race -cover $(PKGNAME)
+	@cd src/$(PKGNAME); $(GO) test -bench=. -benchmem -race -cover $(PKGNAME)
  
 coverage_html:	deps
-	@$(GO) test -bench=. -benchmem -race -coverprofile=build/c.out $(PKGNAME)
-	@$(GO) tool cover -html=build/c.out -o build/coverage.html
+	@cd src/$(PKGNAME); $(GO) test -bench=. -benchmem -race -coverprofile=../../build/c.out $(PKGNAME)
+	@cd src/$(PKGNAME); $(GO) tool cover -html=../../build/c.out -o ../../build/coverage.html
 	@sleep 3; open http://localhost:8000/coverage.html
 	@$(GO) run tools/fileserver.go -listen localhost:8000 -directory ./build
 
@@ -58,7 +58,7 @@ report:	clean deps report_deps
 	@bin/goreporter -p ./src/$(PKGNAME) -r build/ -t src/github.com/wgliang/goreporter/templates/template.html
 
 codecov:
-	@$(GO) test -race -coverprofile=coverage.txt -covermode=atomic $(PKGNAME)
+	@cd src/$(PKGNAME); $(GO) test -race -coverprofile=coverage.txt -covermode=atomic $(PKGNAME)
 
 dockerimage:
 	@cp -r /usr/local/etc/openssl ./ssl
@@ -71,14 +71,14 @@ release_binaries: deps
 	@for platform in $(PLATFORMS); do for architecture in $(ARCHITECTURES); do echo "Building $(DEST)-$$platform-$$architecture"; make build_only PLATFORM=$$platform ARCHITECTURE=$$architecture; done; done
 
 race:
-	@$(GO) test -race $(PKGNAME)
+	@cd src/$(PKGNAME); $(GO) test -race $(PKGNAME)
 
 trace:
-	@$(GO) test -bench=. -trace trace.out $(PKGNAME)
-	@$(GO) tool trace trace.out
+	@cd src/$(PKGNAME); $(GO) test -bench=. -trace trace.out $(PKGNAME)
+	@cd src/$(PKGNAME); $(GO) tool trace trace.out
 
 lint:
-	@golangci-lint run ./src/torpedobot
+	@cd src/$(PKGNAME); golangci-lint run -v -c ../../.golangci.yml .
 
 tag:
 	@git tag -a v$(VERSION) -m v$(VERSION)

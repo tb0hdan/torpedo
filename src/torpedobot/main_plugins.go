@@ -10,7 +10,6 @@ import (
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_file_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_fun_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_giphy_plugin"
-	_ "github.com/tb0hdan/torpedo_plugins/torpedo_google_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_history_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_lastfm_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_pinterest_plugin"
@@ -21,3 +20,6 @@ import (
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_wiki_plugin"
 	_ "github.com/tb0hdan/torpedo_plugins/torpedo_xkcd_plugin"
 )
+
+// Disaled so far:
+//	_ "github.com/tb0hdan/torpedo_plugins/torpedo_google_plugin"
