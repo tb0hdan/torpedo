@@ -2,10 +2,10 @@
 
 ARCHITECTURE ?=
 PLATFORM ?=
-GO = "go"
+GO111MODULE = on
+GO = GO111MODULE=$(GO111MODULE) go
 ARCHITECTURES = 386 amd64
 PLATFORMS = darwin linux windows
-GO111MODULE = on
 # Preserved for historical purposes
 # GOPATH = $(shell pwd)
 PKGNAME = "torpedobot"
@@ -15,7 +15,7 @@ BUILD = $(shell git rev-parse HEAD)
 BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
 GO_VERSION = $(shell $(GO) version|awk '{print $$3}')
 VERSION = $(shell cat ./VERSION)
-BUILD_CMD = GO111MODULE=$(GO111MODULE) $(GO) build
+BUILD_CMD =  $(GO) build
 
 ifneq ($(strip $(PLATFORM)),)
     BUILD_CMD := GOOS=$(PLATFORM) $(BUILD_CMD)
@@ -80,7 +80,7 @@ trace:
 	@cd src/$(PKGNAME); $(GO) tool trace trace.out
 
 lint:
-	@cd src/$(PKGNAME); golangci-lint run -v -c ../../.golangci.yml .
+	@cd src/$(PKGNAME); GO111MODULE=$(GO111MODULE) golangci-lint run -v -c ../../.golangci.yml .
 
 tag:
 	@git tag -a v$(VERSION) -m v$(VERSION)
