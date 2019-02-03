@@ -80,6 +80,7 @@ trace:
 	@cd src/$(PKGNAME); $(GO) tool trace trace.out
 
 lint:
+	@if [ "$(shell which golangci-lint)" == "" ]; then go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; fi
 	@cd src/$(PKGNAME); GO111MODULE=$(GO111MODULE) golangci-lint run -v -c ../../.golangci.yml .
 
 tag:
