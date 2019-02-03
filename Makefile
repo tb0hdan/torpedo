@@ -15,7 +15,7 @@ BUILD = $(shell git rev-parse HEAD)
 BDATE = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p_UTC')
 GO_VERSION = $(shell $(GO) version|awk '{print $$3}')
 VERSION = $(shell cat ./VERSION)
-BUILD_CMD = $(GO) build
+BUILD_CMD = GO111MODULE=$(GO111MODULE) $(GO) build
 
 ifneq ($(strip $(PLATFORM)),)
     BUILD_CMD := GOOS=$(PLATFORM) $(BUILD_CMD)
