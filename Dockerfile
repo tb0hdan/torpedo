@@ -2,16 +2,13 @@
 FROM golang:alpine AS build-env
 ENV GOPATH /
 WORKDIR /
-ADD ./ssl /etc/ssl
 ADD ./Makefile /
 ADD ./VERSION /
 ADD ./.git /
 ADD ./src/torpedobot /src/torpedobot
 RUN apk update
-RUN apk add git
-RUN apk add make
-RUN apk add gcc
-RUN apk add libc-dev
+RUN apk add git make gcc libc-dev
+RUN apk add --no-cache ca-certificates apache2-utils
 RUN make deps
 RUN make build_only
 

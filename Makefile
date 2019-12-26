@@ -42,7 +42,7 @@ report_deps:
 build:  deps lint build_only
 
 build_only:
-	@cd src/$(PKGNAME); $(BUILD_CMD) -v -x -ldflags "-s -w -X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o ../../bin/$(DEST) $(PKGNAME)
+	@cd src/$(PKGNAME); $(BUILD_CMD) -a -trimpath -tags netgo -installsuffix netgo -v -x -ldflags "-s -w -X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o ../../bin/$(DEST) $(PKGNAME)
 	@strip ./bin/$(DEST)
 
 clean:
@@ -64,7 +64,6 @@ codecov:
 	@cd src/$(PKGNAME); $(GO) test -race -coverprofile=coverage.txt -covermode=atomic $(PKGNAME)
 
 dockerimage:
-	@cp -r /usr/local/etc/openssl ./ssl
 	@docker build -t tb0hdan/torpedo .
 
 dockerrun:
