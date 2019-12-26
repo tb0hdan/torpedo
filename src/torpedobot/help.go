@@ -11,10 +11,13 @@ import (
 
 func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incomingMessage string) {
 	var message string
+
 	_, command, _ := common.GetRequestedFeature(incomingMessage)
 	if command == "" {
 		idx := 0
+
 		message = "Available commands: "
+
 		for command := range torpedo_registry.Config.GetHandlers() {
 			if idx == 0 {
 				message += fmt.Sprintf("`%s%s`", api.CommandPrefix, command)
@@ -32,5 +35,6 @@ func HelpProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, incom
 			}
 		}
 	}
+
 	api.Bot.PostMessage(channel, message, api)
 }

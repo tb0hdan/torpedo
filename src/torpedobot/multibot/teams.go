@@ -12,8 +12,9 @@ import (
 
 	"github.com/google/uuid"
 	common "github.com/tb0hdan/torpedo_common"
-	memcache "github.com/tb0hdan/torpedo_common/memcache"
 	"github.com/tb0hdan/torpedo_registry"
+
+	"github.com/tb0hdan/memcache"
 )
 
 // Custom Bot is expected to reply within 5 seconds
@@ -23,7 +24,7 @@ const sleepMax = 5
 var (
 	TeamsIncomingAddr *string
 	TeamsAPIKey       *string
-	TeamsMessageQueue = memcache.New()
+	TeamsMessageQueue = memcache.New(log.New())
 )
 
 type TeamsAPI struct {
@@ -126,8 +127,9 @@ func (tb *TorpedoBot) RunTeamsBotAccount(account *torpedo_registry.Account) {
 		ticker := time.NewTicker(time.Millisecond * 100)
 		go func() {
 			for range ticker.C {
-				body, ok := TeamsMessageQueue.Get(teams_api.GUID)
+				value, ok := TeamsMessageQueue.Get(teams_api.GUID)
 				if ok {
+					body := value.([]string)
 					w.Write([]byte(body[0]))
 					TeamsMessageQueue.Delete(teams_api.GUID)
 					stopFlag = true

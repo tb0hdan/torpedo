@@ -20,7 +20,7 @@ var (
 	ProjectURL = "Not available"
 )
 
-func main() {
+func main() { // nolint
 	// Set process name - https://github.com/tb0hdan/torpedo/issues/30
 	gspt.SetProcTitle(os.Args[0])
 
@@ -63,6 +63,7 @@ func main() {
 		logger := cu.NewLog("torpedo-bot")
 		logger.Println(torpedo_registry.Config.GetConfig())
 	}
+
 	bot.RunBotsCSV(bot.RunSlackBot, torpedo_registry.Config.GetConfig()["slackapikey"], "!")
 	bot.RunBotsCSV(bot.RunTelegramBot, torpedo_registry.Config.GetConfig()["telegramapikey"], "/")
 	bot.RunBotsCSV(bot.RunJabberBot, torpedo_registry.Config.GetConfig()["jabberapikey"], "!")

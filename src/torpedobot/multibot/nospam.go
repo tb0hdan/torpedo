@@ -31,7 +31,8 @@ func (tb *TorpedoBot) UpdateChannelTS(channel interface{}, message string) {
 
 func (tb *TorpedoBot) GetChannelTSValues(channel interface{}) (values []string, ok bool) {
 	chatID := fmt.Sprintf("%+v", channel)
-	values, ok = tb.throttle.Get(chatID)
+	value, ok := tb.throttle.Get(chatID)
+	values = value.([]string)
 	return
 }
 

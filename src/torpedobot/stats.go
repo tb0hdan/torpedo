@@ -12,9 +12,12 @@ import (
 
 func GetMemStats() (result string) {
 	var m runtime.MemStats
+
 	runtime.ReadMemStats(&m)
+
 	result = fmt.Sprintf("\n\tAlloc = %s\n\tSys = %s\n\tNumGC = %s\n\n", humanize.Bytes(m.Alloc),
 		humanize.Bytes(m.Sys), humanize.Comma(int64(m.NumGC)))
+
 	return
 }
 
@@ -23,6 +26,7 @@ func StatsProcessMessage(api *torpedo_registry.BotAPI, channel interface{}, _ st
 	if err != nil {
 		panic(err)
 	}
+
 	message := fmt.Sprintf("Project URL: %s\n", api.Bot.Build.ProjectURL)
 	message += fmt.Sprintf("Build hash: %s\n", api.Bot.Build.Build)
 	message += fmt.Sprintf("Build date: %s\n", api.Bot.Build.BuildDate)

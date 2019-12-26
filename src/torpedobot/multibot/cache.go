@@ -1,14 +1,15 @@
 package multibot
 
 import (
+	log "github.com/sirupsen/logrus"
+	"github.com/tb0hdan/memcache"
 	common "github.com/tb0hdan/torpedo_common"
-	memcache "github.com/tb0hdan/torpedo_common/memcache"
 )
 
-func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.MemCacheType) {
+func (tb *TorpedoBot) GetCreateCache(name string) (cache *memcache.CacheType) {
 	value, success := tb.caches[name]
 	if !success {
-		cache = memcache.New()
+		cache = memcache.New(log.New())
 		tb.caches[name] = cache
 	} else {
 		cache = value
@@ -24,8 +25,9 @@ func (tb *TorpedoBot) GetCachedItem(name string) (item string) {
 		for key = range cache.Cache() {
 			break
 		}
-		quote, _ := cache.Get(key)
+		value, _ := cache.Get(key)
 		cache.Delete(key)
+		quote := value.([]string)
 		item = quote[0]
 	}
 	return

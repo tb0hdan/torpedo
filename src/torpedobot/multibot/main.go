@@ -14,9 +14,10 @@ import (
 
 	"github.com/getsentry/raven-go"
 	common "github.com/tb0hdan/torpedo_common"
-	database "github.com/tb0hdan/torpedo_common/database"
-	memcache "github.com/tb0hdan/torpedo_common/memcache"
+	"github.com/tb0hdan/torpedo_common/database"
 	"github.com/tb0hdan/torpedo_registry"
+
+	"github.com/tb0hdan/memcache"
 )
 
 var bot *TorpedoBot
@@ -31,10 +32,10 @@ type BotStats struct {
 }
 
 type TorpedoBot struct {
-	caches              map[string]*memcache.MemCacheType
+	caches              map[string]*memcache.CacheType
 	Database            *database.MongoDB
 	logger              *log.Logger
-	throttle            *memcache.MemCacheType
+	throttle            *memcache.CacheType
 	RegisteredProtocols map[string]func(interface{}, string, *TorpedoBotAPI, []torpedo_registry.RichMessage)
 	Stats               BotStats
 	Build               struct {
@@ -206,8 +207,8 @@ func New() *TorpedoBot {
 		bot = &TorpedoBot{}
 		cu := &common.Utils{}
 		bot.logger = cu.NewLog("torpedo-bot")
-		bot.caches = make(map[string]*memcache.MemCacheType)
-		bot.throttle = memcache.New()
+		bot.caches = make(map[string]*memcache.CacheType)
+		bot.throttle = memcache.New(log.New())
 		env_dsn := os.Getenv("SENTRY_DSN")
 		if env_dsn != "" {
 			bot.logger.Print("Using Sentry error reporting...\n")
