@@ -43,7 +43,7 @@ build:  deps lint build_only
 
 build_only:
 	@cd src/$(PKGNAME); $(BUILD_CMD) -a -trimpath -tags netgo -installsuffix netgo -v -x -ldflags "-s -w -X main.Build=$(BUILD) -X main.BuildDate=$(BDATE) -X main.GoVersion=$(GO_VERSION) -X main.Version=$(VERSION) -X main.ProjectURL=$(PROJECT_URL)" -o ../../bin/$(DEST) $(PKGNAME)
-	@strip ./bin/$(DEST)
+	@strip -S -x ./bin/$(DEST)
 
 clean:
 	@rm -rf bin/ build/
